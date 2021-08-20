@@ -155,7 +155,7 @@ Feature: add user
       | 123      |
       | -123     |
       | 0.0      |
-
+  @notToImplementOnOCIS
   Scenario: subadmin should not be able to create a new user
     Given user "brand-new-user" has been deleted
     And user "subadmin" has been created with default attributes and without skeleton files
@@ -174,7 +174,7 @@ Feature: add user
     Then the OCS status code should be "997"
     And the HTTP status code should be "401"
     And user "brand-new-user" should not exist
-
+  @notToImplementOnOCIS
   Scenario: subadmin should be able to create a new user into their group
     Given user "brand-new-user" has been deleted
     And user "subadmin" has been created with default attributes and without skeleton files
@@ -185,7 +185,7 @@ Feature: add user
     Then the OCS status code should be "100"
     And the HTTP status code should be "200"
     And user "brand-new-user" should exist
-
+  @notToImplementOnOCIS
   Scenario: subadmin should not be able to create a new user into other group
     Given user "brand-new-user" has been deleted
     And user "subadmin" has been created with default attributes and without skeleton files
@@ -197,3 +197,16 @@ Feature: add user
     Then the OCS status code should be "105"
     And the HTTP status code should be "200"
     And user "brand-new-user" should not exist
+
+  @sqliteDB
+  Scenario: admin tries to create user with brackets in the username
+    When the administrator sends a user creation request for the following users with password using the provisioning API
+      | username  | password |
+      | [user1]   | %alt1%   |
+      | [ user2 ] | %alt1%   |
+    Then the OCS status code of responses on all endpoints should be "101"
+    And the HTTP status code of responses on all endpoints should be "200"
+    And the following users should not exist
+      | username  |
+      | [user1]   |
+      | [ user2 ] |

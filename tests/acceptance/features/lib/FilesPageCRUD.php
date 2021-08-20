@@ -45,6 +45,7 @@ class FilesPageCRUD extends FilesPageBasic {
 	protected $deleteAllSelectedBtnXpath = ".//*[@id='app-content-files']//*[@class='delete-selected']";
 	protected $fileUploadInputId = "file_upload_start";
 	protected $uploadProgressbarLabelXpath = "//div[@id='uploadprogressbar']/em";
+	protected $newFolderCreateButtonXpath = './/div[contains(@class, "newFileMenu")]//button[@class="create primary"]';
 	protected $strForNormalFileName = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
 
 	/**
@@ -232,7 +233,10 @@ class FilesPageCRUD extends FilesPageBasic {
 	 * @return void
 	 */
 	public function moveFileTo(
-		$name, $destination, Session $session, $maxRetries = STANDARD_RETRY_COUNT
+		$name,
+		$destination,
+		Session $session,
+		$maxRetries = STANDARD_RETRY_COUNT
 	) {
 		$toMoveFileRow = $this->findFileRowByName($name, $session);
 		$destinationFileRow = $this->findFileRowByName($destination, $session);
@@ -284,13 +288,16 @@ class FilesPageCRUD extends FilesPageBasic {
 	 * @param Session $session
 	 * @param string $name
 	 * @param int $timeoutMsec
+	 * @param boolean $useCreateButton
 	 *
 	 * @return string name of the created file
 	 * @throws ElementNotFoundException|\Exception
 	 */
 	public function createFolder(
-		Session $session, $name = null,
-		$timeoutMsec = STANDARD_UI_WAIT_TIMEOUT_MILLISEC
+		Session $session,
+		$name = null,
+		$timeoutMsec = STANDARD_UI_WAIT_TIMEOUT_MILLISEC,
+		$useCreateButton = false
 	) {
 		if ($name === null) {
 			$name = \substr(\str_shuffle($this->strForNormalFileName), 0, 8);
@@ -298,17 +305,17 @@ class FilesPageCRUD extends FilesPageBasic {
 		$newButtonElement = $this->findNewFileFolderButton();
 		$newButtonElement->click();
 
-		$newFolderButtonElement = $this->find("xpath", $this->newFolderButtonXpath);
+		$newFolderCreateButtonElement = $this->find("xpath", $this->newFolderButtonXpath);
 
 		$this->assertElementNotNull(
-			$newFolderButtonElement,
+			$newFolderCreateButtonElement,
 			__METHOD__ .
 			" xpath $this->newFolderButtonXpath " .
 			"could not find new folder button"
 		);
 
 		try {
-			$newFolderButtonElement->click();
+			$newFolderCreateButtonElement->click();
 		} catch (NoSuchElement $e) {
 			// Edge sometimes reports NoSuchElement even though we just found it.
 			// Log the event and continue, because maybe the button was clicked.
@@ -323,7 +330,22 @@ class FilesPageCRUD extends FilesPageBasic {
 		}
 
 		try {
-			$this->fillField($this->newFolderNameInputLabel, $name . Key::ENTER);
+			if ($useCreateButton) {
+				$this->fillField($this->newFolderNameInputLabel, $name);
+
+				$newFolderCreateButtonElement = $this->find("xpath", $this->newFolderCreateButtonXpath);
+
+				$this->assertElementNotNull(
+					$newFolderCreateButtonElement,
+					__METHOD__ .
+					" xpath $this->newFolderCreateButtonXpath " .
+					"could not find create button"
+				);
+
+				$newFolderCreateButtonElement->click();
+			} else {
+				$this->fillField($this->newFolderNameInputLabel, $name . Key::ENTER);
+			}
 		} catch (NoSuchElement $e) {
 			// this seems to be a bug in MinkSelenium2Driver.
 			// Used to work fine in 1.3.1 but now throws this exception
@@ -430,7 +452,8 @@ class FilesPageCRUD extends FilesPageBasic {
 	 */
 	public function findDeleteAllSelectedFilesBtn() {
 		$deleteAllSelectedBtn = $this->find(
-			"xpath", $this->deleteAllSelectedBtnXpath
+			"xpath",
+			$this->deleteAllSelectedBtnXpath
 		);
 		$this->assertElementNotNull(
 			$deleteAllSelectedBtn,
@@ -481,7 +504,8 @@ class FilesPageCRUD extends FilesPageBasic {
 	 */
 	public function waitForUploadProgressbarToFinish() {
 		$uploadProgressbar = $this->find(
-			"xpath", $this->uploadProgressbarLabelXpath
+			"xpath",
+			$this->uploadProgressbarLabelXpath
 		);
 		$this->assertElementNotNull(
 			$uploadProgressbar,

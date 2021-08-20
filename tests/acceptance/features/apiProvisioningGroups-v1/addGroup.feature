@@ -22,20 +22,23 @@ Feature: add groups
       | España§àôœ€ |
       | नेपाली        |
 
+  @sqliteDB
   Scenario: admin creates a group with special characters
     When the administrator sends a group creation request for the following groups using the provisioning API
-      | groupname           | comment                                 |
-      | brand-new-group     | dash                                    |
-      | the.group           | dot                                     |
-      | left,right          | comma                                   |
-      | 0                   | The "false" group                       |
-      | Finance (NP)        | Space and brackets                      |
-      | Admin&Finance       | Ampersand                               |
-      | admin:Pokhara@Nepal | Colon and @                             |
-      | maint+eng           | Plus sign                               |
-      | $x<=>[y*z^2]!       | Maths symbols                           |
-      | Mgmt\Middle         | Backslash                               |
-      | 😅 😆               | emoji                                   |
+      | groupname           | comment            |
+      | brand-new-group     | dash               |
+      | the.group           | dot                |
+      | left,right          | comma              |
+      | 0                   | The "false" group  |
+      | Finance (NP)        | Space and brackets |
+      | Admin&Finance       | Ampersand          |
+      | admin:Pokhara@Nepal | Colon and @        |
+      | maint+eng           | Plus sign          |
+      | $x<=>[y*z^2]!       | Maths symbols      |
+      | Mgmt\Middle         | Backslash          |
+      | 😅 😆               | emoji              |
+      | [group1]            | brackets           |
+      | group [ 2 ]         | bracketsAndSpace   |
     Then the OCS status code of responses on all endpoints should be "100"
     And the HTTP status code of responses on all endpoints should be "200"
     And these groups should exist:
@@ -51,6 +54,8 @@ Feature: add groups
       | $x<=>[y*z^2]!       |
       | Mgmt\Middle         |
       | 😅 😆               |
+      | [group1]            |
+      | group [ 2 ]         |
 
   @toImplementOnOCIS @issue-product-284
   Scenario: admin creates a group with % and # in name
@@ -118,7 +123,7 @@ Feature: add groups
 
   # A group name must not end in "/subadmins" because that would create ambiguity
   # with the endpoint for getting the subadmins of a group
-  @issue-31015 @skipOnOcV10
+  @issue-31015 @skipOnOcV10 @notToImplementOnOCIS
   Scenario: admin tries to create a group with name ending in "/subadmins"
     Given group "brand-new-group" has been created
     When the administrator tries to send a group creation request for group "priv/subadmins" using the provisioning API
@@ -139,7 +144,7 @@ Feature: add groups
     Then the OCS status code should be "997"
     And the HTTP status code should be "401"
     And group "brand-new-group" should not exist
-
+  @notToImplementOnOCIS
   Scenario: subadmin tries to create a group
     Given user "subadmin" has been created with default attributes and without skeleton files
     And group "brand-new-group" has been created

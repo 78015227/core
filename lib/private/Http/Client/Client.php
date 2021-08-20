@@ -46,9 +46,11 @@ class Client implements IClient {
 	 * @param ICertificateManager $certificateManager
 	 * @param GuzzleClient $client
 	 */
-	public function __construct(IConfig $config,
-								ICertificateManager $certificateManager,
-								GuzzleClient $client) {
+	public function __construct(
+		IConfig $config,
+		ICertificateManager $certificateManager,
+		GuzzleClient $client
+	) {
 		$this->config = $config;
 		$this->client = $client;
 		$this->certificateManager = $certificateManager;
@@ -141,6 +143,7 @@ class Client implements IClient {
 					'proxy',
 					'tcp://' . $proxyHost
 				);
+				$options['config']['stream_context']['http']['request_fulluri'] = true;
 			}
 
 			$proxyUserPwd = $this->config->getSystemValue('proxyuserpwd', null);

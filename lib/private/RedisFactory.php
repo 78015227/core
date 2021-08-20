@@ -26,8 +26,8 @@ class RedisFactory {
 	/** @var \Redis | \RedisCluster */
 	private $instance;
 
-	const REDIS_MINIMAL_VERSION = '2.2.5';
-	const REDIS_EXTRA_PARAMETERS_MINIMAL_VERSION = '5.3.0';
+	public const REDIS_MINIMAL_VERSION = '2.2.5';
+	public const REDIS_EXTRA_PARAMETERS_MINIMAL_VERSION = '5.3.0';
 
 	/** @var  SystemConfig */
 	private $config;
@@ -64,18 +64,26 @@ class RedisFactory {
 			}
 			if (isset($config['connection_parameters'])) {
 				if (!$isConnectionParametersSupported) {
-					throw new \UnexpectedValueException(\sprintf('php-redis extension must be version %s or higher to support connection parameters',
-						self::REDIS_EXTRA_PARAMETERS_MINIMAL_VERSION));
+					throw new \UnexpectedValueException(\sprintf(
+						'php-redis extension must be version %s or higher to support connection parameters',
+						self::REDIS_EXTRA_PARAMETERS_MINIMAL_VERSION
+					));
 				}
 				$connectionParameters = $config['connection_parameters'];
 			} else {
 				$connectionParameters = null;
 			}
 
+			$auth = null;
+
+			if (isset($config['password']) && $config['password'] !== '') {
+				$auth = $config['password'];
+			}
+
 			if ($connectionParameters && $isConnectionParametersSupported) {
-				$this->instance = new \RedisCluster(null, $config['seeds'], $timeout, $readTimeout, false, null, $connectionParameters); // @phan-suppress-current-line PhanParamTooManyInternal
+				$this->instance = new \RedisCluster(null, $config['seeds'], $timeout, $readTimeout, false, $auth, $connectionParameters); // @phan-suppress-current-line PhanParamTooManyInternal
 			} else {
-				$this->instance = new \RedisCluster(null, $config['seeds'], $timeout, $readTimeout);
+				$this->instance = new \RedisCluster(null, $config['seeds'], $timeout, $readTimeout, false, $auth);
 			}
 
 			if (isset($config['failover_mode'])) {
@@ -101,8 +109,10 @@ class RedisFactory {
 
 			if (isset($config['connection_parameters'])) {
 				if (!$isConnectionParametersSupported) {
-					throw new \UnexpectedValueException(\sprintf('php-redis extension must be version %s or higher to support connection parameters',
-						self::REDIS_EXTRA_PARAMETERS_MINIMAL_VERSION));
+					throw new \UnexpectedValueException(\sprintf(
+						'php-redis extension must be version %s or higher to support connection parameters',
+						self::REDIS_EXTRA_PARAMETERS_MINIMAL_VERSION
+					));
 				}
 				$connectionParameters = $config['connection_parameters'];
 			} else {

@@ -27,8 +27,8 @@
 #      - testing targets
 
 # Detailed documentation in https://github.com/owncloud/documentation:
-#      - https://doc.owncloud.org/server/latest/developer_manual/general/devenv.html#check-out-the-code
-#      - https://doc.owncloud.org/server/latest/developer_manual/core/unit-testing.html#running-unit-tests-for-the-owncloud-core-project
+#      - https://doc.owncloud.com/server/latest/developer_manual/general/devenv.html#check-out-the-code
+#      - https://doc.owncloud.com/server/latest/developer_manual/testing/unit-testing.html#running-unit-tests-for-owncloud-core
 #
 
 NODE_PREFIX=build
@@ -55,6 +55,8 @@ PHPSTAN=php -d zend.enable_gc=0 vendor-bin/phpstan/vendor/bin/phpstan
 TEST_DATABASE=sqlite
 TEST_EXTERNAL_ENV=smb-silvershell
 TEST_PHP_SUITE=
+
+DOC_LINK_VERSION=
 
 # Acceptance test flags (for shells supporting autocompletion of makefiles, eg: zsh)
 TEST_SERVER_URL?=
@@ -133,6 +135,11 @@ help:
 	@echo -e "make test-php-style-fix\t\trun PHP code style checks and fix any issues found"
 	@echo -e "make update-php-license-header\tUpdate license headers"
 	@echo -e "make changelog\t\t\tGenerate the CHANGELOG.md file for testing"
+	@echo
+	@echo -e "make test-doc-links\t\tTest if the doc links are valid"
+	@echo
+	@echo It is also possible to specify the ownCloud version to look for in the docs:
+	@echo -e "make test-doc-links DOC_LINK_VERSION=10.7"
 
 
 #
@@ -216,13 +223,13 @@ test-acceptance-webui: $(acceptance_test_deps)
 
 .PHONY: test-php-style
 test-php-style: vendor-bin/owncloud-codestyle/vendor vendor-bin/php_codesniffer/vendor
-	$(PHP_CS_FIXER) fix -v --diff --diff-format udiff --allow-risky yes --dry-run
+	$(PHP_CS_FIXER) fix -v --diff --allow-risky yes --dry-run
 	$(PHP_CODESNIFFER) --cache --runtime-set ignore_warnings_on_exit --standard=phpcs.xml tests/acceptance tests/TestHelpers
 	php build/OCPSinceChecker.php
 
 .PHONY: test-php-style-fix
 test-php-style-fix: vendor-bin/owncloud-codestyle/vendor
-	$(PHP_CS_FIXER) fix -v --diff --diff-format udiff --allow-risky yes
+	$(PHP_CS_FIXER) fix -v --diff --allow-risky yes
 
 .PHONY: test-php-phan
 test-php-phan: vendor-bin/phan/vendor
@@ -260,6 +267,10 @@ docs: docs-js
 .PHONY: clean-docs
 clean-docs:
 	rm -Rf build/jsdocs
+
+.PHONY: test-doc-links
+test-doc-links: 
+	php tests/docs/DocLinksTest.php $(DOC_LINK_VERSION)
 
 #
 # Build distribution

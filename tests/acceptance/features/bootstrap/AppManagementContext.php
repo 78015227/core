@@ -58,6 +58,7 @@ class AppManagementContext implements Context {
 		return SetupHelper::setSystemConfig(
 			'apps_paths',
 			\json_encode($appsPaths),
+			$this->featureContext->getStepLineRef(),
 			'json'
 		);
 	}
@@ -72,7 +73,11 @@ class AppManagementContext implements Context {
 	 */
 	public function setAppDirectories(TableNode $table) {
 		$appsPathsConfigs = \json_decode(
-			SetupHelper::getSystemConfig("apps_paths", "json")['stdOut'],
+			SetupHelper::getSystemConfig(
+				"apps_paths",
+				$this->featureContext->getStepLineRef(),
+				"json"
+			)['stdOut'],
 			true
 		);
 		$this->featureContext->verifyTableNodeColumns($table, ['dir'], ['is_writable']);
@@ -105,7 +110,10 @@ class AppManagementContext implements Context {
 	 * @throws Exception
 	 */
 	public function putAppInDir($appId, $version, $dir) {
-		$ocVersion = SetupHelper::getSystemConfigValue('version');
+		$ocVersion = SetupHelper::getSystemConfigValue(
+			'version',
+			$this->featureContext->getStepLineRef()
+		);
 		$appInfo = \sprintf(
 			'<?xml version="1.0"?>
 			<info>
@@ -154,7 +162,10 @@ class AppManagementContext implements Context {
 	 */
 	public function appHasBeenPutInDir($appId, $version, $dir) {
 		$this->putAppInDir($appId, $version, $dir);
-		$check = SetupHelper::runOcc(['app:list', '--output json']);
+		$check = SetupHelper::runOcc(
+			['app:list', '--output json'],
+			$this->featureContext->getStepLineRef()
+		);
 		$appsDisabled = \json_decode($check['stdOut'], true)['disabled'];
 		if (!\array_key_exists($appId, $appsDisabled)) {
 			throw new \Exception(
@@ -247,7 +258,9 @@ class AppManagementContext implements Context {
 	 * @return void
 	 */
 	public function appWithVersionAndPathShouldHaveBeenListedInTheEnabledAppsSection(
-		$appId, $appVersion, $appPath
+		$appId,
+		$appVersion,
+		$appPath
 	) {
 		$commandOutput = $this->featureContext->getStdOutOfOccCommand();
 		$expectedStartOfOutput = "Enabled:";
@@ -277,7 +290,9 @@ class AppManagementContext implements Context {
 	 * @return void
 	 */
 	public function appWithVersionAndPathShouldHaveBeenListedInTheDisabledAppsSection(
-		$appId, $appVersion, $appPath
+		$appId,
+		$appVersion,
+		$appPath
 	) {
 		$commandOutput = $this->featureContext->getStdOutOfOccCommand();
 		$startOfDisabledSection = \strpos($commandOutput, "Disabled:");
@@ -370,10 +385,12 @@ class AppManagementContext implements Context {
 	 */
 	public function assertInstalledVersionOfAppIs($appId, $version) {
 		$cmdOutput = SetupHelper::runOcc(
-			['config:app:get', $appId, 'installed_version', '--no-ansi']
+			['config:app:get', $appId, 'installed_version', '--no-ansi'],
+			$this->featureContext->getStepLineRef()
 		)['stdOut'];
 		Assert::assertEquals(
-			$version, \trim($cmdOutput),
+			$version,
+			\trim($cmdOutput),
 			"Expected: the installed version of ${appId} should be ${version} but got " . \trim($cmdOutput)
 		);
 	}
@@ -396,7 +413,9 @@ class AppManagementContext implements Context {
 		$this->featureContext = $environment->getContext('FeatureContext');
 
 		$value = SetupHelper::getSystemConfigValue(
-			'apps_paths', 'json'
+			'apps_paths',
+			$this->featureContext->getStepLineRef(),
+			'json'
 		);
 
 		if ($value === '') {
@@ -416,7 +435,10 @@ class AppManagementContext implements Context {
 	 */
 	public function undoChangingParameters() {
 		if ($this->oldAppsPaths === null) {
-			SetupHelper::deleteSystemConfig('apps_paths');
+			SetupHelper::deleteSystemConfig(
+				'apps_paths',
+				$this->featureContext->getStepLineRef()
+			);
 		} else {
 			$this->setAppsPaths($this->oldAppsPaths);
 		}
@@ -431,7 +453,10 @@ class AppManagementContext implements Context {
 	 * @throws Exception
 	 */
 	public function deleteCreatedApps() {
-		$configJson = SetupHelper::runOcc(['config:list'])['stdOut'];
+		$configJson = SetupHelper::runOcc(
+			['config:list'],
+			$this->featureContext->getStepLineRef()
+		)['stdOut'];
 		$configList = \json_decode($configJson, true);
 		foreach ($this->createdApps as $app => $paths) {
 			//disable the app
@@ -440,13 +465,19 @@ class AppManagementContext implements Context {
 			//delete config values out of the database
 			if (\array_key_exists($app, $configList['apps'])) {
 				foreach ($configList['apps'][$app] as $key => $value) {
-					SetupHelper::runOcc(['config:app:delete', $app, $key]);
+					SetupHelper::runOcc(
+						['config:app:delete', $app, $key],
+						$this->featureContext->getStepLineRef()
+					);
 				}
 			}
 
 			//delete the app from the drive
 			foreach ($paths as $path) {
-				SetupHelper::rmDirOnServer(\dirname($path));
+				SetupHelper::rmDirOnServer(
+					\dirname($path),
+					$this->featureContext->getStepLineRef()
+				);
 			}
 		}
 	}

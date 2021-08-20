@@ -37,7 +37,7 @@ abstract class Storage extends \Test\TestCase {
 	 */
 	protected function wait() {
 		if ($this->waitDelay > 0) {
-			\sleep($this->waitDelay);
+			\usleep($this->waitDelay * 1000000);
 		}
 	}
 
@@ -338,6 +338,9 @@ abstract class Storage extends \Test\TestCase {
 	public function testCheckUpdate() {
 		if ($this->instance instanceof \OC\Files\Storage\Wrapper\Wrapper) {
 			$this->markTestSkipped('Cannot test update check on wrappers');
+		}
+		if ($this instanceof \OCA\Files_External\Tests\Storage\OwncloudTest) {
+			$this->markTestSkipped('Skip testCheckUpdate on OwncloudTest see issue 38371');
 		}
 		$textFile = \OC::$SERVERROOT . '/tests/data/lorem.txt';
 		$watcher = $this->instance->getWatcher();

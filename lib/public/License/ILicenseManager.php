@@ -79,6 +79,12 @@ interface ILicenseManager {
 	public function setLicenseString(?string $licenseString);
 
 	/**
+	 * @since 10.8.0
+	 * Remove the set license
+	 */
+	public function removeLicenseString();
+
+	/**
 	 * @since 10.5.0
 	 * Get the license state for $appid. This function will return one of the LICENSE_STATE_*
 	 * constants.
@@ -109,6 +115,23 @@ interface ILicenseManager {
 	 *
 	 */
 	public function getLicenseMessageFor(string $appid, string $language = null): array;
+
+	/**
+	 * @since 10.8.0
+	 * Ask the license for some specific information without leaking the license.
+	 * Note that some method might be protected and the LicenseManager will refuse checking
+	 * them. An InvalidArgumentException will be thrown
+	 *
+	 * @param string $appid The appid to check the license for.
+	 * @param string $method The method of the license that we want to call. If the
+	 * method has been declared as protected (AbstractLicense->getProtectedMethods()),
+	 * the LicenseManager will throw an LicenseManagerException
+	 * @param array $params The parameters for the method
+	 * @return mixed the result of the method
+	 * @throws LicenseManagerException if there is no license set, the method can't be called
+	 * of the method fails
+	 */
+	public function askLicenseFor(string $appid, string $method, array $params = []);
 
 	/**
 	 * @since 10.5.0

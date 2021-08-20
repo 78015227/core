@@ -33,12 +33,12 @@ use OCP\Security\ICrypto;
  * Stores the mount config in the database
  */
 class DBConfigService {
-	const MOUNT_TYPE_ADMIN = 1;
-	const MOUNT_TYPE_PERSONAl = 2;
+	public const MOUNT_TYPE_ADMIN = 1;
+	public const MOUNT_TYPE_PERSONAl = 2;
 
-	const APPLICABLE_TYPE_GLOBAL = 1;
-	const APPLICABLE_TYPE_GROUP = 2;
-	const APPLICABLE_TYPE_USER = 3;
+	public const APPLICABLE_TYPE_GLOBAL = 1;
+	public const APPLICABLE_TYPE_GROUP = 2;
+	public const APPLICABLE_TYPE_USER = 3;
 
 	/**
 	 * @var IDBConnection
@@ -270,9 +270,6 @@ class DBConfigService {
 	 * @param string $value
 	 */
 	public function setConfig($mountId, $key, $value) {
-		if ($key === 'password') {
-			$value = $this->encryptValue($value);
-		}
 		$count = $this->connection->insertIfNotExist('*PREFIX*external_config', [
 			'mount_id' => $mountId,
 			'key' => $key,
@@ -434,31 +431,13 @@ class DBConfigService {
 	 * @return array ['key1' => $value1, ...]
 	 */
 	private function createKeyValueMap(array $keyValuePairs) {
-		$decryptedPairts = \array_map(function ($pair) {
-			if ($pair['key'] === 'password') {
-				$pair['value'] = $this->decryptValue($pair['value']);
-			}
-			return $pair;
-		}, $keyValuePairs);
 		$keys = \array_map(function ($pair) {
 			return $pair['key'];
-		}, $decryptedPairts);
+		}, $keyValuePairs);
 		$values = \array_map(function ($pair) {
 			return $pair['value'];
-		}, $decryptedPairts);
+		}, $keyValuePairs);
 
 		return \array_combine($keys, $values);
-	}
-
-	private function encryptValue($value) {
-		return $this->crypto->encrypt($value);
-	}
-
-	private function decryptValue($value) {
-		try {
-			return $this->crypto->decrypt($value);
-		} catch (\Exception $e) {
-			return $value;
-		}
 	}
 }

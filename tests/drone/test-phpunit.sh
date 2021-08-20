@@ -37,6 +37,12 @@ set_up_external_storage() {
       cp tests/drone/configs/config.files_external.sftp.php apps/files_external/tests/config.sftp.php
       FILES_EXTERNAL_TEST_TO_RUN=SftpTest.php
       ;;
+    owncloud)
+      wait-for-it -t 800 oc-server:8080
+      curl -u admin:admin http://oc-server:8080/ocs/v1.php/cloud/users -d userid="test" -d password="test"
+      cp tests/drone/configs/config.files_external.owncloud.php apps/files_external/tests/config.owncloud.php
+      FILES_EXTERNAL_TEST_TO_RUN=OwncloudTest.php
+      ;;
     *)
       echo "Unsupported files external type!"
       exit 1
@@ -56,7 +62,7 @@ php occ app:list
 
 phpunit_cmd="php ../lib/composer/bin/phpunit"
 if [[ "${COVERAGE}" == "true" ]]; then
-    phpunit_cmd="phpdbg -d memory_limit=4096M -rr ../lib/composer/bin/phpunit"
+    phpunit_cmd="phpdbg -d memory_limit=6G -rr ../lib/composer/bin/phpunit"
 fi
 
 if [[ -n "${FILES_EXTERNAL_TYPE}" ]]; then

@@ -42,6 +42,7 @@ class MoveCopyHelper {
 	 * @param string $password
 	 * @param string $fromFileName
 	 * @param string $toFileName
+	 * @param string $xRequestId
 	 * @param array  $headers
 	 * @param int    $davPathVersionToUse (1|2)
 	 * @param string $sourceIpAddress
@@ -54,13 +55,22 @@ class MoveCopyHelper {
 		$password,
 		$fromFileName,
 		$toFileName,
+		$xRequestId = '',
 		$headers = [],
 		$davPathVersionToUse = 1,
 		$sourceIpAddress = null
 	) {
 		return self::copyOrMove(
-			$baseUrl, "copy", $user, $password, $fromFileName, $toFileName,
-			$headers, $davPathVersionToUse, $sourceIpAddress
+			$baseUrl,
+			"copy",
+			$user,
+			$password,
+			$fromFileName,
+			$toFileName,
+			$xRequestId,
+			$headers,
+			$davPathVersionToUse,
+			$sourceIpAddress
 		);
 	}
 
@@ -75,6 +85,7 @@ class MoveCopyHelper {
 	 * @param string $password
 	 * @param string $fromFileName
 	 * @param string $toFileName
+	 * @param string $xRequestId
 	 * @param array  $headers
 	 * @param int    $davPathVersionToUse (1|2)
 	 * @param string $sourceIpAddress
@@ -87,13 +98,22 @@ class MoveCopyHelper {
 		$password,
 		$fromFileName,
 		$toFileName,
+		$xRequestId = '',
 		$headers = [],
 		$davPathVersionToUse = 1,
 		$sourceIpAddress = null
 	) {
 		return self::copyOrMove(
-			$baseUrl, "move", $user, $password, $fromFileName, $toFileName,
-			$headers, $davPathVersionToUse, $sourceIpAddress
+			$baseUrl,
+			"move",
+			$user,
+			$password,
+			$fromFileName,
+			$toFileName,
+			$xRequestId,
+			$headers,
+			$davPathVersionToUse,
+			$sourceIpAddress
 		);
 	}
 
@@ -109,6 +129,7 @@ class MoveCopyHelper {
 	 * @param string $password
 	 * @param string $fromFileName
 	 * @param string $toFileName
+	 * @param string $xRequestId
 	 * @param array  $headers
 	 * @param int    $davPathVersionToUse (1|2)
 	 * @param string $sourceIpAddress
@@ -122,6 +143,7 @@ class MoveCopyHelper {
 		$password,
 		$fromFileName,
 		$toFileName,
+		$xRequestId = '',
 		$headers = [],
 		$davPathVersionToUse = 1,
 		$sourceIpAddress = null
@@ -146,6 +168,7 @@ class MoveCopyHelper {
 			$method,
 			$fromFileName,
 			$headers,
+			$xRequestId,
 			null,
 			$davPathVersionToUse,
 			"files",

@@ -25,6 +25,7 @@ use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Gherkin\Node\TableNode;
 use PHPUnit\Framework\Assert;
 use TestHelpers\LoggingHelper;
+use TestHelpers\OcisHelper;
 use TestHelpers\SetupHelper;
 
 require_once 'bootstrap.php';
@@ -60,8 +61,15 @@ class LoggingContext implements Context {
 	 * @throws \Exception
 	 */
 	public function theLastLinesOfTheLogFileShouldContainEntriesWithTheseAttributes(
-		$comparingMode, $ignoredLines = 0, TableNode $expectedLogEntries = null
+		$comparingMode,
+		$ignoredLines = 0,
+		TableNode $expectedLogEntries = null
 	) {
+		if (OcisHelper::isTestingOnOcisOrReva()) {
+			// Currently we don't interact with the log file on reva or OCIS
+			// So skip processing this test step.
+			return;
+		}
 		$ignoredLines = (int) $ignoredLines;
 		//-1 because getRows gives also the header
 		$linesToRead = \count($expectedLogEntries->getRows()) - 1 + $ignoredLines;
@@ -69,6 +77,7 @@ class LoggingContext implements Context {
 			$this->featureContext->getBaseUrl(),
 			$this->featureContext->getAdminUsername(),
 			$this->featureContext->getAdminPassword(),
+			$this->featureContext->getStepLineRef(),
 			$linesToRead
 		);
 		$lineNo = 0;
@@ -82,7 +91,9 @@ class LoggingContext implements Context {
 				if ($comparingMode === 'matching') {
 					$expectedLogEntry[$attribute]
 						= $this->featureContext->substituteInLineCodes(
-							$expectedLogEntry[$attribute], null, ['preg_quote' => ['/']]
+							$expectedLogEntry[$attribute],
+							null,
+							['preg_quote' => ['/']]
 						);
 				} else {
 					$expectedLogEntry[$attribute]
@@ -93,28 +104,33 @@ class LoggingContext implements Context {
 
 				if ($expectedLogEntry[$attribute] !== "") {
 					Assert::assertArrayHasKey(
-						$attribute, $logEntry,
+						$attribute,
+						$logEntry,
 						"could not find attribute: '$attribute' in log entry: '{$logLines[$lineNo]}'"
 					);
 					$message = "log entry:\n{$logLines[$lineNo]}\n";
 					if (!\is_string($logEntry[$attribute])) {
 						$logEntry[$attribute] = \json_encode(
-							$logEntry[$attribute], JSON_UNESCAPED_SLASHES
+							$logEntry[$attribute],
+							JSON_UNESCAPED_SLASHES
 						);
 					}
 					if ($comparingMode === 'with') {
 						Assert::assertEquals(
-							$expectedLogEntry[$attribute], $logEntry[$attribute],
+							$expectedLogEntry[$attribute],
+							$logEntry[$attribute],
 							$message
 						);
 					} elseif ($comparingMode === 'containing') {
 						Assert::assertStringContainsString(
-							$expectedLogEntry[$attribute], $logEntry[$attribute],
+							$expectedLogEntry[$attribute],
+							$logEntry[$attribute],
 							$message
 						);
 					} elseif ($comparingMode === 'matching') {
 						Assert::assertRegExp(
-							$expectedLogEntry[$attribute], $logEntry[$attribute],
+							$expectedLogEntry[$attribute],
+							$logEntry[$attribute],
 							$message
 						);
 					} else {
@@ -143,10 +159,14 @@ class LoggingContext implements Context {
 	 * @return void
 	 */
 	public function theLastLinesOfTheLogFileIgnoringSomeShouldContainEntries(
-		$ignoredLines, $comparingMode, TableNode $expectedLogEntries
+		$ignoredLines,
+		$comparingMode,
+		TableNode $expectedLogEntries
 	) {
 		$this->theLastLinesOfTheLogFileShouldContainEntriesWithTheseAttributes(
-			$comparingMode, $ignoredLines, $expectedLogEntries
+			$comparingMode,
+			$ignoredLines,
+			$expectedLogEntries
 		);
 	}
 
@@ -161,10 +181,13 @@ class LoggingContext implements Context {
 	 * @return void
 	 */
 	public function theLastLinesOfTheLogFileIgnoringLastShouldContainEntries(
-		$comparingMode, TableNode $expectedLogEntries
+		$comparingMode,
+		TableNode $expectedLogEntries
 	) {
 		$this->theLastLinesOfTheLogFileShouldContainEntriesWithTheseAttributes(
-			$comparingMode, 1, $expectedLogEntries
+			$comparingMode,
+			1,
+			$expectedLogEntries
 		);
 	}
 
@@ -186,7 +209,8 @@ class LoggingContext implements Context {
 		TableNode $expectedLogEntries
 	) {
 		$this->assertLogFileContainsAtLeastOneEntryMatchingTable(
-			true, $expectedLogEntries
+			true,
+			$expectedLogEntries
 		);
 	}
 
@@ -205,7 +229,9 @@ class LoggingContext implements Context {
 		TableNode $expectedLogEntries
 	) {
 		$this->assertLogFileContainsAtLeastOneEntryMatchingTable(
-			true, $expectedLogEntries, true
+			true,
+			$expectedLogEntries,
+			true
 		);
 	}
 
@@ -221,7 +247,9 @@ class LoggingContext implements Context {
 		TableNode $expectedLogEntries
 	) {
 		$this->assertLogFileContainsAtLeastOneEntryMatchingTable(
-			false, $expectedLogEntries, true
+			false,
+			$expectedLogEntries,
+			true
 		);
 	}
 
@@ -245,12 +273,20 @@ class LoggingContext implements Context {
 	 * @throws \Exception
 	 */
 	private function assertLogFileContainsAtLeastOneEntryMatchingTable(
-		$shouldOrNot, TableNode $expectedLogEntries, $regexCompare = false
+		$shouldOrNot,
+		TableNode $expectedLogEntries,
+		$regexCompare = false
 	) {
+		if (OcisHelper::isTestingOnOcisOrReva()) {
+			// Currently we don't interact with the log file on reva or OCIS
+			// So skip processing this test step.
+			return;
+		}
 		$logLines = LoggingHelper::getLogFileContent(
 			$this->featureContext->getBaseUrl(),
 			$this->featureContext->getAdminUsername(),
-			$this->featureContext->getAdminPassword()
+			$this->featureContext->getAdminPassword(),
+			$this->featureContext->getStepLineRef()
 		);
 		$expectedLogEntries = $expectedLogEntries->getHash();
 		foreach ($logLines as $logLine) {
@@ -276,17 +312,21 @@ class LoggingContext implements Context {
 					}
 					if (!\is_string($logEntry[$attribute])) {
 						$logEntry[$attribute] = \json_encode(
-							$logEntry[$attribute], JSON_UNESCAPED_SLASHES
+							$logEntry[$attribute],
+							JSON_UNESCAPED_SLASHES
 						);
 					}
 
 					if ($regexCompare === true) {
 						$expectedLogEntry[$attribute]
 							= $this->featureContext->substituteInLineCodes(
-								$expectedLogEntry[$attribute], null, ['preg_quote' => ['/']]
+								$expectedLogEntry[$attribute],
+								null,
+								['preg_quote' => ['/']]
 							);
 						$matchAttribute = \preg_match(
-							$expectedLogEntry[$attribute], $logEntry[$attribute]
+							$expectedLogEntry[$attribute],
+							$logEntry[$attribute]
 						);
 					} else {
 						$expectedLogEntry[$attribute]
@@ -342,12 +382,19 @@ class LoggingContext implements Context {
 	 * @throws \Exception
 	 */
 	public function theLogFileShouldNotContainAnyLogEntriesWithTheseAttributes(
-		$withOrContaining, TableNode $logEntriesExpectedNotToExist
+		$withOrContaining,
+		TableNode $logEntriesExpectedNotToExist
 	) {
+		if (OcisHelper::isTestingOnOcisOrReva()) {
+			// Currently we don't interact with the log file on reva or OCIS
+			// So skip processing this test step.
+			return;
+		}
 		$logLines = LoggingHelper::getLogFileContent(
 			$this->featureContext->getBaseUrl(),
 			$this->featureContext->getAdminUsername(),
-			$this->featureContext->getAdminPassword()
+			$this->featureContext->getAdminPassword(),
+			$this->featureContext->getStepLineRef()
 		);
 		foreach ($logLines as $logLine) {
 			$logEntry = \json_decode($logLine, true);
@@ -393,7 +440,10 @@ class LoggingContext implements Context {
 	 * @throws \Exception
 	 */
 	public function owncloudLogLevelIsSetTo($logLevel) {
-		LoggingHelper::setLogLevel($logLevel);
+		LoggingHelper::setLogLevel(
+			$logLevel,
+			$this->featureContext->getStepLineRef()
+		);
 	}
 
 	/**
@@ -408,7 +458,12 @@ class LoggingContext implements Context {
 		$this->owncloudLogLevelIsSetTo($logLevel);
 		$logLevelArray = LoggingHelper::LOG_LEVEL_ARRAY;
 		$logLevelExpected = \array_search($logLevel, $logLevelArray);
-		$logLevelActual = \array_search(LoggingHelper::getLogLevel(), $logLevelArray);
+		$logLevelActual = \array_search(
+			LoggingHelper::getLogLevel(
+				$this->featureContext->getStepLineRef()
+			),
+			$logLevelArray
+		);
 		Assert::assertEquals(
 			$logLevelExpected,
 			$logLevelActual,
@@ -425,7 +480,10 @@ class LoggingContext implements Context {
 	 * @throws \Exception
 	 */
 	public function owncloudLogBackendIsSetTo($backend) {
-		LoggingHelper::setLogBackend($backend);
+		LoggingHelper::setLogBackend(
+			$backend,
+			$this->featureContext->getStepLineRef()
+		);
 	}
 
 	/**
@@ -438,7 +496,9 @@ class LoggingContext implements Context {
 	 */
 	public function owncloudLogBackendHasBeenSetTo($expectedBackend) {
 		$this->owncloudLogBackendIsSetTo($expectedBackend);
-		$currentBackend = LoggingHelper::getLogBackend();
+		$currentBackend = LoggingHelper::getLogBackend(
+			$this->featureContext->getStepLineRef()
+		);
 		Assert::assertEquals(
 			$expectedBackend,
 			$currentBackend,
@@ -455,7 +515,10 @@ class LoggingContext implements Context {
 	 * @throws \Exception
 	 */
 	public function owncloudLogTimezoneIsSetTo($timezone) {
-		LoggingHelper::setLogTimezone($timezone);
+		LoggingHelper::setLogTimezone(
+			$timezone,
+			$this->featureContext->getStepLineRef()
+		);
 	}
 
 	/**
@@ -468,7 +531,9 @@ class LoggingContext implements Context {
 	 */
 	public function owncloudLogTimezoneHasBeenSetTo($expectedTimezone) {
 		$this->owncloudLogTimezoneIsSetTo($expectedTimezone);
-		$currentTimezone = LoggingHelper::getLogTimezone();
+		$currentTimezone = LoggingHelper::getLogTimezone(
+			$this->featureContext->getStepLineRef()
+		);
 		Assert::assertEquals(
 			$expectedTimezone,
 			$currentTimezone,
@@ -489,23 +554,9 @@ class LoggingContext implements Context {
 		LoggingHelper::clearLogFile(
 			$this->featureContext->getBaseUrl(),
 			$this->featureContext->getAdminUsername(),
-			$this->featureContext->getAdminPassword()
+			$this->featureContext->getAdminPassword(),
+			$this->featureContext->getStepLineRef()
 		);
-	}
-
-	/**
-	 * Before Scenario for logging. Saves current log settings
-	 *
-	 * @BeforeScenario
-	 *
-	 * @return void
-	 * @throws \Exception
-	 */
-	public function setUpScenarioLogging() {
-		$logging = LoggingHelper::getLogInfo();
-		$this->oldLogLevel = $logging["level"];
-		$this->oldLogBackend = $logging["backend"];
-		$this->oldLogTimezone = $logging["timezone"];
 	}
 
 	/**
@@ -517,7 +568,12 @@ class LoggingContext implements Context {
 	 * @throws \Exception
 	 */
 	public function tearDownScenarioLogging() {
-		LoggingHelper::restoreLoggingStatus($this->oldLogLevel, $this->oldLogBackend, $this->oldLogTimezone);
+		LoggingHelper::restoreLoggingStatus(
+			$this->oldLogLevel,
+			$this->oldLogBackend,
+			$this->oldLogTimezone,
+			$this->featureContext->getStepLineRef()
+		);
 	}
 
 	/**
@@ -538,5 +594,22 @@ class LoggingContext implements Context {
 			$this->featureContext->getBaseUrl(),
 			$this->featureContext->getOcPath()
 		);
+	}
+
+	/**
+	 * Before Scenario for logging. Saves current log settings
+	 *
+	 * @BeforeScenario
+	 *
+	 * @return void
+	 * @throws \Exception
+	 */
+	public function setUpScenarioLogging() {
+		$logging = LoggingHelper::getLogInfo(
+			$this->featureContext->getStepLineRef()
+		);
+		$this->oldLogLevel = $logging["level"];
+		$this->oldLogBackend = $logging["backend"];
+		$this->oldLogTimezone = $logging["timezone"];
 	}
 }

@@ -38,19 +38,24 @@ class PublicLinkFilesPage extends FilesPageBasic {
 	protected $fileListXpath = ".//tbody[@id='fileList']";
 	protected $uploadFormXpath = "//div[@class='uploadForm']";
 	protected $emptyContentXpath = ".//div[@id='emptycontent']";
-	protected $addToYourOcBtnId = "save-button";
+	protected $saveToOcButtonContainerId = "save";
+	protected $saveToOcButtonExpandId = "save-to-oc-button-expand";
+	protected $changeServerLinkId = "change-server";
+	protected $changeServerPromptXpath = ".//div[@class='oc-dialog' and not(contains(@style,'display: none'))]";
+	protected $changeServerPromptInputId = "oc-dialog-0-content-input";
 	protected $DownloadBtnXpath = "//a[@id='download']";
 	protected $directLinkXpath = "//input[@id='directLink']";
 	protected $downloadFileXpath = "//a[@id='downloadFile']";
 	protected $textPreviewContainerXpath = "//div[@class='text-preview']";
 	protected $remoteAddressInputId = "remote_address";
-	protected $confirmBtnId = "save-button-confirm";
+	protected $confirmBtnId = "save-to-oc-button-confirm";
 	protected $passwordFieldId = 'password';
 	protected $passwordSubmitButtonId = 'password-submit';
 	protected $warningMessageCss = '.warning';
 	protected $deleteAllSelectedBtnXpath = "//a[@class='delete-selected']";
 	protected $uploadedElementsCss = '.public-upload-view--completed';
 	protected $uploadedElementsXpath = "//div[@class='public-upload-view--completed']//li";
+	protected $saveToOcButtonId = "save-to-oc-button";
 
 	/**
 	 *
@@ -104,7 +109,9 @@ class PublicLinkFilesPage extends FilesPageBasic {
 	 * @param array $parameters
 	 */
 	public function __construct(
-		Session $session, Factory $factory, array $parameters = []
+		Session $session,
+		Factory $factory,
+		array $parameters = []
 	) {
 		parent::__construct($session, $factory, $parameters);
 		$this->filesPageCRUDFunctions = $this->getPage("FilesPageCRUD");
@@ -124,7 +131,7 @@ class PublicLinkFilesPage extends FilesPageBasic {
 	 * @throws ElementNotFoundException
 	 */
 	public function isAddtoServerButtonPresent() {
-		$addToYourOcBtn = $this->findById($this->addToYourOcBtnId);
+		$addToYourOcBtn = $this->findById($this->saveToOcButtonContainerId);
 		if ($addToYourOcBtn) {
 			return true;
 		} else {
@@ -141,26 +148,50 @@ class PublicLinkFilesPage extends FilesPageBasic {
 	 * @throws ElementNotFoundException
 	 */
 	public function addToServer($server) {
-		$addToYourOcBtn = $this->findById($this->addToYourOcBtnId);
+		$changeServerLink = $this->findById($this->changeServerLinkId);
+		$saveToOcButtonExpand = $this->findById($this->saveToOcButtonExpandId);
+
 		$this->assertElementNotNull(
-			$addToYourOcBtn,
+			$saveToOcButtonExpand,
 			__METHOD__ .
-			" id $this->addToYourOcBtnId could not find 'add to your owncloud' button"
+			" id $this->saveToOcButtonExpandId could not find 'expand save to owncloud' button"
 		);
-		$addToYourOcBtn->click();
-		$remoteAddressInput = $this->findById($this->remoteAddressInputId);
+
+		$saveToOcButtonExpand->click();
+
 		$this->assertElementNotNull(
-			$remoteAddressInput,
+			$changeServerLink,
 			__METHOD__ .
-			" id $this->remoteAddressInputId could not find remote address input field"
+			" id $this->saveToOcButtonExpandId could not find 'change server' link"
 		);
-		$remoteAddressInput->setValue($server);
+
+		$changeServerLink->click();
+
+		$changeServerPrompt  = $this->find('xpath', $this->changeServerPromptXpath);
+
+		$this->assertElementNotNull(
+			$changeServerPrompt,
+			__METHOD__ .
+			" could not find 'change server' prompt"
+		);
+
+		$changeServerPromptInput = $this->findById($this->changeServerPromptInputId);
+
+		$this->assertElementNotNull(
+			$changeServerPromptInput,
+			__METHOD__ .
+			" id $this->changeServerPromptInputId could not find 'change server' input field"
+		);
+
+		$changeServerPromptInput->setValue($server);
+
 		$confirmBtn = $this->findById($this->confirmBtnId);
 		$this->assertElementNotNull(
 			$confirmBtn,
 			__METHOD__ .
 			" id $this->confirmBtnId could not find confirm button"
 		);
+
 		$confirmBtn->click();
 	}
 
@@ -176,11 +207,14 @@ class PublicLinkFilesPage extends FilesPageBasic {
 	 * @throws ElementNotFoundException|\Exception
 	 */
 	public function createFolder(
-		Session $session, $name = null,
+		Session $session,
+		$name = null,
 		$timeoutMsec = STANDARD_UI_WAIT_TIMEOUT_MILLISEC
 	) {
 		return $this->filesPageCRUDFunctions->createFolder(
-			$session, $name, $timeoutMsec
+			$session,
+			$name,
+			$timeoutMsec
 		);
 	}
 
@@ -201,7 +235,10 @@ class PublicLinkFilesPage extends FilesPageBasic {
 		$maxRetries = STANDARD_RETRY_COUNT
 	) {
 		$this->filesPageCRUDFunctions->renameFile(
-			$fromFileName, $toFileName, $session, $maxRetries
+			$fromFileName,
+			$toFileName,
+			$session,
+			$maxRetries
 		);
 	}
 
@@ -216,10 +253,16 @@ class PublicLinkFilesPage extends FilesPageBasic {
 	 * @return void
 	 */
 	public function moveFileTo(
-		$name, $destination, Session $session, $maxRetries = STANDARD_RETRY_COUNT
+		$name,
+		$destination,
+		Session $session,
+		$maxRetries = STANDARD_RETRY_COUNT
 	) {
 		$this->filesPageCRUDFunctions->moveFileTo(
-			$name, $destination, $session, $maxRetries
+			$name,
+			$destination,
+			$session,
+			$maxRetries
 		);
 	}
 
@@ -385,10 +428,12 @@ class PublicLinkFilesPage extends FilesPageBasic {
 		while ($currentTime <= $end) {
 			$fileList = $this->find('xpath', $this->getFileListXpath());
 			$downloadButton = $this->find(
-				"xpath", $this->DownloadBtnXpath
+				"xpath",
+				$this->DownloadBtnXpath
 			);
 			$uploadForm = $this->find(
-				"xpath", $this->uploadFormXpath
+				"xpath",
+				$this->uploadFormXpath
 			);
 			if ($fileList !== null) {
 				try {
@@ -470,7 +515,10 @@ class PublicLinkFilesPage extends FilesPageBasic {
 		$maxRetries = STANDARD_RETRY_COUNT
 	) {
 		$this->filesPageCRUDFunctions->deleteFile(
-			$name, $session, $expectToDeleteFile, $maxRetries
+			$name,
+			$session,
+			$expectToDeleteFile,
+			$maxRetries
 		);
 	}
 
@@ -524,5 +572,23 @@ class PublicLinkFilesPage extends FilesPageBasic {
 			\array_push($uploadedElements, $element->getText());
 		}
 		return $uploadedElements;
+	}
+
+	/**
+	 * adding public link share to same server instance
+	 *
+	 * @return void
+	 * @throws ElementNotFoundException
+	 */
+	public function saveToSameServer() {
+		$saveToElement = $this->findById($this->saveToOcButtonId);
+
+		$this->assertElementNotNull(
+			$saveToElement,
+			__METHOD__ .
+			" id $this->saveToOcButtonId could not find 'Add To' button"
+		);
+
+		$saveToElement->click();
 	}
 }

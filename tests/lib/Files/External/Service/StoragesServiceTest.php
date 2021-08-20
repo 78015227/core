@@ -33,6 +33,7 @@ use Test\TestCase;
 use OCP\Files\External\Backend\InvalidBackend;
 use OCP\Files\External\Auth\InvalidAuth;
 use OCP\Files\External\Backend\Backend;
+use OCP\Security\ICrypto;
 
 /**
  * @group DB
@@ -73,6 +74,9 @@ abstract class StoragesServiceTest extends TestCase {
 	 * @var Backend[]
 	 */
 	protected $backends;
+
+	/** @var ICrypto */
+	protected $crypto;
 
 	public function setUp(): void {
 		parent::setUp();
@@ -137,17 +141,36 @@ abstract class StoragesServiceTest extends TestCase {
 		\OCP\Util::connectHook(
 			Filesystem::CLASSNAME,
 			Filesystem::signal_create_mount,
-			\get_class($this), 'createHookCallback');
+			\get_class($this),
+			'createHookCallback'
+		);
 		\OCP\Util::connectHook(
 			Filesystem::CLASSNAME,
 			Filesystem::signal_delete_mount,
-			\get_class($this), 'deleteHookCallback');
+			\get_class($this),
+			'deleteHookCallback'
+		);
 
 		$containerMock = $this->createMock('\OCP\AppFramework\IAppContainer');
 		$containerMock->method('query')
 			->will($this->returnCallback(function ($name) {
 				if ($name === 'OCP\Files\External\IStoragesBackendService') {
 					return $this->backendService;
+				}
+			}));
+
+		$this->crypto = $this->createMock(ICrypto::class);
+		$this->crypto->method('encrypt')
+			->will($this->returnCallback(function ($value) {
+				return "-$value-";
+			}));
+		$this->crypto->method('decrypt')
+			->will($this->returnCallback(function ($value) {
+				$expectedDecrypt = \trim($value, '-');
+				if ($value === "-$expectedDecrypt-") {
+					return $expectedDecrypt;
+				} else {
+					throw new \Exception('Cannot decrypt');
 				}
 			}));
 	}

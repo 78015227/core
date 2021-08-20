@@ -35,7 +35,7 @@ use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
  * Repairs file cache entry which path do not match the parent-child relationship
  */
 class RepairMismatchFileCachePath implements IRepairStep {
-	const CHUNK_SIZE = 10000;
+	public const CHUNK_SIZE = 10000;
 
 	/** @var IDBConnection */
 	protected $connection;
@@ -64,10 +64,12 @@ class RepairMismatchFileCachePath implements IRepairStep {
 	/**
 	 * @param \OCP\IDBConnection $connection
 	 */
-	public function __construct(IDBConnection $connection,
-								IMimeTypeLoader $mimeLoader,
-								ILogger $logger,
-								IConfig $config) {
+	public function __construct(
+		IDBConnection $connection,
+		IMimeTypeLoader $mimeLoader,
+		ILogger $logger,
+		IConfig $config
+	) {
 		$this->connection = $connection;
 		$this->mimeLoader = $mimeLoader;
 		$this->logger = $logger;
@@ -108,7 +110,6 @@ class RepairMismatchFileCachePath implements IRepairStep {
 	 * @param string $wrongPath wrong path of the entry to fix
 	 * @param int $correctStorageNumericId numeric idea of the correct storage
 	 * @param string $correctPath value to which to set the path of the entry
-	 * @return bool true for success
 	 */
 	private function fixEntryPath(IOutput $out, $fileId, $wrongPath, $correctStorageNumericId, $correctPath) {
 		// delete target if exists

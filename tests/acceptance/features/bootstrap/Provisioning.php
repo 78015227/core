@@ -362,7 +362,12 @@ trait Provisioning {
 	 */
 	public function adminCreatesUserUsingTheProvisioningApi($user) {
 		$this->createUser(
-			$user, null, null, null, true, 'api'
+			$user,
+			null,
+			null,
+			null,
+			true,
+			'api'
 		);
 	}
 
@@ -390,7 +395,9 @@ trait Provisioning {
 	 * @throws \Exception
 	 */
 	public function userHasBeenCreatedWithDefaultAttributes(
-		string $user, string $skeletonType = "", $skeleton = true
+		string $user,
+		string $skeletonType = "",
+		$skeleton = true
 	) {
 		if ($skeletonType === "") {
 			$skeletonType = $this->getSmallestSkeletonDirName();
@@ -400,7 +407,14 @@ trait Provisioning {
 
 		try {
 			$this->createUser(
-				$user, null, null, null, true, null, true, $skeleton
+				$user,
+				null,
+				null,
+				null,
+				true,
+				null,
+				true,
+				$skeleton
 			);
 			$this->userShouldExist($user);
 		} finally {
@@ -529,18 +543,21 @@ trait Provisioning {
 			}
 		} else {
 			$occResult = SetupHelper::runOcc(
-				['ldap:show-config', 'LDAPTestId', '--output=json']
+				['ldap:show-config', 'LDAPTestId', '--output=json'],
+				$this->getStepLineRef()
 			);
 
 			Assert::assertSame(
-				'0', $occResult['code'],
+				'0',
+				$occResult['code'],
 				"could not read current LDAP config. stdOut: " .
 				$occResult['stdOut'] .
 				" stdErr: " . $occResult['stdErr']
 			);
 
 			$ldapConfig = \json_decode(
-				$occResult['stdOut'], true
+				$occResult['stdOut'],
+				true
 			);
 			Assert::assertNotNull(
 				$ldapConfig,
@@ -582,7 +599,8 @@ trait Provisioning {
 	public function theLdapUsersHaveBeenReSynced() {
 		if (!OcisHelper::isTestingOnOcisOrReva()) {
 			$occResult = SetupHelper::runOcc(
-				['user:sync', 'OCA\User_LDAP\User_Proxy', '-m', 'remove']
+				['user:sync', 'OCA\User_LDAP\User_Proxy', '-m', 'remove'],
+				$this->getStepLineRef()
 			);
 			if ($occResult['code'] !== "0") {
 				throw new \Exception(__METHOD__ . " could not sync LDAP users " . $occResult['stdErr']);
@@ -598,7 +616,8 @@ trait Provisioning {
 	 */
 	public function theLdapUsersAreReSynced() {
 		SetupHelper::runOcc(
-			['user:sync', 'OCA\User_LDAP\User_Proxy', '-m', 'remove']
+			['user:sync', 'OCA\User_LDAP\User_Proxy', '-m', 'remove'],
+			$this->getStepLineRef()
 		);
 	}
 
@@ -630,7 +649,7 @@ trait Provisioning {
 			} elseif ($setDefaultAttributes) {
 				$userAttribute['email'] = $this->getEmailAddressForUser($row['username']);
 				if ($userAttribute['email'] === null) {
-					$userAttribute['email'] = $row['username'] . '@owncloud.org';
+					$userAttribute['email'] = $row['username'] . '@owncloud.com';
 				}
 			} else {
 				$userAttribute['email'] = null;
@@ -757,10 +776,14 @@ trait Provisioning {
 			]
 		];
 		$configValue = $this->substituteInLineCodes(
-			$configValue, null, [], $substitutions
+			$configValue,
+			null,
+			[],
+			$substitutions
 		);
 		$occResult = SetupHelper::runOcc(
-			['ldap:set-config', $configId, $configKey, $configValue]
+			['ldap:set-config', $configId, $configKey, $configValue],
+			$this->getStepLineRef()
 		);
 		if ($occResult['code'] !== "0") {
 			throw new \Exception(
@@ -778,11 +801,13 @@ trait Provisioning {
 	public function deleteLdapUsersAndGroups() {
 		//delete created ldap users
 		$this->ldap->delete(
-			"ou=" . $this->ldapUsersOU . "," . $this->ldapBaseDN, true
+			"ou=" . $this->ldapUsersOU . "," . $this->ldapBaseDN,
+			true
 		);
 		//delete all created ldap groups
 		$this->ldap->delete(
-			"ou=" . $this->ldapGroupsOU . "," . $this->ldapBaseDN, true
+			"ou=" . $this->ldapGroupsOU . "," . $this->ldapBaseDN,
+			true
 		);
 		foreach ($this->ldapCreatedUsers as $user) {
 			$this->rememberThatUserIsNotExpectedToExist($user);
@@ -802,7 +827,10 @@ trait Provisioning {
 	public function resetOldLdapConfig() {
 		$toDeleteLdapConfig = $this->getToDeleteLdapConfigs();
 		foreach ($toDeleteLdapConfig as $configId) {
-			SetupHelper::runOcc(['ldap:delete-config', $configId]);
+			SetupHelper::runOcc(
+				['ldap:delete-config', $configId],
+				$this->getStepLineRef()
+			);
 		}
 		foreach ($this->oldLdapConfig as $configId => $settings) {
 			foreach ($settings as $configKey => $configValue) {
@@ -867,7 +895,8 @@ trait Provisioning {
 					$this->getBaseUrl(),
 					$skeletonDir,
 					$userAttributes['userid'],
-					$userAttributes['password']
+					$userAttributes['password'],
+					$this->getStepLineRef()
 				);
 			}
 		}
@@ -896,7 +925,10 @@ trait Provisioning {
 	 * @throws Exception
 	 */
 	public function usersHaveBeenCreated(
-		$initialize, $usersAttributes, $method = null, $skeleton = true
+		$initialize,
+		$usersAttributes,
+		$method = null,
+		$skeleton = true
 	) {
 		$requests = [];
 		$client = HttpRequestHelper::createClient(
@@ -927,7 +959,7 @@ trait Provisioning {
 							$userAttributes,
 							__METHOD__ . " userAttributes array does not have key 'userid'"
 						);
-						$attributesToCreateUser['email'] = $userAttributes['userid'] . '@owncloud.org';
+						$attributesToCreateUser['email'] = $userAttributes['userid'] . '@owncloud.com';
 					} else {
 						$attributesToCreateUser['email'] = $userAttributes['email'];
 					}
@@ -937,6 +969,7 @@ trait Provisioning {
 					$this->getBaseUrl(),
 					'POST',
 					"/cloud/users",
+					$this->stepLineRef,
 					$attributesToCreateUser
 				);
 				// Add the request to the $requests array so that they can be sent in parallel.
@@ -977,7 +1010,8 @@ trait Provisioning {
 				OcisHelper::createEOSStorageHome(
 					$this->getBaseUrl(),
 					$userAttributes['userid'],
-					$userAttributes['password']
+					$userAttributes['password'],
+					$this->getStepLineRef()
 				);
 				// We don't need to set displayName and email while running in oCIS
 				// As they are set when creating the user
@@ -996,7 +1030,8 @@ trait Provisioning {
 				$this->getBaseUrl(),
 				$editData,
 				$this->getAdminUsername(),
-				$this->getAdminPassword()
+				$this->getAdminPassword(),
+				$this->stepLineRef
 			);
 		}
 
@@ -1124,7 +1159,8 @@ trait Provisioning {
 	 * @throws \Exception
 	 */
 	public function adminChangesPasswordOfUserToUsingTheProvisioningApi(
-		$user, $password
+		$user,
+		$password
 	) {
 		$this->response = UserHelper::editUser(
 			$this->getBaseUrl(),
@@ -1132,7 +1168,8 @@ trait Provisioning {
 			'password',
 			$password,
 			$this->getAdminUsername(),
-			$this->getAdminPassword()
+			$this->getAdminPassword(),
+			$this->getStepLineRef()
 		);
 	}
 
@@ -1146,10 +1183,12 @@ trait Provisioning {
 	 * @throws \Exception
 	 */
 	public function adminHasChangedPasswordOfUserTo(
-		$user, $password
+		$user,
+		$password
 	) {
 		$this->adminChangesPasswordOfUserToUsingTheProvisioningApi(
-			$user, $password
+			$user,
+			$password
 		);
 		$this->theHTTPStatusCodeShouldBe(
 			200,
@@ -1171,11 +1210,17 @@ trait Provisioning {
 			. "/ocs/v{$this->ocsApiVersion}.php/cloud/apps/$app";
 		if ($action === 'enables') {
 			$this->response = HttpRequestHelper::post(
-				$fullUrl, $user, $this->getPasswordForUser($user)
+				$fullUrl,
+				$this->getStepLineRef(),
+				$user,
+				$this->getPasswordForUser($user)
 			);
 		} else {
 			$this->response = HttpRequestHelper::delete(
-				$fullUrl, $user, $this->getPasswordForUser($user)
+				$fullUrl,
+				$this->getStepLineRef(),
+				$user,
+				$this->getPasswordForUser($user)
 			);
 		}
 	}
@@ -1190,7 +1235,9 @@ trait Provisioning {
 	 */
 	public function adminEnablesOrDisablesApp($action, $app) {
 		$this->userEnablesOrDisablesApp(
-			$this->getAdminUsername(), $action, $app
+			$this->getAdminUsername(),
+			$action,
+			$app
 		);
 	}
 
@@ -1209,7 +1256,9 @@ trait Provisioning {
 			$action = 'disables';
 		}
 		$this->userEnablesOrDisablesApp(
-			$this->getAdminUsername(), $action, $app
+			$this->getAdminUsername(),
+			$action,
+			$app
 		);
 	}
 
@@ -1279,7 +1328,7 @@ trait Provisioning {
 
 		if (OcisHelper::isTestingOnOcisOrReva()) {
 			if ($email === null) {
-				$email = $username . '@owncloud.org';
+				$email = $username . '@owncloud.com';
 			}
 			$userAttributes["username"] = $username;
 			$userAttributes["email"] = $email;
@@ -1316,7 +1365,7 @@ trait Provisioning {
 		$user = $this->getActualUsername($user);
 		$password = $this->getActualPassword($password);
 		if (OcisHelper::isTestingOnOcisOrReva()) {
-			$email = $user . '@owncloud.org';
+			$email = $user . '@owncloud.com';
 			$bodyTable = new TableNode(
 				[
 					['userid', $user],
@@ -1346,7 +1395,12 @@ trait Provisioning {
 			$this->theHTTPStatusCodeWasSuccess()
 		);
 		if (OcisHelper::isTestingOnOcisOrReva()) {
-			OcisHelper::createEOSStorageHome($this->getBaseUrl(), $user, $password);
+			OcisHelper::createEOSStorageHome(
+				$this->getBaseUrl(),
+				$user,
+				$password,
+				$this->getStepLineRef()
+			);
 			$this->manuallyAddSkeletonFilesForUser($user, $password);
 		}
 	}
@@ -1380,7 +1434,7 @@ trait Provisioning {
 		$userToCreate = $this->getActualUsername($userToCreate);
 		$password = $this->getActualPassword($password);
 		if (OcisHelper::isTestingOnOcisOrReva()) {
-			$email = $userToCreate . '@owncloud.org';
+			$email = $userToCreate . '@owncloud.com';
 			$bodyTable = new TableNode(
 				[
 					['userid', $userToCreate],
@@ -1419,12 +1473,14 @@ trait Provisioning {
 	 * @throws Exception
 	 */
 	public function theAdministratorCreatesUserPasswordGroupUsingTheProvisioningApi(
-		$user, $password, $group
+		$user,
+		$password,
+		$group
 	) {
 		$user = $this->getActualUsername($user);
 		$password = $this->getActualPassword($password);
 		if (OcisHelper::isTestingOnOcisOrReva()) {
-			$email = $user . '@owncloud.org';
+			$email = $user . '@owncloud.com';
 			$bodyTable = new TableNode(
 				[
 					['userid', $user],
@@ -1470,12 +1526,15 @@ trait Provisioning {
 	 * @throws Exception
 	 */
 	public function theGroupAdminCreatesUserPasswordGroupUsingTheProvisioningApi(
-		$groupadmin, $userToCreate, $password, $group
+		$groupadmin,
+		$userToCreate,
+		$password,
+		$group
 	) {
 		$userToCreate = $this->getActualUsername($userToCreate);
 		$password = $this->getActualPassword($password);
 		if (OcisHelper::isTestingOnOcisOrReva()) {
-			$email = $userToCreate . '@owncloud.org';
+			$email = $userToCreate . '@owncloud.com';
 			$bodyTable = new TableNode(
 				[
 					['userid', $userToCreate],
@@ -1521,12 +1580,15 @@ trait Provisioning {
 	 * @throws Exception
 	 */
 	public function theGroupAdminCreatesUserPasswordInOtherGroupUsingTheProvisioningApi(
-		$groupadmin, $userToCreate, $password, $group
+		$groupadmin,
+		$userToCreate,
+		$password,
+		$group
 	) {
 		$userToCreate = $this->getActualUsername($userToCreate);
 		$password = $this->getActualPassword($password);
 		if (OcisHelper::isTestingOnOcisOrReva()) {
-			$email = $userToCreate . '@owncloud.org';
+			$email = $userToCreate . '@owncloud.com';
 			$bodyTable = new TableNode(
 				[
 					['userid', $userToCreate],
@@ -1613,7 +1675,9 @@ trait Provisioning {
 		$targetUsername = $this->getActualUsername($username);
 		$password = $this->getActualPassword($password);
 		$this->userTriesToResetUserPasswordUsingTheProvisioningApi(
-			$user, $targetUsername, $password
+			$user,
+			$targetUsername,
+			$password
 		);
 		$this->rememberUserPassword($targetUsername, $password);
 	}
@@ -1646,7 +1710,9 @@ trait Provisioning {
 	 */
 	public function userHasResetPasswordOfUserUsingTheProvisioningApi($user, $username, $password) {
 		$this->userResetUserPasswordUsingProvisioningApi(
-			$user, $username, $password
+			$user,
+			$username,
+			$password
 		);
 		$this->theHTTPStatusCodeShouldBeSuccess();
 	}
@@ -1755,7 +1821,8 @@ trait Provisioning {
 	 * @return void
 	 */
 	public function userDeletesUserUsingTheProvisioningApi(
-		$user, $otherUser
+		$user,
+		$otherUser
 	) {
 		$actualUser = $this->getActualUsername($user);
 		$actualPassword = $this->getUserPassword($actualUser);
@@ -1766,6 +1833,7 @@ trait Provisioning {
 			$actualOtherUser,
 			$actualUser,
 			$actualPassword,
+			$this->getStepLineRef(),
 			$this->ocsApiVersion
 		);
 	}
@@ -1779,7 +1847,8 @@ trait Provisioning {
 	 * @return void
 	 */
 	public function adminChangesTheEmailOfUserToUsingTheProvisioningApi(
-		$user, $email
+		$user,
+		$email
 	) {
 		$user = $this->getActualUsername($user);
 		$this->response = UserHelper::editUser(
@@ -1789,6 +1858,7 @@ trait Provisioning {
 			$email,
 			$this->getAdminUsername(),
 			$this->getAdminPassword(),
+			$this->getStepLineRef(),
 			$this->ocsApiVersion
 		);
 		$this->rememberUserEmailAddress($user, $email);
@@ -1804,7 +1874,8 @@ trait Provisioning {
 	 */
 	public function adminHasChangedTheEmailOfUserTo($user, $email) {
 		$this->adminChangesTheEmailOfUserToUsingTheProvisioningApi(
-			$user, $email
+			$user,
+			$email
 		);
 		$this->theHTTPStatusCodeShouldBe(
 			200,
@@ -1832,7 +1903,9 @@ trait Provisioning {
 	 * @return void
 	 */
 	public function userChangesUserEmailUsingProvisioningApi(
-		$requestingUser, $targetUser, $email
+		$requestingUser,
+		$targetUser,
+		$email
 	) {
 		$this->response = UserHelper::editUser(
 			$this->getBaseUrl(),
@@ -1841,6 +1914,7 @@ trait Provisioning {
 			$email,
 			$this->getActualUsername($requestingUser),
 			$this->getPasswordForUser($requestingUser),
+			$this->getStepLineRef(),
 			$this->ocsApiVersion
 		);
 	}
@@ -1855,10 +1929,14 @@ trait Provisioning {
 	 * @return void
 	 */
 	public function userChangesTheEmailOfUserUsingTheProvisioningApi(
-		$requestingUser, $targetUser, $email
+		$requestingUser,
+		$targetUser,
+		$email
 	) {
 		$this->userTriesToChangeTheEmailOfUserUsingTheProvisioningApi(
-			$requestingUser, $targetUser, $email
+			$requestingUser,
+			$targetUser,
+			$email
 		);
 		$targetUser = $this->getActualUsername($targetUser);
 		$this->rememberUserEmailAddress($targetUser, $email);
@@ -1874,7 +1952,9 @@ trait Provisioning {
 	 * @return void
 	 */
 	public function userTriesToChangeTheEmailOfUserUsingTheProvisioningApi(
-		$requestingUser, $targetUser, $email
+		$requestingUser,
+		$targetUser,
+		$email
 	) {
 		$requestingUser = $this->getActualUsername($requestingUser);
 		$targetUser = $this->getActualUsername($targetUser);
@@ -1895,7 +1975,9 @@ trait Provisioning {
 	 * @return void
 	 */
 	public function userHasChangedTheEmailOfUserUsingTheProvisioningApi(
-		$requestingUser, $targetUser, $email
+		$requestingUser,
+		$targetUser,
+		$email
 	) {
 		$requestingUser = $this->getActualUsername($requestingUser);
 		$targetUser = $this->getActualUsername($targetUser);
@@ -1924,11 +2006,14 @@ trait Provisioning {
 	 * @throws Exception
 	 */
 	public function adminChangesTheDisplayNameOfUserUsingTheProvisioningApi(
-		$user, $displayName
+		$user,
+		$displayName
 	) {
 		$user = $this->getActualUsername($user);
 		$this->adminChangesTheDisplayNameOfUserUsingKey(
-			$user, 'displayname', $displayName
+			$user,
+			'displayname',
+			$displayName
 		);
 		$this->rememberUserDisplayName($user, $displayName);
 	}
@@ -1943,23 +2028,28 @@ trait Provisioning {
 	 * @throws Exception
 	 */
 	public function adminHasChangedTheDisplayNameOfUser(
-		$user, $displayName
+		$user,
+		$displayName
 	) {
 		$user = $this->getActualUsername($user);
 		if ($this->isTestingWithLdap()) {
 			$this->editLdapUserDisplayName(
-				$user, $displayName
+				$user,
+				$displayName
 			);
 		} else {
 			$this->adminChangesTheDisplayNameOfUserUsingKey(
-				$user, 'displayname', $displayName
+				$user,
+				'displayname',
+				$displayName
 			);
 		}
 		$response = UserHelper::getUser(
 			$this->getBaseUrl(),
 			$user,
 			$this->getAdminUsername(),
-			$this->getAdminPassword()
+			$this->getAdminPassword(),
+			$this->getStepLineRef()
 		);
 		$this->setResponse($response);
 		$this->theDisplayNameReturnedByTheApiShouldBe($displayName);
@@ -1982,11 +2072,14 @@ trait Provisioning {
 	 * @throws Exception
 	 */
 	public function adminChangesTheDisplayOfUserUsingTheProvisioningApi(
-		$user, $displayName
+		$user,
+		$displayName
 	) {
 		$user = $this->getActualUsername($user);
 		$this->adminChangesTheDisplayNameOfUserUsingKey(
-			$user, 'display', $displayName
+			$user,
+			'display',
+			$displayName
 		);
 		$this->rememberUserDisplayName($user, $displayName);
 	}
@@ -2001,7 +2094,9 @@ trait Provisioning {
 	 * @throws Exception
 	 */
 	public function adminChangesTheDisplayNameOfUserUsingKey(
-		$user, $key, $displayName
+		$user,
+		$key,
+		$displayName
 	) {
 		$result = UserHelper::editUser(
 			$this->getBaseUrl(),
@@ -2010,6 +2105,7 @@ trait Provisioning {
 			$displayName,
 			$this->getAdminUsername(),
 			$this->getAdminPassword(),
+			$this->getStepLineRef(),
 			$this->ocsApiVersion
 		);
 		$this->response = $result;
@@ -2037,10 +2133,14 @@ trait Provisioning {
 	 * @return void
 	 */
 	public function userChangesTheDisplayNameOfUserUsingTheProvisioningApi(
-		$requestingUser, $targetUser, $displayName
+		$requestingUser,
+		$targetUser,
+		$displayName
 	) {
 		$this->userTriesToChangeTheDisplayNameOfUserUsingTheProvisioningApi(
-			$requestingUser, $targetUser, $displayName
+			$requestingUser,
+			$targetUser,
+			$displayName
 		);
 		$targetUser = $this->getActualUsername($targetUser);
 		$this->rememberUserDisplayName($targetUser, $displayName);
@@ -2062,12 +2162,17 @@ trait Provisioning {
 	 * @return void
 	 */
 	public function userTriesToChangeTheDisplayNameOfUserUsingTheProvisioningApi(
-		$requestingUser, $targetUser, $displayName
+		$requestingUser,
+		$targetUser,
+		$displayName
 	) {
 		$requestingUser = $this->getActualUsername($requestingUser);
 		$targetUser = $this->getActualUsername($targetUser);
 		$this->userChangesTheDisplayNameOfUserUsingKey(
-			$requestingUser, $targetUser, 'displayname', $displayName
+			$requestingUser,
+			$targetUser,
+			'displayname',
+			$displayName
 		);
 	}
 
@@ -2087,12 +2192,17 @@ trait Provisioning {
 	 * @return void
 	 */
 	public function userChangesTheDisplayOfUserUsingTheProvisioningApi(
-		$requestingUser, $targetUser, $displayName
+		$requestingUser,
+		$targetUser,
+		$displayName
 	) {
 		$requestingUser = $this->getActualUsername($requestingUser);
 		$targetUser = $this->getActualUsername($targetUser);
 		$this->userChangesTheDisplayNameOfUserUsingKey(
-			$requestingUser, $targetUser, 'display', $displayName
+			$requestingUser,
+			$targetUser,
+			'display',
+			$displayName
 		);
 		$this->rememberUserDisplayName($targetUser, $displayName);
 	}
@@ -2107,12 +2217,17 @@ trait Provisioning {
 	 * @return void
 	 */
 	public function userHasChangedTheDisplayNameOfUserUsingTheProvisioningApi(
-		$requestingUser, $targetUser, $displayName
+		$requestingUser,
+		$targetUser,
+		$displayName
 	) {
 		$requestingUser = $this->getActualUsername($requestingUser);
 		$targetUser = $this->getActualUsername($targetUser);
 		$this->userChangesTheDisplayNameOfUserUsingKey(
-			$requestingUser, $targetUser, 'displayname', $displayName
+			$requestingUser,
+			$targetUser,
+			'displayname',
+			$displayName
 		);
 		$this->theHTTPStatusCodeShouldBeSuccess();
 		$this->rememberUserDisplayName($targetUser, $displayName);
@@ -2127,7 +2242,10 @@ trait Provisioning {
 	 * @return void
 	 */
 	public function userChangesTheDisplayNameOfUserUsingKey(
-		$requestingUser, $targetUser, $key, $displayName
+		$requestingUser,
+		$targetUser,
+		$key,
+		$displayName
 	) {
 		$result = UserHelper::editUser(
 			$this->getBaseUrl(),
@@ -2136,6 +2254,7 @@ trait Provisioning {
 			$displayName,
 			$this->getActualUsername($requestingUser),
 			$this->getPasswordForUser($requestingUser),
+			$this->getStepLineRef(),
 			$this->ocsApiVersion
 		);
 		$this->response = $result;
@@ -2150,7 +2269,8 @@ trait Provisioning {
 	 * @return void
 	 */
 	public function adminChangesTheQuotaOfUserUsingTheProvisioningApi(
-		$user, $quota
+		$user,
+		$quota
 	) {
 		$result = UserHelper::editUser(
 			$this->getBaseUrl(),
@@ -2159,6 +2279,7 @@ trait Provisioning {
 			$quota,
 			$this->getAdminUsername(),
 			$this->getAdminPassword(),
+			$this->getStepLineRef(),
 			$this->ocsApiVersion
 		);
 		$this->response = $result;
@@ -2173,11 +2294,13 @@ trait Provisioning {
 	 * @return void
 	 */
 	public function adminHasChangedTheQuotaOfUserTo(
-		$user, $quota
+		$user,
+		$quota
 	) {
 		$user = $this->getActualUsername($user);
 		$this->adminChangesTheQuotaOfUserUsingTheProvisioningApi(
-			$user, $quota
+			$user,
+			$quota
 		);
 		$this->theHTTPStatusCodeShouldBe(
 			200,
@@ -2193,7 +2316,9 @@ trait Provisioning {
 	 * @return void
 	 */
 	public function userChangeQuotaOfUserUsingProvisioningApi(
-		$requestingUser, $targetUser, $quota
+		$requestingUser,
+		$targetUser,
+		$quota
 	) {
 		$result = UserHelper::editUser(
 			$this->getBaseUrl(),
@@ -2202,6 +2327,7 @@ trait Provisioning {
 			$quota,
 			$this->getActualUsername($requestingUser),
 			$this->getPasswordForUser($requestingUser),
+			$this->getStepLineRef(),
 			$this->ocsApiVersion
 		);
 		$this->response = $result;
@@ -2217,7 +2343,9 @@ trait Provisioning {
 	 * @return void
 	 */
 	public function userChangesTheQuotaOfUserUsingTheProvisioningApi(
-		$requestingUser, $targetUser, $quota
+		$requestingUser,
+		$targetUser,
+		$quota
 	) {
 		$this->userChangeQuotaOfUserUsingProvisioningApi(
 			$requestingUser,
@@ -2236,7 +2364,9 @@ trait Provisioning {
 	 * @return void
 	 */
 	public function userHasChangedTheQuotaOfUserUsingTheProvisioningApi(
-		$requestingUser, $targetUser, $quota
+		$requestingUser,
+		$targetUser,
+		$quota
 	) {
 		$this->userChangeQuotaOfUserUsingProvisioningApi(
 			$requestingUser,
@@ -2259,6 +2389,7 @@ trait Provisioning {
 			$this->getActualUsername($user),
 			$this->getAdminUsername(),
 			$this->getAdminPassword(),
+			$this->getStepLineRef(),
 			$this->ocsApiVersion
 		);
 		$this->response = $result;
@@ -2301,13 +2432,15 @@ trait Provisioning {
 	 * @return void
 	 */
 	public function userRetrieveUserInformationUsingProvisioningApi(
-		$requestingUser, $targetUser
+		$requestingUser,
+		$targetUser
 	) {
 		$result = UserHelper::getUser(
 			$this->getBaseUrl(),
 			$this->getActualUsername($targetUser),
 			$this->getActualUsername($requestingUser),
 			$this->getPasswordForUser($requestingUser),
+			$this->getStepLineRef(),
 			$this->ocsApiVersion
 		);
 		$this->response = $result;
@@ -2322,7 +2455,8 @@ trait Provisioning {
 	 * @return void
 	 */
 	public function userRetrievesTheInformationOfUserUsingTheProvisioningApi(
-		$requestingUser, $targetUser
+		$requestingUser,
+		$targetUser
 	) {
 		$this->userRetrieveUserInformationUsingProvisioningApi(
 			$requestingUser,
@@ -2339,7 +2473,8 @@ trait Provisioning {
 	 * @return void
 	 */
 	public function userHasRetrievedTheInformationOfUserUsingTheProvisioningApi(
-		$requestingUser, $targetUser
+		$requestingUser,
+		$targetUser
 	) {
 		$this->userRetrieveUserInformationUsingProvisioningApi(
 			$requestingUser,
@@ -2546,7 +2681,8 @@ trait Provisioning {
 	 */
 	public function theAdministratorGetsAllTheMembersOfGroupUsingTheProvisioningApi($group) {
 		$this->userGetsAllTheMembersOfGroupUsingTheProvisioningApi(
-			$this->getAdminUsername(), $group
+			$this->getAdminUsername(),
+			$group
 		);
 	}
 
@@ -2561,7 +2697,10 @@ trait Provisioning {
 	public function userGetsAllTheMembersOfGroupUsingTheProvisioningApi($user, $group) {
 		$fullUrl = $this->getBaseUrl() . "/ocs/v{$this->ocsApiVersion}.php/cloud/groups/$group";
 		$this->response = HttpRequestHelper::get(
-			$fullUrl, $this->getActualUsername($user), $this->getPasswordForUser($user)
+			$fullUrl,
+			$this->getStepLineRef(),
+			$this->getActualUsername($user),
+			$this->getPasswordForUser($user)
 		);
 	}
 
@@ -2573,7 +2712,10 @@ trait Provisioning {
 	public function getAllGroups() {
 		$fullUrl = $this->getBaseUrl() . "/ocs/v{$this->ocsApiVersion}.php/cloud/groups";
 		return HttpRequestHelper::get(
-			$fullUrl, $this->getAdminUsername(), $this->getAdminPassword()
+			$fullUrl,
+			$this->getStepLineRef(),
+			$this->getAdminUsername(),
+			$this->getAdminPassword()
 		);
 	}
 
@@ -2599,7 +2741,10 @@ trait Provisioning {
 		$actualUser = $this->getActualUsername($user);
 		$actualPassword = $this->getUserPassword($actualUser);
 		$this->response = HttpRequestHelper::get(
-			$fullUrl, $actualUser, $actualPassword
+			$fullUrl,
+			$this->getStepLineRef(),
+			$actualUser,
+			$actualPassword
 		);
 	}
 
@@ -2628,7 +2773,10 @@ trait Provisioning {
 		$actualUser = $this->getActualUsername($user);
 		$actualPassword = $this->getUserPassword($actualUser);
 		$this->response = HttpRequestHelper::get(
-			$fullUrl, $actualUser, $actualPassword
+			$fullUrl,
+			$this->getStepLineRef(),
+			$actualUser,
+			$actualPassword
 		);
 	}
 
@@ -2653,7 +2801,10 @@ trait Provisioning {
 		$actualUser = $this->getActualUsername($user);
 		$actualPassword = $this->getUserPassword($actualUser);
 		$this->response = HttpRequestHelper::get(
-			$fullUrl, $actualUser, $actualPassword
+			$fullUrl,
+			$this->getStepLineRef(),
+			$actualUser,
+			$actualPassword
 		);
 	}
 
@@ -2669,7 +2820,12 @@ trait Provisioning {
 	public function initializeUser($user, $password) {
 		$url = $this->getBaseUrl()
 			. "/ocs/v{$this->ocsApiVersion}.php/cloud/users/$user";
-		HttpRequestHelper::get($url, $user, $password);
+		HttpRequestHelper::get(
+			$url,
+			$this->getStepLineRef(),
+			$user,
+			$password
+		);
 		$this->lastUploadTime = \time();
 	}
 
@@ -2689,7 +2845,8 @@ trait Provisioning {
 				$user,
 				$this->getPasswordForUser($user),
 				'GET',
-				\sprintf($url, $user)
+				\sprintf($url, $user),
+				$this->getStepLineRef()
 			);
 			$this->setResponse($response);
 			$this->theHTTPStatusCodeShouldBe(200);
@@ -2710,7 +2867,11 @@ trait Provisioning {
 	 * @return void
 	 */
 	public function addUserToCreatedUsersList(
-		$user, $password, $displayName = null, $email = null, $shouldExist = true
+		$user,
+		$password,
+		$displayName = null,
+		$email = null,
+		$shouldExist = true
 	) {
 		$user = $this->getActualUsername($user);
 		$normalizedUsername = $this->normalizeUsername($user);
@@ -2749,7 +2910,8 @@ trait Provisioning {
 	 * @return void
 	 */
 	public function rememberUserPassword(
-		$user, $password
+		$user,
+		$password
 	) {
 		$normalizedUsername = $this->normalizeUsername($user);
 		if ($this->currentServer === 'LOCAL') {
@@ -2822,7 +2984,7 @@ trait Provisioning {
 
 			if ($email === null) {
 				// escape @ & space if present in userId
-				$email = \str_replace(["@", " "], "", $user) . '@owncloud.org';
+				$email = \str_replace(["@", " "], "", $user) . '@owncloud.com';
 			}
 		}
 
@@ -2839,7 +3001,11 @@ trait Provisioning {
 		switch ($method) {
 			case "occ":
 				$result = SetupHelper::createUser(
-					$user, $password, $displayName, $email
+					$user,
+					$password,
+					$this->getStepLineRef(),
+					$displayName,
+					$email
 				);
 				if ($result["code"] !== "0") {
 					throw new Exception(
@@ -2950,7 +3116,10 @@ trait Provisioning {
 		}
 		$fullUrl = $this->getBaseUrl() . "/ocs/v2.php/cloud/users/$user";
 		$this->response = HttpRequestHelper::get(
-			$fullUrl, $requestingUser, $requestingPassword
+			$fullUrl,
+			$this->getStepLineRef(),
+			$requestingUser,
+			$requestingPassword
 		);
 		if ($this->response->getStatusCode() >= 400) {
 			return false;
@@ -3027,13 +3196,17 @@ trait Provisioning {
 		$user = $this->getActualUsername($user);
 		$fullUrl = $this->getBaseUrl() . "/ocs/v2.php/cloud/users/$user/groups";
 		$this->response = HttpRequestHelper::get(
-			$fullUrl, $this->getAdminUsername(), $this->getAdminPassword()
+			$fullUrl,
+			$this->getStepLineRef(),
+			$this->getAdminUsername(),
+			$this->getAdminPassword()
 		);
 		$respondedArray = $this->getArrayOfGroupsResponded($this->response);
 		\sort($respondedArray);
 		Assert::assertNotContains($group, $respondedArray);
 		Assert::assertEquals(
-			200, $this->response->getStatusCode()
+			200,
+			$this->response->getStatusCode()
 		);
 	}
 
@@ -3064,7 +3237,10 @@ trait Provisioning {
 		$username = $this->getActualUsername($username);
 		$fullUrl = $this->getBaseUrl() . "/ocs/v2.php/cloud/groups/$group";
 		$this->response = HttpRequestHelper::get(
-			$fullUrl, $this->getAdminUsername(), $this->getAdminPassword()
+			$fullUrl,
+			$this->getStepLineRef(),
+			$this->getAdminUsername(),
+			$this->getAdminPassword()
 		);
 		$this->theUsersReturnedByTheApiShouldNotInclude($username);
 	}
@@ -3078,7 +3254,10 @@ trait Provisioning {
 	public function userBelongsToGroup($user, $group) {
 		$fullUrl = $this->getBaseUrl() . "/ocs/v2.php/cloud/users/$user/groups";
 		$this->response = HttpRequestHelper::get(
-			$fullUrl, $this->getAdminUsername(), $this->getAdminPassword()
+			$fullUrl,
+			$this->getStepLineRef(),
+			$this->getAdminUsername(),
+			$this->getAdminPassword()
 		);
 		$respondedArray = $this->getArrayOfGroupsResponded($this->response);
 
@@ -3136,6 +3315,7 @@ trait Provisioning {
 			$group,
 			$actualUser,
 			$actualPassword,
+			$this->getStepLineRef(),
 			$this->ocsApiVersion
 		);
 		$this->response = $result;
@@ -3162,7 +3342,8 @@ trait Provisioning {
 	 * @return void
 	 */
 	public function theAdministratorTriesToAddUserToGroupUsingTheProvisioningApi(
-		$user, $group
+		$user,
+		$group
 	) {
 		$this->userTriesToAddUserToGroupUsingTheProvisioningApi(
 			$this->getAdminUsername(),
@@ -3239,9 +3420,11 @@ trait Provisioning {
 				$this->emptyLastOCSStatusCodesArray();
 				$result = UserHelper::addUserToGroup(
 					$this->getBaseUrl(),
-					$user, $group,
+					$user,
+					$group,
 					$this->getAdminUsername(),
 					$this->getAdminPassword(),
+					$this->getStepLineRef(),
 					$this->ocsApiVersion
 				);
 				if ($checkResult && ($result->getStatusCode() !== 200)) {
@@ -3254,7 +3437,11 @@ trait Provisioning {
 				$this->pushToLastStatusCodesArrays();
 				break;
 			case "occ":
-				$result = SetupHelper::addUserToGroup($group, $user);
+				$result = SetupHelper::addUserToGroup(
+					$group,
+					$user,
+					$this->getStepLineRef()
+				);
 				if ($checkResult && ($result["code"] !== "0")) {
 					throw new Exception(
 						"could not add user to group. {$result['stdOut']} {$result['stdErr']}"
@@ -3301,7 +3488,9 @@ trait Provisioning {
 	 * @return void
 	 */
 	public function addGroupToCreatedGroupsList(
-		$group, $shouldExist = true, $possibleToDelete = true
+		$group,
+		$shouldExist = true,
+		$possibleToDelete = true
 	) {
 		$groupData = [
 			"shouldExist" => $shouldExist,
@@ -3396,7 +3585,8 @@ trait Provisioning {
 	 * @return void
 	 */
 	public function adminSendsGroupCreationRequestUsingTheProvisioningApi(
-		$group, $user = null
+		$group,
+		$user = null
 	) {
 		$bodyTable = new TableNode([['groupid', $group]]);
 		$user = $user === null ? $this->getAdminUsername() : $user;
@@ -3477,7 +3667,8 @@ trait Provisioning {
 					$this->getBaseUrl(),
 					$group,
 					$this->getAdminUsername(),
-					$this->getAdminPassword()
+					$this->getAdminPassword(),
+					$this->getStepLineRef()
 				);
 				if ($result->getStatusCode() === 200) {
 					$groupCanBeDeleted = true;
@@ -3489,7 +3680,10 @@ trait Provisioning {
 				}
 				break;
 			case "occ":
-				$result = SetupHelper::createGroup($group);
+				$result = SetupHelper::createGroup(
+					$group,
+					$this->getStepLineRef()
+				);
 				if ($result["code"] == 0) {
 					$groupCanBeDeleted = true;
 				} else {
@@ -3525,7 +3719,10 @@ trait Provisioning {
 	 * @return void
 	 */
 	public function setTheLdapAttributeOfTheEntryTo(
-		$attribute, $entry, $value, $append=false
+		$attribute,
+		$entry,
+		$value,
+		$append=false
 	) {
 		$ldapEntry = $this->ldap->getEntry($entry . "," . $this->ldapBaseDN);
 		Laminas\Ldap\Attribute::setAttribute($ldapEntry, $attribute, $value, $append);
@@ -3561,7 +3758,8 @@ trait Provisioning {
 	 */
 	public function deleteValueFromLdapAttribute($value, $attribute, $entry) {
 		$this->ldap->deleteAttributes(
-			$entry . "," . $this->ldapBaseDN, [$attribute => [$value]]
+			$entry . "," . $this->ldapBaseDN,
+			[$attribute => [$value]]
 		);
 	}
 
@@ -3578,7 +3776,9 @@ trait Provisioning {
 			$ou = $this->getLdapGroupsOU();
 		}
 		$this->deleteValueFromLdapAttribute(
-			$user, "memberUid", "cn=$group,ou=$ou"
+			$user,
+			"memberUid",
+			"cn=$group,ou=$ou"
 		);
 		$this->theLdapUsersHaveBeenReSynced();
 	}
@@ -3763,7 +3963,8 @@ trait Provisioning {
 	 * @return void
 	 */
 	public function userTriesToEnableUserUsingTheProvisioningApi(
-		$user, $otherUser
+		$user,
+		$otherUser
 	) {
 		$this->disableOrEnableUser($user, $otherUser, 'enable');
 	}
@@ -3783,6 +3984,7 @@ trait Provisioning {
 			$user,
 			$this->getAdminUsername(),
 			$this->getAdminPassword(),
+			$this->getStepLineRef(),
 			$this->ocsApiVersion
 		);
 		$this->pushToLastStatusCodesArrays();
@@ -3861,6 +4063,7 @@ trait Provisioning {
 			$group,
 			$this->getAdminUsername(),
 			$this->getAdminPassword(),
+			$this->getStepLineRef(),
 			$this->ocsApiVersion
 		);
 		$this->pushToLastStatusCodesArrays();
@@ -3906,6 +4109,7 @@ trait Provisioning {
 			$group,
 			$this->getActualUsername($user),
 			$this->getActualPassword($user),
+			$this->getStepLineRef(),
 			$this->ocsApiVersion
 		);
 	}
@@ -3928,7 +4132,10 @@ trait Provisioning {
 		$group = \rawurlencode($group);
 		$fullUrl = $this->getBaseUrl() . "/ocs/v2.php/cloud/groups/$group";
 		$this->response = HttpRequestHelper::get(
-			$fullUrl, $this->getAdminUsername(), $this->getAdminPassword()
+			$fullUrl,
+			$this->getStepLineRef(),
+			$this->getAdminUsername(),
+			$this->getAdminPassword()
 		);
 		if ($this->response->getStatusCode() >= 400) {
 			return false;
@@ -3945,7 +4152,9 @@ trait Provisioning {
 	 */
 	public function removeUserFromGroupAsAdminUsingTheProvisioningApi($user, $group) {
 		$this->userRemovesUserFromGroupUsingTheProvisioningApi(
-			$this->getAdminUsername(), $user, $group
+			$this->getAdminUsername(),
+			$user,
+			$group
 		);
 	}
 
@@ -3961,7 +4170,8 @@ trait Provisioning {
 	public function adminRemovesUserFromGroupUsingTheProvisioningApi($user, $group) {
 		$user = $this->getActualUsername($user);
 		$this->removeUserFromGroupAsAdminUsingTheProvisioningApi(
-			$user, $group
+			$user,
+			$group
 		);
 	}
 
@@ -3996,7 +4206,8 @@ trait Provisioning {
 			$this->removeUserFromLdapGroup($user, $group);
 		} else {
 			$this->removeUserFromGroupAsAdminUsingTheProvisioningApi(
-				$user, $group
+				$user,
+				$group
 			);
 		}
 		$this->userShouldNotBelongToGroup($user, $group);
@@ -4012,10 +4223,14 @@ trait Provisioning {
 	 * @return void
 	 */
 	public function userRemovesUserFromGroupUsingTheProvisioningApi(
-		$user, $otherUser, $group
+		$user,
+		$otherUser,
+		$group
 	) {
 		$this->userTriesToRemoveUserFromGroupUsingTheProvisioningApi(
-			$user, $otherUser, $group
+			$user,
+			$otherUser,
+			$group
 		);
 
 		if ($this->response->getStatusCode() !== 200) {
@@ -4036,7 +4251,9 @@ trait Provisioning {
 	 * @return void
 	 */
 	public function userTriesToRemoveUserFromGroupUsingTheProvisioningApi(
-		$user, $otherUser, $group
+		$user,
+		$otherUser,
+		$group
 	) {
 		$actualUser = $this->getActualUsername($user);
 		$actualPassword = $this->getUserPassword($actualUser);
@@ -4047,6 +4264,7 @@ trait Provisioning {
 			$group,
 			$actualUser,
 			$actualPassword,
+			$this->getStepLineRef(),
 			$this->ocsApiVersion
 		);
 	}
@@ -4060,11 +4278,14 @@ trait Provisioning {
 	 * @return void
 	 */
 	public function adminMakesUserSubadminOfGroupUsingTheProvisioningApi(
-		$user, $group
+		$user,
+		$group
 	) {
 		$user = $this->getActualUsername($user);
 		$this->userMakesUserASubadminOfGroupUsingTheProvisioningApi(
-			$this->getAdminUsername(), $user, $group
+			$this->getAdminUsername(),
+			$user,
+			$group
 		);
 	}
 
@@ -4078,7 +4299,9 @@ trait Provisioning {
 	 * @return void
 	 */
 	public function userMakesUserASubadminOfGroupUsingTheProvisioningApi(
-		$user, $otherUser, $group
+		$user,
+		$otherUser,
+		$group
 	) {
 		$actualUser = $this->getActualUsername($user);
 		$actualPassword = $this->getUserPassword($actualUser);
@@ -4089,6 +4312,7 @@ trait Provisioning {
 		$body = ['groupid' => $group];
 		$this->response = HttpRequestHelper::post(
 			$fullUrl,
+			$this->getStepLineRef(),
 			$actualUser,
 			$actualPassword,
 			null,
@@ -4107,7 +4331,10 @@ trait Provisioning {
 		$fullUrl = $this->getBaseUrl()
 			. "/ocs/v{$this->ocsApiVersion}.php/cloud/users/$user/subadmins";
 		$this->response = HttpRequestHelper::get(
-			$fullUrl, $this->getAdminUsername(), $this->getAdminPassword()
+			$fullUrl,
+			$this->getStepLineRef(),
+			$this->getAdminUsername(),
+			$this->getAdminPassword()
 		);
 	}
 
@@ -4127,7 +4354,10 @@ trait Provisioning {
 		$actualUser = $this->getActualUsername($user);
 		$actualPassword = $this->getUserPassword($actualUser);
 		$this->response = HttpRequestHelper::get(
-			$fullUrl, $actualUser, $actualPassword
+			$fullUrl,
+			$this->getStepLineRef(),
+			$actualUser,
+			$actualPassword
 		);
 	}
 
@@ -4140,13 +4370,16 @@ trait Provisioning {
 	 * @return void
 	 */
 	public function userHasBeenMadeSubadminOfGroup(
-		$user, $group
+		$user,
+		$group
 	) {
 		$this->adminMakesUserSubadminOfGroupUsingTheProvisioningApi(
-			$user, $group
+			$user,
+			$group
 		);
 		Assert::assertEquals(
-			200, $this->response->getStatusCode()
+			200,
+			$this->response->getStatusCode()
 		);
 	}
 
@@ -4159,7 +4392,8 @@ trait Provisioning {
 	 */
 	public function theAdministratorGetsAllTheSubadminsOfGroupUsingTheProvisioningApi($group) {
 		$this->userGetsAllTheSubadminsOfGroupUsingTheProvisioningApi(
-			$this->getAdminUsername(), $group
+			$this->getAdminUsername(),
+			$group
 		);
 	}
 
@@ -4177,7 +4411,10 @@ trait Provisioning {
 		$actualUser = $this->getActualUsername($user);
 		$actualPassword = $this->getUserPassword($actualUser);
 		$this->response = HttpRequestHelper::get(
-			$fullUrl, $actualUser, $actualPassword
+			$fullUrl,
+			$this->getStepLineRef(),
+			$actualUser,
+			$actualPassword
 		);
 	}
 
@@ -4190,10 +4427,13 @@ trait Provisioning {
 	 * @return void
 	 */
 	public function theAdministratorRemovesUserFromBeingASubadminOfGroupUsingTheProvisioningApi(
-		$user, $group
+		$user,
+		$group
 	) {
 		$this->userRemovesUserFromBeingASubadminOfGroupUsingTheProvisioningApi(
-			$this->getAdminUsername(), $user, $group
+			$this->getAdminUsername(),
+			$user,
+			$group
 		);
 	}
 
@@ -4207,7 +4447,9 @@ trait Provisioning {
 	 * @return void
 	 */
 	public function userRemovesUserFromBeingASubadminOfGroupUsingTheProvisioningApi(
-		$user, $otherUser, $group
+		$user,
+		$otherUser,
+		$group
 	) {
 		$actualOtherUser = $this->getActualUsername($otherUser);
 		$fullUrl = $this->getBaseUrl()
@@ -4216,6 +4458,7 @@ trait Provisioning {
 		$actualPassword = $this->getUserPassword($actualUser);
 		$this->response = HttpRequestHelper::delete(
 			$fullUrl,
+			$this->getStepLineRef(),
 			$actualUser,
 			$actualPassword,
 			null,
@@ -4241,7 +4484,8 @@ trait Provisioning {
 		);
 		$respondedArray = $this->getArrayOfUsersResponded($this->response);
 		Assert::assertEqualsCanonicalizing(
-			$usersSimplified, $respondedArray
+			$usersSimplified,
+			$respondedArray
 		);
 	}
 
@@ -4286,7 +4530,8 @@ trait Provisioning {
 		$groupsSimplified = $this->simplifyArray($groups);
 		$respondedArray = $this->getArrayOfGroupsResponded($this->response);
 		Assert::assertEqualsCanonicalizing(
-			$groupsSimplified, $respondedArray
+			$groupsSimplified,
+			$respondedArray
 		);
 	}
 
@@ -4337,7 +4582,8 @@ trait Provisioning {
 		$simplifiedTableRows = $this->simplifyArray($tableRows);
 		$respondedArray = $this->getArrayOfSubadminsResponded($this->response);
 		Assert::assertEqualsCanonicalizing(
-			$simplifiedTableRows, $respondedArray
+			$simplifiedTableRows,
+			$respondedArray
 		);
 	}
 
@@ -4415,7 +4661,10 @@ trait Provisioning {
 	public function appShouldNotBeInTheAppsList($appName) {
 		$fullUrl = $this->getBaseUrl() . "/ocs/v2.php/cloud/apps";
 		$this->response = HttpRequestHelper::get(
-			$fullUrl, $this->getAdminUsername(), $this->getAdminPassword()
+			$fullUrl,
+			$this->getStepLineRef(),
+			$this->getAdminUsername(),
+			$this->getAdminPassword()
 		);
 		$respondedArray = $this->getArrayOfAppsResponded($this->response);
 		Assert::assertNotContains($appName, $respondedArray);
@@ -4432,7 +4681,8 @@ trait Provisioning {
 	public function userShouldBeASubadminOfGroup($user, $group) {
 		$this->theAdministratorGetsAllTheSubadminsOfGroupUsingTheProvisioningApi($group);
 		Assert::assertEquals(
-			200, $this->response->getStatusCode()
+			200,
+			$this->response->getStatusCode()
 		);
 		$listOfSubadmins = $this->getArrayOfSubadminsResponded($this->response);
 		Assert::assertContains(
@@ -4673,12 +4923,16 @@ trait Provisioning {
 		$fullUrl = $this->getBaseUrl()
 			. "/ocs/v2.php/cloud/apps?filter=disabled";
 		$this->response = HttpRequestHelper::get(
-			$fullUrl, $this->getAdminUsername(), $this->getAdminPassword()
+			$fullUrl,
+			$this->getStepLineRef(),
+			$this->getAdminUsername(),
+			$this->getAdminPassword()
 		);
 		$respondedArray = $this->getArrayOfAppsResponded($this->response);
 		Assert::assertContains($app, $respondedArray);
 		Assert::assertEquals(
-			200, $this->response->getStatusCode()
+			200,
+			$this->response->getStatusCode()
 		);
 	}
 
@@ -4692,12 +4946,16 @@ trait Provisioning {
 	public function appShouldBeEnabled($app) {
 		$fullUrl = $this->getBaseUrl() . "/ocs/v2.php/cloud/apps?filter=enabled";
 		$this->response = HttpRequestHelper::get(
-			$fullUrl, $this->getAdminUsername(), $this->getAdminPassword()
+			$fullUrl,
+			$this->getStepLineRef(),
+			$this->getAdminUsername(),
+			$this->getAdminPassword()
 		);
 		$respondedArray = $this->getArrayOfAppsResponded($this->response);
 		Assert::assertContains($app, $respondedArray);
 		Assert::assertEquals(
-			200, $this->response->getStatusCode()
+			200,
+			$this->response->getStatusCode()
 		);
 	}
 
@@ -4711,10 +4969,14 @@ trait Provisioning {
 	public function theInformationForAppShouldHaveAValidVersion($app) {
 		$fullUrl = $this->getBaseUrl() . "/ocs/v2.php/cloud/apps/$app";
 		$this->response = HttpRequestHelper::get(
-			$fullUrl, $this->getAdminUsername(), $this->getAdminPassword()
+			$fullUrl,
+			$this->getStepLineRef(),
+			$this->getAdminUsername(),
+			$this->getAdminPassword()
 		);
 		Assert::assertEquals(
-			200, $this->response->getStatusCode()
+			200,
+			$this->response->getStatusCode()
 		);
 		$respondedArray = $this->getArrayOfAppInfoResponded($this->response);
 		Assert::assertArrayHasKey(
@@ -4741,10 +5003,14 @@ trait Provisioning {
 		$fullUrl = $this->getBaseUrl()
 			. "/ocs/v{$this->ocsApiVersion}.php/cloud/users/$user";
 		$this->response = HttpRequestHelper::get(
-			$fullUrl, $this->getAdminUsername(), $this->getAdminPassword()
+			$fullUrl,
+			$this->getStepLineRef(),
+			$this->getAdminUsername(),
+			$this->getAdminPassword()
 		);
 		Assert::assertEquals(
-			"false", $this->getResponseXml(null, __METHOD__)->data[0]->enabled
+			"false",
+			$this->getResponseXml(null, __METHOD__)->data[0]->enabled
 		);
 	}
 
@@ -4775,10 +5041,14 @@ trait Provisioning {
 		$fullUrl = $this->getBaseUrl()
 			. "/ocs/v{$this->ocsApiVersion}.php/cloud/users/$user";
 		$this->response = HttpRequestHelper::get(
-			$fullUrl, $this->getAdminUsername(), $this->getAdminPassword()
+			$fullUrl,
+			$this->getStepLineRef(),
+			$this->getAdminUsername(),
+			$this->getAdminPassword()
 		);
 		Assert::assertEquals(
-			"true", $this->getResponseXml(null, __METHOD__)->data[0]->enabled
+			"true",
+			$this->getResponseXml(null, __METHOD__)->data[0]->enabled
 		);
 	}
 
@@ -4819,6 +5089,7 @@ trait Provisioning {
 			$this->getAdminPassword(),
 			"PUT",
 			"/cloud/users/$user",
+			$this->getStepLineRef(),
 			$body,
 			2
 		);
@@ -4870,7 +5141,10 @@ trait Provisioning {
 		$fullUrl = $this->getBaseUrl()
 			. "/ocs/v{$this->ocsApiVersion}.php/cloud/users/$user";
 		$this->response = HttpRequestHelper::get(
-			$fullUrl, $this->getAdminUsername(), $this->getAdminPassword()
+			$fullUrl,
+			$this->getStepLineRef(),
+			$this->getAdminUsername(),
+			$this->getAdminPassword()
 		);
 		return $this->getResponseXml(null, __METHOD__)->data[0]->home;
 	}
@@ -4911,7 +5185,9 @@ trait Provisioning {
 		$user = $this->getActualUsername($user);
 		$this->verifyTableNodeColumnsCount($body, 2);
 		$this->ocsContext->userSendsHTTPMethodToOcsApiEndpointWithBody(
-			$this->getAdminUsername(), "GET", "/cloud/users/$user",
+			$this->getAdminUsername(),
+			"GET",
+			"/cloud/users/$user",
 			null
 		);
 		$this->checkUserAttributes($body);
@@ -4967,7 +5243,6 @@ trait Provisioning {
 
 		if (OcisHelper::isTestingOnOcisOrReva() && $this->someUsersHaveBeenCreated()) {
 			foreach ($this->getCreatedUsers() as $user) {
-				$this->deleteAllSharesForUser($user["actualUsername"]);
 				OcisHelper::deleteRevaUserData($user["actualUsername"]);
 			}
 		} elseif (OcisHelper::isTestingOnOc10()) {
@@ -5101,6 +5376,7 @@ trait Provisioning {
 			. "/ocs/v{$this->ocsApiVersion}.php/cloud/users/$actualOtherUser/$action";
 		$this->response = HttpRequestHelper::put(
 			$fullUrl,
+			$this->getStepLineRef(),
 			$actualUser,
 			$actualPassword
 		);
@@ -5116,7 +5392,10 @@ trait Provisioning {
 		$fullUrl = $this->getBaseUrl()
 			. "/ocs/v{$this->ocsApiVersion}.php/cloud/apps";
 		$this->response = HttpRequestHelper::get(
-			$fullUrl, $this->getAdminUsername(), $this->getAdminPassword()
+			$fullUrl,
+			$this->getStepLineRef(),
+			$this->getAdminUsername(),
+			$this->getAdminPassword()
 		);
 		return ($this->getArrayOfAppsResponded($this->response));
 	}
@@ -5130,7 +5409,10 @@ trait Provisioning {
 		$fullUrl = $this->getBaseUrl()
 			. "/ocs/v{$this->ocsApiVersion}.php/cloud/apps?filter=enabled";
 		$this->response = HttpRequestHelper::get(
-			$fullUrl, $this->getAdminUsername(), $this->getAdminPassword()
+			$fullUrl,
+			$this->getStepLineRef(),
+			$this->getAdminUsername(),
+			$this->getAdminPassword()
 		);
 		return ($this->getArrayOfAppsResponded($this->response));
 	}
@@ -5144,7 +5426,10 @@ trait Provisioning {
 		$fullUrl = $this->getBaseUrl()
 			. "/ocs/v{$this->ocsApiVersion}.php/cloud/apps?filter=disabled";
 		$this->response = HttpRequestHelper::get(
-			$fullUrl, $this->getAdminUsername(), $this->getAdminPassword()
+			$fullUrl,
+			$this->getStepLineRef(),
+			$this->getAdminUsername(),
+			$this->getAdminPassword()
 		);
 		return ($this->getArrayOfAppsResponded($this->response));
 	}
@@ -5160,7 +5445,9 @@ trait Provisioning {
 		$path = $this->getSkeletonDirectory($baseUrl);
 		$this->runOcc(
 			["config:system:delete skeletondirectory"],
-			null, null, $baseUrl
+			null,
+			null,
+			$baseUrl
 		);
 		return $path;
 	}
@@ -5173,7 +5460,9 @@ trait Provisioning {
 	private function getSkeletonDirectory(string $baseUrl = null): string {
 		$this->runOcc(
 			["config:system:get skeletondirectory"],
-			null, null, $baseUrl
+			null,
+			null,
+			$baseUrl
 		);
 		return \trim($this->getStdOutOfOccCommand());
 	}
@@ -5222,6 +5511,7 @@ trait Provisioning {
 					$this->getAdminPassword(),
 					'POST',
 					"/apps/testing/api/v1/testingskeletondirectory",
+					$this->getStepLineRef(),
 					[
 						'directory' => $skeletonType . "Skeleton"
 					],
@@ -5253,7 +5543,9 @@ trait Provisioning {
 			if ($skeletonDir !== '') {
 				$this->runOcc(
 					["config:system:set skeletondirectory --value $skeletonDir"],
-					null, null, $baseUrl
+					null,
+					null,
+					$baseUrl
 				);
 			}
 		}

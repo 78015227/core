@@ -108,14 +108,12 @@ OC.L10N.register(
     "Database tablespace" : "ডাটাবেজ টেবলস্পেস",
     "Database host" : "ডাটাবেজ হোস্ট",
     "Finish setup" : "সেটআপ সুসম্পন্ন কর",
-    "Finishing …" : "সম্পন্ন হচ্ছে....",
     "Log out" : "প্রস্থান",
     "Search" : "অনুসন্ধান",
     "Login" : "প্রবেশ",
     "Alternative Logins" : "বিকল্প লগইন",
     "Use the following link to reset your password: {link}" : "আপনার কূটশব্দটি পূনঃনির্ধারণ  করার জন্য নিম্নোক্ত লিংকটি ব্যবহার করুনঃ {link}",
     "New password" : "নতুন কূটশব্দ",
-    "New Password" : "নতুন কূটশব্দ",
     "Reset password" : "কূটশব্দ পূনঃনির্ধারণ কর"
 },
 "nplurals=2; plural=(n != 1);");

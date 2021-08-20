@@ -80,11 +80,19 @@ class SetConfig extends Base {
 		$configValue = $this->castValue($input->getOption('value'), $input->getOption('type'));
 		$updateOnly = $input->getOption('update-only');
 
+		if ($configName === '') {
+			$output->writeln('<error>Config name must not be empty.</error>');
+			return 1;
+		}
+
 		if (\sizeof($configNames) > 1) {
 			$existingValue = $this->systemConfig->getValue($configName);
 
 			$newValue = $this->mergeArrayValue(
-				\array_slice($configNames, 1), $existingValue, $configValue['value'], $updateOnly
+				\array_slice($configNames, 1),
+				$existingValue,
+				$configValue['value'],
+				$updateOnly
 			);
 
 			$this->systemConfig->setValue($configName, $newValue);

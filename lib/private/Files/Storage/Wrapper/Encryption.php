@@ -103,17 +103,17 @@ class Encryption extends Wrapper {
 	 * @param ArrayCache $arrayCache
 	 */
 	public function __construct(
-			$parameters,
-			IManager $encryptionManager = null,
-			Util $util = null,
-			ILogger $logger = null,
-			IFile $fileHelper = null,
-			$uid = null,
-			IStorage $keyStorage = null,
-			Update $update = null,
-			Manager $mountManager = null,
-			ArrayCache $arrayCache = null
-		) {
+		$parameters,
+		IManager $encryptionManager = null,
+		Util $util = null,
+		ILogger $logger = null,
+		IFile $fileHelper = null,
+		$uid = null,
+		IStorage $keyStorage = null,
+		Update $update = null,
+		Manager $mountManager = null,
+		ArrayCache $arrayCache = null
+	) {
 		$this->mountPoint = $parameters['mountPoint'];
 		$this->mount = $parameters['mount'];
 		$this->encryptionManager = $encryptionManager;
@@ -475,9 +475,24 @@ class Encryption extends Wrapper {
 				} else {
 					$sourceFileOfRename = null;
 				}
-				$handle = \OC\Files\Stream\Encryption::wrap($source, $path, $fullPath, $header,
-					$this->uid, $encryptionModule, $this->storage, $this, $this->util, $this->fileHelper, $mode,
-					$size, $unencryptedSize, $headerSize, $signed, $sourceFileOfRename);
+				$handle = \OC\Files\Stream\Encryption::wrap(
+					$source,
+					$path,
+					$fullPath,
+					$header,
+					$this->uid,
+					$encryptionModule,
+					$this->storage,
+					$this,
+					$this->util,
+					$this->fileHelper,
+					$mode,
+					$size,
+					$unencryptedSize,
+					$headerSize,
+					$signed,
+					$sourceFileOfRename
+				);
 				unset($this->sourcePath[$path]);
 
 				return $handle;
@@ -701,6 +716,8 @@ class Encryption extends Wrapper {
 			}
 
 			$cacheInformation['encryptedVersion'] = $encryptedVersion;
+		} else {
+			$cacheInformation['encryptedVersion'] = 0;
 		}
 
 		// in case of a rename we need to manipulate the source cache because
@@ -711,7 +728,7 @@ class Encryption extends Wrapper {
 			 * incremented version of source file, for the destination file.
 			 */
 			$encryptedVersion = $sourceStorage->getCache()->get($sourceInternalPath)['encryptedVersion'];
-			if ($this->encryptionManager->isEnabled()) {
+			if ($this->encryptionManager->isEnabled() && $isEncrypted) {
 				$cacheInformation['encryptedVersion'] = $encryptedVersion + 1;
 			}
 			$sourceStorage->getCache()->put($sourceInternalPath, $cacheInformation);
@@ -765,7 +782,7 @@ class Encryption extends Wrapper {
 			$target = $this->getFullPath($targetInternalPath);
 			$this->copyKeys($source, $target);
 		} else {
-			$this->logger->error('Could not find mount point, can\'t keep encryption keys');
+			$this->logger->error(\sprintf('Could not find mount point, can\'t keep encryption keys. MountCount: %s', \count($mount)));
 		}
 
 		if ($sourceStorage->is_dir($sourceInternalPath)) {

@@ -23,7 +23,10 @@
 namespace OCA\Files_Sharing\Tests;
 
 use OCA\Files_Sharing\Capabilities;
+use OCA\Files_Sharing\SharingAllowlist;
 use OCP\IL10N;
+use OCP\IUser;
+use OCP\IUserSession;
 use OCP\Share\IManager;
 
 /**
@@ -42,6 +45,10 @@ class CapabilitiesTest extends \Test\TestCase {
 	private $l10n;
 	/** @var IManager | \PHPUnit\Framework\MockObject\MockObject */
 	private $shareManager;
+	/** @var IUserSession | \PHPUnit\Framework\MockObject\MockObject */
+	private $userSession;
+	/** @var SharingAllowlist | \PHPUnit\Framework\MockObject\MockObject */
+	private $sharingAllowlist;
 
 	/**
 	 *
@@ -61,6 +68,10 @@ class CapabilitiesTest extends \Test\TestCase {
 			->willReturn('Public link');
 
 		$this->shareManager = $this->createMock(IManager::class);
+
+		$this->userSession = $this->createMock(IUserSession::class);
+
+		$this->sharingAllowlist = $this->createMock(SharingAllowlist::class);
 	}
 
 	/**
@@ -86,7 +97,7 @@ class CapabilitiesTest extends \Test\TestCase {
 	private function getResults(array $map) {
 		$stub = $this->getMockBuilder('\OCP\IConfig')->disableOriginalConstructor()->getMock();
 		$stub->method('getAppValue')->will($this->returnValueMap($map));
-		$cap = new Capabilities($this->shareManager, $stub, $this->userSearch, $this->l10n);
+		$cap = new Capabilities($this->shareManager, $stub, $this->userSearch, $this->l10n, $this->sharingAllowlist, $this->userSession);
 		$result = $this->getFilesSharingPart($cap->getCapabilities());
 		return $result;
 	}
@@ -112,6 +123,7 @@ class CapabilitiesTest extends \Test\TestCase {
 		$this->assertFalse($result['can_share']);
 		$this->assertFalse($result['public']['enabled']);
 		$this->assertFalse($result['user']['send_mail']);
+		$this->assertTrue($result['user']['profile_picture']);
 		$this->assertFalse($result['resharing']);
 	}
 
@@ -123,6 +135,54 @@ class CapabilitiesTest extends \Test\TestCase {
 		$result = $this->getResults($map);
 		$this->assertIsArray($result['public']);
 		$this->assertFalse($result['public']['enabled']);
+	}
+
+	public function testCanCreatePublicLink() {
+		$this->userSession
+			->expects($this->once())
+			->method('getUser')
+			->willReturn($this->createMock(IUser::class));
+
+		$this->sharingAllowlist
+			->expects($this->once())
+			->method('isPublicShareSharersGroupsAllowlistEnabled')->willReturn(true);
+
+		$this->sharingAllowlist
+			->expects($this->once())
+			->method('isUserInPublicShareSharersGroupsAllowlist')
+			->willReturn(true);
+
+		$map = [
+			['core', 'shareapi_enabled', 'yes', 'yes'],
+			['core', 'shareapi_allow_links', 'yes', 'yes'],
+		];
+
+		$result = $this->getResults($map);
+		$this->assertTrue($result['public']['can_create_public_link']);
+	}
+
+	public function testCannotCreatePublicLink() {
+		$this->userSession
+			->expects($this->once())
+			->method('getUser')
+			->willReturn($this->createMock(IUser::class));
+
+		$this->sharingAllowlist
+			->expects($this->once())
+			->method('isPublicShareSharersGroupsAllowlistEnabled')->willReturn(true);
+
+		$this->sharingAllowlist
+			->expects($this->once())
+			->method('isUserInPublicShareSharersGroupsAllowlist')
+			->willReturn(false);
+
+		$map = [
+			['core', 'shareapi_enabled', 'yes', 'yes'],
+			['core', 'shareapi_allow_links', 'yes', 'yes'],
+		];
+
+		$result = $this->getResults($map);
+		$this->assertFalse($result['public']['can_create_public_link']);
 	}
 
 	public function providesRolesCapability() {
@@ -311,6 +371,14 @@ class CapabilitiesTest extends \Test\TestCase {
 		];
 		$result = $this->getResults($map);
 		$this->assertFalse($result['user']['send_mail']);
+	}
+
+	public function testProfilePictureCapability() {
+		$map = [
+			['core', 'shareapi_enabled', 'yes', 'yes']
+		];
+		$result = $this->getResults($map);
+		$this->assertTrue($result['user']['profile_picture']);
 	}
 
 	public function testResharing() {

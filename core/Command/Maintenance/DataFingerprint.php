@@ -38,9 +38,11 @@ class DataFingerprint extends Command {
 	/** @var ILogger */
 	private $logger;
 
-	public function __construct(IConfig $config,
-								ITimeFactory $timeFactory,
-								ILogger $logger) {
+	public function __construct(
+		IConfig $config,
+		ITimeFactory $timeFactory,
+		ILogger $logger
+	) {
 		$this->config = $config;
 		$this->timeFactory = $timeFactory;
 		$this->logger = $logger;
@@ -71,6 +73,8 @@ EOD;
 			$fingerprint = \md5($this->timeFactory->getTime());
 			$this->config->setSystemValue('data-fingerprint', $fingerprint);
 			$this->logger->info("Data fingerprint was set by $osUser@$server to $fingerprint");
+			return 0;
 		}
+		return 1;
 	}
 }

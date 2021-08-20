@@ -61,11 +61,13 @@ class Users {
 	 * @param IUserSession $userSession
 	 * @param ILogger $logger
 	 */
-	public function __construct(IUserManager $userManager,
-								IGroupManager $groupManager,
-								IUserSession $userSession,
-								ILogger $logger,
-								\OC\Authentication\TwoFactorAuth\Manager $twoFactorAuthManager) {
+	public function __construct(
+		IUserManager $userManager,
+		IGroupManager $groupManager,
+		IUserSession $userSession,
+		ILogger $logger,
+		\OC\Authentication\TwoFactorAuth\Manager $twoFactorAuthManager
+	) {
 		$this->userManager = $userManager;
 		$this->groupManager = $groupManager;
 		$this->userSession = $userSession;
@@ -484,13 +486,13 @@ class Users {
 			return new Result(null, 102);
 		}
 
-		if (!$this->groupManager->isAdmin($user->getUID())) {
-			return new Result(null, 104);
-		}
-
 		$targetUser = $this->userManager->get($parameters['userid']);
 		if ($targetUser === null) {
 			return new Result(null, 103);
+		}
+
+		if (!$this->groupManager->isAdmin($user->getUID()) && !$this->groupManager->getSubAdmin()->isUserAccessible($user, $targetUser)) {
+			return new Result(null, 104);
 		}
 
 		// Add user to group

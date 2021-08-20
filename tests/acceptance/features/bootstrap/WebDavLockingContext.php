@@ -25,6 +25,8 @@ use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Gherkin\Node\TableNode;
 use GuzzleHttp\Exception\ConnectException;
 use PHPUnit\Framework\Assert;
+use TestHelpers\HttpRequestHelper;
+use TestHelpers\OcsApiHelper;
 use TestHelpers\WebDavHelper;
 
 require_once 'bootstrap.php';
@@ -63,7 +65,10 @@ class WebDavLockingContext implements Context {
 	 * @return void
 	 */
 	private function lockFile(
-		$user, $file, TableNode $properties, $public = false,
+		$user,
+		$file,
+		TableNode $properties,
+		$public = false,
 		$expectToSucceed = true
 	) {
 		$user = $this->featureContext->getActualUsername($user);
@@ -92,8 +97,16 @@ class WebDavLockingContext implements Context {
 
 		$body .= "</d:lockinfo>";
 		$response = WebDavHelper::makeDavRequest(
-			$baseUrl, $user, $password, "LOCK", $file, $headers, $body,
-			$this->featureContext->getDavPathVersion(), $type
+			$baseUrl,
+			$user,
+			$password,
+			"LOCK",
+			$file,
+			$headers,
+			$this->featureContext->getStepLineRef(),
+			$body,
+			$this->featureContext->getDavPathVersion(),
+			$type
 		);
 
 		$this->featureContext->setResponse($response);
@@ -145,7 +158,9 @@ class WebDavLockingContext implements Context {
 	public function publicHasLockedLastSharedFile(TableNode $properties) {
 		$this->lockFile(
 			(string) $this->featureContext->getLastShareData()->data->token,
-			"/", $properties, true
+			"/",
+			$properties,
+			true
 		);
 	}
 
@@ -159,7 +174,10 @@ class WebDavLockingContext implements Context {
 	public function publicLocksLastSharedFile(TableNode $properties) {
 		$this->lockFile(
 			(string) $this->featureContext->getLastShareData()->data->token,
-			"/", $properties, true, false
+			"/",
+			$properties,
+			true,
+			false
 		);
 	}
 
@@ -172,11 +190,14 @@ class WebDavLockingContext implements Context {
 	 * @return void
 	 */
 	public function publicHasLockedFileLastSharedFolder(
-		$file, TableNode $properties
+		$file,
+		TableNode $properties
 	) {
 		$this->lockFile(
 			(string) $this->featureContext->getLastShareData()->data->token,
-			$file, $properties, true
+			$file,
+			$properties,
+			true
 		);
 	}
 
@@ -190,11 +211,16 @@ class WebDavLockingContext implements Context {
 	 * @return void
 	 */
 	public function publicLocksFileLastSharedFolder(
-		$file, $publicWebDAVAPIVersion, TableNode $properties
+		$file,
+		$publicWebDAVAPIVersion,
+		TableNode $properties
 	) {
 		$this->lockFile(
 			(string) $this->featureContext->getLastShareData()->data->token,
-			$file, $properties, true, false
+			$file,
+			$properties,
+			true,
+			false
 		);
 	}
 
@@ -208,7 +234,10 @@ class WebDavLockingContext implements Context {
 	 */
 	public function unlockLastLockUsingWebDavAPI($user, $file) {
 		$this->unlockItemWithLastLockOfUserAndItemUsingWebDavAPI(
-			$user, $file, $user, $file
+			$user,
+			$file,
+			$user,
+			$file
 		);
 	}
 
@@ -222,10 +251,15 @@ class WebDavLockingContext implements Context {
 	 * @return void
 	 */
 	public function unlockItemWithLastLockOfOtherItemUsingWebDavAPI(
-		$user, $itemToUnlock, $itemToUseLockOf
+		$user,
+		$itemToUnlock,
+		$itemToUseLockOf
 	) {
 		$this->unlockItemWithLastLockOfUserAndItemUsingWebDavAPI(
-			$user, $itemToUnlock, $user, $itemToUseLockOf
+			$user,
+			$itemToUnlock,
+			$user,
+			$itemToUseLockOf
 		);
 	}
 
@@ -239,11 +273,16 @@ class WebDavLockingContext implements Context {
 	 * @return void
 	 */
 	public function unlockItemWithLastPublicLockOfOtherItemUsingWebDavAPI(
-		$user, $itemToUnlock, $itemToUseLockOf
+		$user,
+		$itemToUnlock,
+		$itemToUseLockOf
 	) {
 		$lockOwner = (string) $this->featureContext->getLastShareData()->data->token;
 		$this->unlockItemWithLastLockOfUserAndItemUsingWebDavAPI(
-			$user, $itemToUnlock, $lockOwner, $itemToUseLockOf
+			$user,
+			$itemToUnlock,
+			$lockOwner,
+			$itemToUseLockOf
 		);
 	}
 
@@ -259,7 +298,11 @@ class WebDavLockingContext implements Context {
 	 * @return void
 	 */
 	public function unlockItemWithLastLockOfUserAndItemUsingWebDavAPI(
-		$user, $itemToUnlock, $lockOwner, $itemToUseLockOf, $public = false
+		$user,
+		$itemToUnlock,
+		$lockOwner,
+		$itemToUseLockOf,
+		$public = false
 	) {
 		$user = $this->featureContext->getActualUsername($user);
 		$lockOwner = $this->featureContext->getActualUsername($lockOwner);
@@ -282,8 +325,16 @@ class WebDavLockingContext implements Context {
 		];
 		$this->featureContext->setResponse(
 			WebDavHelper::makeDavRequest(
-				$baseUrl, $user, $password, "UNLOCK", $itemToUnlock, $headers,
-				null, $this->featureContext->getDavPathVersion(), $type
+				$baseUrl,
+				$user,
+				$password,
+				"UNLOCK",
+				$itemToUnlock,
+				$headers,
+				$this->featureContext->getStepLineRef(),
+				null,
+				$this->featureContext->getDavPathVersion(),
+				$type
 			)
 		);
 	}
@@ -298,11 +349,17 @@ class WebDavLockingContext implements Context {
 	 * @return void
 	 */
 	public function unlockItemAsPublicWithLastLockOfUserAndItemUsingWebDavAPI(
-		$itemToUnlock, $lockOwner, $itemToUseLockOf
+		$itemToUnlock,
+		$lockOwner,
+		$itemToUseLockOf
 	) {
 		$user = (string) $this->featureContext->getLastShareData()->data->token;
 		$this->unlockItemWithLastLockOfUserAndItemUsingWebDavAPI(
-			$user, $itemToUnlock, $lockOwner, $itemToUseLockOf, true
+			$user,
+			$itemToUnlock,
+			$lockOwner,
+			$itemToUseLockOf,
+			true
 		);
 	}
 
@@ -316,7 +373,11 @@ class WebDavLockingContext implements Context {
 	public function unlockItemAsPublicUsingWebDavAPI($itemToUnlock) {
 		$user = (string) $this->featureContext->getLastShareData()->data->token;
 		$this->unlockItemWithLastLockOfUserAndItemUsingWebDavAPI(
-			$user, $itemToUnlock, $user, $itemToUnlock, true
+			$user,
+			$itemToUnlock,
+			$user,
+			$itemToUnlock,
+			true
 		);
 	}
 
@@ -331,10 +392,17 @@ class WebDavLockingContext implements Context {
 	 * @return void
 	 */
 	public function moveItemSendingLockToken(
-		$user, $fileSource, $fileDestination, $itemToUseLockOf
+		$user,
+		$fileSource,
+		$fileDestination,
+		$itemToUseLockOf
 	) {
 		$this->moveItemSendingLockTokenOfUser(
-			$user, $fileSource, $fileDestination, $itemToUseLockOf, $user
+			$user,
+			$fileSource,
+			$fileDestination,
+			$itemToUseLockOf,
+			$user
 		);
 	}
 
@@ -350,12 +418,17 @@ class WebDavLockingContext implements Context {
 	 * @return void
 	 */
 	public function moveItemSendingLockTokenOfUser(
-		$user, $fileSource, $fileDestination, $itemToUseLockOf, $lockOwner
+		$user,
+		$fileSource,
+		$fileDestination,
+		$itemToUseLockOf,
+		$lockOwner
 	) {
 		$user = $this->featureContext->getActualUsername($user);
 		$lockOwner = $this->featureContext->getActualUsername($lockOwner);
 		$destination = $this->featureContext->destinationHeaderValue(
-			$user, $fileDestination
+			$user,
+			$fileDestination
 		);
 		$token = $this->tokenOfLastLock[$lockOwner][$itemToUseLockOf];
 		$headers = [
@@ -364,7 +437,10 @@ class WebDavLockingContext implements Context {
 		];
 		try {
 			$response = $this->featureContext->makeDavRequest(
-				$user, "MOVE", $fileSource, $headers
+				$user,
+				"MOVE",
+				$fileSource,
+				$headers
 			);
 			$this->featureContext->setResponse($response);
 		} catch (ConnectException $e) {
@@ -382,13 +458,20 @@ class WebDavLockingContext implements Context {
 	 * @return void
 	 */
 	public function userUploadsAFileWithContentTo(
-		$user, $content, $destination, $itemToUseLockOf
+		$user,
+		$content,
+		$destination,
+		$itemToUseLockOf
 	) {
 		$user = $this->featureContext->getActualUsername($user);
 		$token = $this->tokenOfLastLock[$user][$itemToUseLockOf];
 		$this->featureContext->pauseUploadDelete();
 		$response = $this->featureContext->makeDavRequest(
-			$user, "PUT", $destination, ["If" => "(<$token>)"], $content
+			$user,
+			"PUT",
+			$destination,
+			["If" => "(<$token>)"],
+			$content
 		);
 		$this->featureContext->setResponse($response);
 		$this->featureContext->setLastUploadDeleteTime(\time());
@@ -407,14 +490,23 @@ class WebDavLockingContext implements Context {
 	 *
 	 */
 	public function publicUploadFileSendingLockTokenOfUser(
-		$filename, $content, $itemToUseLockOf, $lockOwner, $publicWebDAVAPIVersion
+		$filename,
+		$content,
+		$itemToUseLockOf,
+		$lockOwner,
+		$publicWebDAVAPIVersion
 	) {
 		$lockOwner = $this->featureContext->getActualUsername($lockOwner);
 		$headers = [
 			"If" => "(<" . $this->tokenOfLastLock[$lockOwner][$itemToUseLockOf] . ">)"
 		];
 		$this->publicWebDavContext->publicUploadContent(
-			$filename, '', $content, false, $headers, $publicWebDAVAPIVersion
+			$filename,
+			'',
+			$content,
+			false,
+			$headers,
+			$publicWebDAVAPIVersion
 		);
 	}
 
@@ -429,11 +521,18 @@ class WebDavLockingContext implements Context {
 	 * @return void
 	 */
 	public function publicUploadFileSendingLockTokenOfPublic(
-		$filename, $content, $itemToUseLockOf, $publicWebDAVAPIVersion
+		$filename,
+		$content,
+		$itemToUseLockOf,
+		$publicWebDAVAPIVersion
 	) {
 		$lockOwner = (string) $this->featureContext->getLastShareData()->data->token;
 		$this->publicUploadFileSendingLockTokenOfUser(
-			$filename, $content, $itemToUseLockOf, $lockOwner, $publicWebDAVAPIVersion
+			$filename,
+			$content,
+			$itemToUseLockOf,
+			$lockOwner,
+			$publicWebDAVAPIVersion
 		);
 	}
 
@@ -456,15 +555,73 @@ class WebDavLockingContext implements Context {
 			"<d:prop><d:lockdiscovery/></d:prop>" .
 			"</d:propfind>";
 		$response = WebDavHelper::makeDavRequest(
-			$baseUrl, $user, $password, "PROPFIND", $file, null, $body,
+			$baseUrl,
+			$user,
+			$password,
+			"PROPFIND",
+			$file,
+			null,
+			$this->featureContext->getStepLineRef(),
+			$body,
 			$this->featureContext->getDavPathVersion()
 		);
 		$responseXml = $this->featureContext->getResponseXml($response, __METHOD__);
 		$xmlPart = $responseXml->xpath("//d:response//d:lockdiscovery/d:activelock");
 		Assert::assertCount(
-			(int) $count, $xmlPart,
+			(int) $count,
+			$xmlPart,
 			"expected $count lock(s) for '$file' but found " . \count($xmlPart)
 		);
+	}
+
+	/**
+	 * @Then group :expectedGroup should exist as a lock breaker group
+	 *
+	 * @param string $expectedGroup
+	 *
+	 * @return void
+	 *
+	 * @throws Exception
+	 */
+	public function groupShouldExistAsLockBreakerGroups($expectedGroup) {
+		$baseUrl = $this->featureContext->getBaseUrl();
+		$admin = $this->featureContext->getAdminUsername();
+		$password = $this->featureContext->getAdminPassword();
+		$ocsApiVersion = $this->featureContext->getOcsApiVersion();
+
+		$response = OcsApiHelper::sendRequest(
+			$baseUrl,
+			$admin,
+			$password,
+			'GET',
+			"/apps/testing/api/v1/app/core/lock-breaker-groups",
+			$ocsApiVersion
+		);
+
+		$responseXml = HttpRequestHelper::getResponseXml($response, __METHOD__)->data->element;
+		$lockbreakergroup = trim(\json_decode(\json_encode($responseXml), true)['value'], '\'[]"');
+		$actualgroup = explode("\",\"", $lockbreakergroup);
+		if (!\in_array($expectedGroup, $actualgroup)) {
+			Assert::fail("could not find group '$expectedGroup' in lock breakers group");
+		}
+	}
+
+	/**
+	 * @Then following groups should exist as lock breaker groups
+	 *
+	 * @param TableNode $table
+	 *
+	 * @return void
+	 *
+	 * @throws Exception
+	 */
+	public function followingGroupShouldExistAsLockBreakerGroups(TableNode $table) {
+		$this->featureContext->verifyTableNodeColumns($table, ["groups"]);
+		$paths = $table->getHash();
+
+		foreach ($paths as $group) {
+			$this->groupShouldExistAsLockBreakerGroups($group["groups"]);
+		}
 	}
 
 	/**

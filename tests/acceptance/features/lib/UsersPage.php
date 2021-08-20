@@ -81,6 +81,8 @@ class UsersPage extends OwncloudPage {
 	protected $disableUserCheckboxXpath = "//input[@type='checkbox']";
 	protected $deleteUserBtnXpath
 		= ".//td[@class='remove']/a[@class='action delete']";
+	protected $resendInvitationEmailBtnXpath
+		= ".//td[@class='resendInvitationEmail']/a[@class='action resendInvitationEmail']";
 	protected $deleteConfirmBtnXpath
 		= ".//div[contains(@class, 'oc-dialog-buttonrow twobuttons') and not(ancestor::div[contains(@style, 'display: none')])]//button[text()='Yes']";
 	protected $deleteNotConfirmBtnXpath
@@ -180,6 +182,40 @@ class UsersPage extends OwncloudPage {
 		};
 
 		return $this->getTrimmedText($userEmail);
+	}
+
+	/**
+	 * @return bool
+	 * @throws \Exception
+	 */
+	public function isPasswordFieldOfNewUserVisible() {
+		$newUserPasswordField = $this->findById($this->newUserPasswordFieldId);
+		if ($newUserPasswordField === null) {
+			throw new ElementNotFoundException(
+				__METHOD__ .
+				" $this->newUserPasswordFieldId " .
+				"password field of new user not found"
+			);
+		}
+
+		return $newUserPasswordField->isVisible();
+	}
+
+	/**
+	 * @return bool
+	 * @throws \Exception
+	 */
+	public function isEmailFieldOfNewUserVisible() {
+		$newUserEmailField = $this->findById($this->newUserEmailFieldId);
+		if ($newUserEmailField === null) {
+			throw new ElementNotFoundException(
+				__METHOD__ .
+				" $this->newUserEmailFieldId " .
+				"email field of new user not found"
+			);
+		}
+
+		return $newUserEmailField->isVisible();
 	}
 
 	/**
@@ -395,7 +431,11 @@ class UsersPage extends OwncloudPage {
 	 * @throws ElementNotFoundException
 	 */
 	public function createUser(
-		Session $session, $username, $password, $email = null, $groups = null
+		Session $session,
+		$username,
+		$password,
+		$email = null,
+		$groups = null
 	) {
 		$this->setSetting("Set password for new users", $password !== null);
 		$this->fillField($this->newUserUsernameFieldId, $username);
@@ -415,7 +455,8 @@ class UsersPage extends OwncloudPage {
 			);
 		}
 		$newUserGroupsDropDown = $this->find(
-			"xpath", $this->newUserGroupsDropDownXpath
+			"xpath",
+			$this->newUserGroupsDropDownXpath
 		);
 		if ($newUserGroupsDropDown === null) {
 			throw new ElementNotFoundException(
@@ -435,7 +476,8 @@ class UsersPage extends OwncloudPage {
 			);
 		}
 		$groupsInDropDown = $groupDropDownList->findAll(
-			"xpath", $this->newUserGroupsDropDownListTag
+			"xpath",
+			$this->newUserGroupsDropDownListTag
 		);
 
 		//uncheck all selected groups
@@ -449,13 +491,15 @@ class UsersPage extends OwncloudPage {
 		if (\is_array($groups)) {
 			foreach ($groups as $group) {
 				$groupItem = $this->find(
-					"xpath", \sprintf($this->newUserGroupXpath, $group)
+					"xpath",
+					\sprintf($this->newUserGroupXpath, $group)
 				);
 				if ($groupItem !== null) {
 					$groupItem->click();
 				} else {
 					$newUserAddGroupBtn = $this->find(
-						"xpath", $this->newUserAddGroupBtnXpath
+						"xpath",
+						$this->newUserAddGroupBtnXpath
 					);
 					if ($newUserAddGroupBtn === null) {
 						throw new ElementNotFoundException(
@@ -466,7 +510,8 @@ class UsersPage extends OwncloudPage {
 					}
 					$newUserAddGroupBtn->click();
 					$createUserInput = $this->find(
-						"xpath", $this->createGroupWithNewUserInputXpath
+						"xpath",
+						$this->createGroupWithNewUserInputXpath
 					);
 					if ($createUserInput === null) {
 						throw new ElementNotFoundException(
@@ -500,7 +545,10 @@ class UsersPage extends OwncloudPage {
 	 * @throws ElementNotFoundException
 	 */
 	public function setQuotaOfUserTo(
-		$username, $quota, Session $session, $valid = true
+		$username,
+		$quota,
+		Session $session,
+		$valid = true
 	) {
 		$userTr = $this->findUserInTable($username);
 		$selectField = $userTr->find('xpath', $this->quotaSelectXpath);
@@ -514,7 +562,8 @@ class UsersPage extends OwncloudPage {
 		}
 		$selectField->click();
 		$selectOption = $selectField->find(
-			'xpath', \sprintf($this->quotaOptionXpath, $quota)
+			'xpath',
+			\sprintf($this->quotaOptionXpath, $quota)
 		);
 		if ($selectOption === null) {
 			$xpathLocator = \sprintf($this->quotaOptionXpath, "Other");
@@ -530,7 +579,8 @@ class UsersPage extends OwncloudPage {
 
 			$selectOption->click();
 			$manualQuotaInputElement = $this->find(
-				'xpath', $this->manualQuotaInputXpath
+				'xpath',
+				$this->manualQuotaInputXpath
 			);
 
 			if ($manualQuotaInputElement === null) {
@@ -552,7 +602,8 @@ class UsersPage extends OwncloudPage {
 		} else {
 			try {
 				$this->waitTillXpathIsVisible(
-					"//*[@id='$this->notificationId']", 1000
+					"//*[@id='$this->notificationId']",
+					1000
 				);
 			} catch (\Exception $e) {
 				// Sometimes the notification is not "noticed".
@@ -897,5 +948,27 @@ class UsersPage extends OwncloudPage {
 			return null;
 		}
 		return (int) $groupUserCount;
+	}
+
+	/**
+	 * @param string $username
+	 * @param Session $session
+	 *
+	 * @return void
+	 * @throws ElementNotFoundException
+	 */
+	public function resendInvitationEmail($username, $session) {
+		$userTr = $this->findUserInTable($username);
+		$resendInvitationEmailBtn = $userTr->find('xpath', $this->resendInvitationEmailBtnXpath);
+
+		$this->assertElementNotNull(
+			$resendInvitationEmailBtn,
+			__METHOD__ .
+			" xpath $this->resendInvitationEmailBtnXpath " .
+			"could not find resend invitation email button for user $username"
+		);
+
+		$resendInvitationEmailBtn->click();
+		$this->waitForAjaxCallsToStartAndFinish($session);
 	}
 }

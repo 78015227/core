@@ -46,9 +46,13 @@ class Storage extends Wrapper {
 	/** @var  IUserManager */
 	private $userManager;
 
-	public function __construct($parameters, IUserManager $userManager = null) {
+	/** @var  TrashbinSkipChecker */
+	private $trashbinSkipChecker;
+
+	public function __construct($parameters, IUserManager $userManager = null, TrashbinSkipChecker $trashbinSkipChecker = null) {
 		$this->mountPoint = $parameters['mountPoint'];
 		$this->userManager = $userManager;
+		$this->trashbinSkipChecker = $trashbinSkipChecker;
 		parent::__construct($parameters);
 	}
 
@@ -178,14 +182,22 @@ class Storage extends Wrapper {
 		$normalized = Filesystem::normalizePath($this->mountPoint . '/' . $path, true, false, true);
 		$result = true;
 		$view = Filesystem::getView();
+
+		if ($view instanceof View) {
+			$relativePath = $view->getRelativePath($normalized);
+
+			// Skip trashbin based on config
+			if ($relativePath && $this->trashbinSkipChecker->shouldSkipPath($view, $relativePath) === true) {
+				return \call_user_func_array([$this->storage, $method], [$path]);
+			}
+		}
+
 		if (!isset($this->deletedFiles[$normalized]) && $view instanceof View) {
 			$this->deletedFiles[$normalized] = $normalized;
 			if ($filesPath = $view->getRelativePath($normalized)) {
 				$filesPath = \trim($filesPath, '/');
 				$result = \OCA\Files_Trashbin\Trashbin::move2trash($filesPath);
-				// in cross-storage cases the file will be copied
-				// but not deleted, so we delete it here
-				if ($result) {
+				if ($result === null) {
 					\call_user_func_array([$this->storage, $method], [$path]);
 				}
 			} else {
@@ -228,7 +240,11 @@ class Storage extends Wrapper {
 		\OC\Files\Filesystem::addStorageWrapper('oc_trashbin', function ($mountPoint, $storage) {
 			return new \OCA\Files_Trashbin\Storage(
 				['storage' => $storage, 'mountPoint' => $mountPoint],
-				\OC::$server->getUserManager()
+				\OC::$server->getUserManager(),
+				new TrashbinSkipChecker(
+					\OC::$server->getLogger(),
+					\OC::$server->getConfig()
+				)
 			);
 		}, 1);
 	}

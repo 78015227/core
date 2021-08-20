@@ -5,8 +5,7 @@ Feature: files and folders can be deleted from the trashbin
   So that I can control my trashbin space and which files are kept in that space
 
   Background:
-    Given the administrator has enabled DAV tech_preview
-    And user "Alice" has been created with default attributes and without skeleton files
+    Given user "Alice" has been created with default attributes and without skeleton files
     And user "Alice" has uploaded file with content "to delete" to "/textfile0.txt"
     And user "Alice" has uploaded file with content "to delete" to "/textfile1.txt"
     And user "Alice" has created folder "PARENT"
@@ -198,3 +197,42 @@ Feature: files and folders can be deleted from the trashbin
       | dav-path |
       | old      |
       | new      |
+
+  Scenario: delete folders with dot in the name from the trashbin
+    Given user "Alice" has created the following folders
+      | path      |
+      | /fo.      |
+      | /fo.1     |
+      | /fo...1.. |
+      | /...      |
+      | /..fo     |
+      | /fo.xyz   |
+      | /fo.exe   |
+    And user "Alice" has deleted the following folders
+      | path      |
+      | /fo.      |
+      | /fo.1     |
+      | /fo...1.. |
+      | /...      |
+      | /..fo     |
+      | /fo.xyz   |
+      | /fo.exe   |
+    When user "Alice" deletes the following files with original path from the trashbin
+      | path      |
+      | /fo.      |
+      | /fo.1     |
+      | /fo...1.. |
+      | /...      |
+      | /..fo     |
+      | /fo.xyz   |
+      | /fo.exe   |
+    Then the HTTP status code of responses on all endpoints should be "204"
+    And as "Alice" the folders with following original paths should not exist in the trashbin
+      | path      |
+      | /fo.      |
+      | /fo.1     |
+      | /fo...1.. |
+      | /...      |
+      | /..fo     |
+      | /fo.xyz   |
+      | /fo.exe   |

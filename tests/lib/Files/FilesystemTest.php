@@ -65,8 +65,8 @@ class DummyMountProvider implements IMountProvider {
 class FilesystemTest extends TestCase {
 	use UserTrait;
 
-	const TEST_FILESYSTEM_USER1 = "test-filesystem-user1";
-	const TEST_FILESYSTEM_USER2 = "test-filesystem-user1";
+	public const TEST_FILESYSTEM_USER1 = "test-filesystem-user1";
+	public const TEST_FILESYSTEM_USER2 = "test-filesystem-user1";
 
 	/**
 	 * @var array tmpDirs
@@ -561,5 +561,24 @@ class FilesystemTest extends TestCase {
 		$um = \OC::$server->getUserManager();
 		\OC::$server->getMountProviderCollection()->registerProvider($mountProvider);
 		$this->assertEquals('/foo/bar/', Filesystem::getMountPoint('/foo/bar'));
+	}
+
+	public function getHashedFileNamePaths() {
+		return [
+			['/test/test.txt', '/test/dd18bf3a8e0a2a3e53e2661c7fb53534'],
+			['test/test.txt', 'test/dd18bf3a8e0a2a3e53e2661c7fb53534'],
+			['/test.txt', '/dd18bf3a8e0a2a3e53e2661c7fb53534'],
+			['test.txt', 'dd18bf3a8e0a2a3e53e2661c7fb53534'],
+		];
+	}
+
+	/**
+	 * @dataProvider getHashedFileNamePaths
+	 *
+	 * @param string $path
+	 * @param string $expected
+	 */
+	public function testHashFileName($path, $expected) {
+		$this->assertEquals($expected, Filesystem::hashFileName($path));
 	}
 }

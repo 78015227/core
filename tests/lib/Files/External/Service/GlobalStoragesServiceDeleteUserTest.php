@@ -129,18 +129,23 @@ class GlobalStoragesServiceDeleteUserTest extends TestCase {
 		$dbConfigService = new DBConfigService(\OC::$server->getDatabaseConnection(), \OC::$server->getCrypto());
 		$userManager = \OC::$server->getUserManager();
 		$userMountCache = new UserMountCache(\OC::$server->getDatabaseConnection(), $userManager, \OC::$server->getLogger());
-		$service = new GlobalStoragesService($backendService, $dbConfigService, $userMountCache);
+		$service = new GlobalStoragesService($backendService, $dbConfigService, $userMountCache, \OC::$server->getCrypto());
 
 		$storageIds = [];
 		foreach ($storageParams as $storageParam) {
 			$backend = new Backend();
 			$backend->setIdentifier($storageParam['backendIdentifier']);
 			$backendService->registerBackend($backend);
-			$storageConfig = $service->createStorage('/foo/',
-				$storageParam['backendIdentifier'], $storageParam['authMechanism'],
-				$storageParam['backendOptions'], null,
-				$storageParam['applicableUsers'], $storageParam['applicableGroups'],
-				$storageParam['priority']);
+			$storageConfig = $service->createStorage(
+				'/foo/',
+				$storageParam['backendIdentifier'],
+				$storageParam['authMechanism'],
+				$storageParam['backendOptions'],
+				null,
+				$storageParam['applicableUsers'],
+				$storageParam['applicableGroups'],
+				$storageParam['priority']
+			);
 			$storageConfig->setBackend($backend);
 			$backend->setStorageClass($storageParam['storageClass']);
 

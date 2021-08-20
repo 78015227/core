@@ -40,6 +40,7 @@ class TagsHelper extends \PHPUnit\Framework\Assert {
 	 * @param string $password
 	 * @param string $tagName
 	 * @param string $fileName
+	 * @param string $xRequestId
 	 * @param string|null $fileOwner
 	 * @param string|null $fileOwnerPassword
 	 * @param int $davPathVersionToUse (1|2)
@@ -55,6 +56,7 @@ class TagsHelper extends \PHPUnit\Framework\Assert {
 		$password,
 		$tagName,
 		$fileName,
+		$xRequestId = '',
 		$fileOwner = null,
 		$fileOwnerPassword = null,
 		$davPathVersionToUse = 2,
@@ -70,19 +72,31 @@ class TagsHelper extends \PHPUnit\Framework\Assert {
 		}
 
 		$fileID = WebDavHelper::getFileIdForPath(
-			$baseUrl, $fileOwner, $fileOwnerPassword, $fileName
+			$baseUrl,
+			$fileOwner,
+			$fileOwnerPassword,
+			$fileName,
+			$xRequestId
 		);
 
 		try {
 			$tag = self::requestTagByDisplayName(
-				$baseUrl, $taggingUser, $password, $tagName
+				$baseUrl,
+				$taggingUser,
+				$password,
+				$tagName,
+				$xRequestId
 			);
 		} catch (Exception $e) {
 			//the tag might be not accessible by the user
 			//if we still want to find it, we need to try as admin
 			if ($adminUsername !== null && $adminPassword !== null) {
 				$tag = self::requestTagByDisplayName(
-					$baseUrl, $adminUsername, $adminPassword, $tagName
+					$baseUrl,
+					$adminUsername,
+					$adminPassword,
+					$tagName,
+					$xRequestId
 				);
 			} else {
 				throw $e;
@@ -91,8 +105,16 @@ class TagsHelper extends \PHPUnit\Framework\Assert {
 		$tagID = self::getTagIdFromTagData($tag);
 		$path = '/systemtags-relations/files/' . $fileID . '/' . $tagID;
 		$response = WebDavHelper::makeDavRequest(
-			$baseUrl, $taggingUser, $password, "PUT",
-			$path, null, null, $davPathVersionToUse, "systemtags"
+			$baseUrl,
+			$taggingUser,
+			$password,
+			"PUT",
+			$path,
+			null,
+			$xRequestId,
+			null,
+			$davPathVersionToUse,
+			"systemtags"
 		);
 		return $response;
 	}
@@ -105,7 +127,9 @@ class TagsHelper extends \PHPUnit\Framework\Assert {
 	public static function getTagIdFromTagData($tagData) {
 		$tagID = $tagData->xpath(".//oc:id");
 		self::assertArrayHasKey(
-			0, $tagID, "cannot find id of tag"
+			0,
+			$tagID,
+			"cannot find id of tag"
 		);
 
 		return (int) $tagID[0]->__toString();
@@ -117,6 +141,7 @@ class TagsHelper extends \PHPUnit\Framework\Assert {
 	 * @param string $baseUrl
 	 * @param string $user
 	 * @param string $password
+	 * @param string $xRequestId
 	 * @param bool $withGroups
 	 *
 	 * @return SimpleXMLElement
@@ -125,6 +150,7 @@ class TagsHelper extends \PHPUnit\Framework\Assert {
 		$baseUrl,
 		$user,
 		$password,
+		$xRequestId = '',
 		$withGroups = false
 	) {
 		$properties = [
@@ -138,7 +164,14 @@ class TagsHelper extends \PHPUnit\Framework\Assert {
 			\array_push($properties, 'oc:groups');
 		}
 		$response = WebDavHelper::propfind(
-			$baseUrl, $user, $password, '/systemtags/', $properties, 1, "systemtags"
+			$baseUrl,
+			$user,
+			$password,
+			'/systemtags/',
+			$properties,
+			$xRequestId,
+			1,
+			"systemtags"
 		);
 		return HttpRequestHelper::getResponseXml($response, __METHOD__);
 	}
@@ -150,6 +183,7 @@ class TagsHelper extends \PHPUnit\Framework\Assert {
 	 * @param string $user
 	 * @param string $password
 	 * @param string $tagDisplayName
+	 * @param string $xRequestId
 	 * @param bool $withGroups
 	 *
 	 * @return SimpleXMLElement
@@ -159,14 +193,22 @@ class TagsHelper extends \PHPUnit\Framework\Assert {
 		$user,
 		$password,
 		$tagDisplayName,
+		$xRequestId = '',
 		$withGroups = false
 	) {
-		$tagList = self::requestTagsForUser($baseUrl, $user, $password, $withGroups);
+		$tagList = self::requestTagsForUser(
+			$baseUrl,
+			$user,
+			$password,
+			$xRequestId,
+			$withGroups
+		);
 		$tagData = $tagList->xpath(
 			"//d:prop//oc:display-name[text() ='$tagDisplayName']/.."
 		);
 		self::assertArrayHasKey(
-			0, $tagData,
+			0,
+			$tagData,
 			"cannot find 'oc:display-name' property with text '$tagDisplayName'"
 		);
 		return $tagData[0];
@@ -178,9 +220,10 @@ class TagsHelper extends \PHPUnit\Framework\Assert {
 	 * @param string $user
 	 * @param string $password
 	 * @param string $name
-	 * @param bool $userVisible
-	 * @param bool $userAssignable
-	 * @param bool $userEditable
+	 * @param string $xRequestId
+	 * @param string $userVisible "true", "1" or "false", "0"
+	 * @param string $userAssignable "true", "1" or "false", "0"
+	 * @param string $userEditable "true", "1" or "false", "0"
 	 * @param string $groups separated by "|"
 	 * @param int $davPathVersionToUse (1|2)
 	 *
@@ -192,9 +235,10 @@ class TagsHelper extends \PHPUnit\Framework\Assert {
 		$user,
 		$password,
 		$name,
-		$userVisible = true,
-		$userAssignable = true,
-		$userEditable = false,
+		$xRequestId = '',
+		$userVisible = "true",
+		$userAssignable = "true",
+		$userEditable = "false",
 		$groups = null,
 		$davPathVersionToUse = 2
 	) {
@@ -217,6 +261,7 @@ class TagsHelper extends \PHPUnit\Framework\Assert {
 			"POST",
 			$tagsPath,
 			['Content-Type' => 'application/json',],
+			$xRequestId,
 			\json_encode($body),
 			$davPathVersionToUse,
 			"systemtags"
@@ -229,6 +274,7 @@ class TagsHelper extends \PHPUnit\Framework\Assert {
 	 * @param string $user
 	 * @param string $password
 	 * @param int $tagID
+	 * @param string $xRequestId
 	 * @param int $davPathVersionToUse (1|2)
 	 *
 	 * @return ResponseInterface
@@ -238,38 +284,62 @@ class TagsHelper extends \PHPUnit\Framework\Assert {
 		$user,
 		$password,
 		$tagID,
+		$xRequestId = '',
 		$davPathVersionToUse = 1
 	) {
 		$tagsPath = '/systemtags/' . $tagID;
 		$response = WebDavHelper::makeDavRequest(
-			$baseUrl, $user, $password,
-			"DELETE", $tagsPath, [], null, $davPathVersionToUse, "systemtags"
+			$baseUrl,
+			$user,
+			$password,
+			"DELETE",
+			$tagsPath,
+			[],
+			$xRequestId,
+			null,
+			$davPathVersionToUse,
+			"systemtags"
 		);
 		return $response;
 	}
 
 	/**
+	 * Validate the keyword(s) used for the type of tag
+	 * Tags can be "normal", "not user-assignable", "not user-visible" or "static"
+	 * That determines the tag attributes which are set when creating the tag.
+	 *
+	 * When creating the tag, the attributes can be enabled/disabled by specifying
+	 * either "true"/"false" or "1"/"0" in the request. Choose this "request style"
+	 * by passing the $useTrueFalseStrings parameter.
 	 *
 	 * @param string $type
+	 * @param boolean $useTrueFalseStrings use the strings "true"/"false" else "1"/"0"
 	 *
 	 * @throws \Exception
-	 * @return boolean[]
+	 * @return string[]
 	 */
-	public static function validateTypeOfTag($type) {
-		$userVisible = "1";
-		$userAssignable = "1";
-		$userEditable = "1";
+	public static function validateTypeOfTag($type, $useTrueFalseStrings = true) {
+		if ($useTrueFalseStrings) {
+			$trueValue = "true";
+			$falseValue = "false";
+		} else {
+			$trueValue = "1";
+			$falseValue = "0";
+		}
+		$userVisible = $trueValue;
+		$userAssignable = $trueValue;
+		$userEditable = $trueValue;
 		switch ($type) {
 			case 'normal':
 				break;
 			case 'not user-assignable':
-				$userAssignable = "0";
+				$userAssignable = $falseValue;
 				break;
 			case 'not user-visible':
-				$userVisible = "0";
+				$userVisible = $falseValue;
 				break;
 			case 'static':
-				$userEditable = "0";
+				$userEditable = $falseValue;
 				break;
 			default:
 				throw new \Exception('Unsupported type');

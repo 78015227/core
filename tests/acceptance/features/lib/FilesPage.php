@@ -98,7 +98,9 @@ class FilesPage extends FilesPageBasic {
 	 * @param array $parameters
 	 */
 	public function __construct(
-		Session $session, Factory $factory, array $parameters = []
+		Session $session,
+		Factory $factory,
+		array $parameters = []
 	) {
 		parent::__construct($session, $factory, $parameters);
 		$this->filesPageCRUDFunctions = $this->getPage("FilesPageCRUD");
@@ -118,16 +120,22 @@ class FilesPage extends FilesPageBasic {
 	 * @param Session $session
 	 * @param string $name
 	 * @param int $timeoutMsec
+	 * @param boolean $useCreateButton
 	 *
 	 * @return string name of the created file
 	 * @throws ElementNotFoundException|\Exception
 	 */
 	public function createFolder(
-		Session $session, $name = null,
-		$timeoutMsec = STANDARD_UI_WAIT_TIMEOUT_MILLISEC
+		Session $session,
+		$name = null,
+		$timeoutMsec = STANDARD_UI_WAIT_TIMEOUT_MILLISEC,
+		$useCreateButton = false
 	) {
 		return $this->filesPageCRUDFunctions->createFolder(
-			$session, $name, $timeoutMsec
+			$session,
+			$name,
+			$timeoutMsec,
+			$useCreateButton,
 		);
 	}
 
@@ -141,10 +149,12 @@ class FilesPage extends FilesPageBasic {
 	 * @return string
 	 */
 	public function getTooltipOfFile(
-		$fileName, Session $session
+		$fileName,
+		Session $session
 	) {
 		return $this->filesPageCRUDFunctions->getTooltipOfFile(
-			$fileName, $session
+			$fileName,
+			$session
 		);
 	}
 
@@ -234,7 +244,10 @@ class FilesPage extends FilesPageBasic {
 		$maxRetries = STANDARD_RETRY_COUNT
 	) {
 		$this->filesPageCRUDFunctions->renameFile(
-			$fromFileName, $toFileName, $session, $maxRetries
+			$fromFileName,
+			$toFileName,
+			$session,
+			$maxRetries
 		);
 	}
 
@@ -254,7 +267,10 @@ class FilesPage extends FilesPageBasic {
 		$maxRetries = STANDARD_RETRY_COUNT
 	) {
 		$this->filesPageCRUDFunctions->deleteFile(
-			$name, $session, $expectToDeleteFile, $maxRetries
+			$name,
+			$session,
+			$expectToDeleteFile,
+			$maxRetries
 		);
 	}
 
@@ -279,10 +295,16 @@ class FilesPage extends FilesPageBasic {
 	 * @return void
 	 */
 	public function moveFileTo(
-		$name, $destination, Session $session, $maxRetries = STANDARD_RETRY_COUNT
+		$name,
+		$destination,
+		Session $session,
+		$maxRetries = STANDARD_RETRY_COUNT
 	) {
 		$this->filesPageCRUDFunctions->moveFileTo(
-			$name, $destination, $session, $maxRetries
+			$name,
+			$destination,
+			$session,
+			$maxRetries
 		);
 	}
 
@@ -333,7 +355,9 @@ class FilesPage extends FilesPageBasic {
 	 * @return FilesPage
 	 */
 	public function browseToFileId(
-		$fileId, $folderName = '/', $detailsTab = null
+		$fileId,
+		$folderName = '/',
+		$detailsTab = null
 	) {
 		$url = \rtrim($this->getUrl(), '/');
 		$fullUrl = "$url/?dir=$folderName&fileid=$fileId";
@@ -357,10 +381,12 @@ class FilesPage extends FilesPageBasic {
 	/**
 	 * Browse to Home Page by clicking on home icon.
 	 *
+	 * @param Session $session
+	 *
 	 * @return void
 	 * @throws \Exception
 	 */
-	public function browseToHomePage() {
+	public function browseToHomePage($session) {
 		$homePageIcon = $this->find("xpath", $this->homePageIconXpath);
 		$this->assertElementNotNull(
 			$homePageIcon,
@@ -369,6 +395,10 @@ class FilesPage extends FilesPageBasic {
 			"could not find home page icon."
 		);
 		$homePageIcon->click();
+		// The home page icon takes us to the top-level files page.
+		// Wait for it to be properly loaded, so that the next step(s) can run
+		// without timing problems.
+		$this->waitTillPageIsLoaded($session);
 	}
 
 	/**

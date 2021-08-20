@@ -33,8 +33,8 @@ use OCP\SystemTag\TagNotFoundException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class SystemTagObjectMapper implements ISystemTagObjectMapper {
-	const RELATION_TABLE = 'systemtag_object_mapping';
-	const CHUNK_SIZE = 200;
+	public const RELATION_TABLE = 'systemtag_object_mapping';
+	public const CHUNK_SIZE = 200;
 
 	/** @var ISystemTagManager */
 	protected $tagManager;
@@ -82,7 +82,7 @@ class SystemTagObjectMapper implements ISystemTagObjectMapper {
 				->from(self::RELATION_TABLE)
 				->where($query->expr()->in('objectid', $query->createParameter('objectids')))
 				->andWhere($query->expr()->eq('objecttype', $query->createParameter('objecttype')))
-				->setParameter('objectids', $objectIdChunk, IQueryBuilder::PARAM_INT_ARRAY)
+				->setParameter('objectids', $objectIdChunk, IQueryBuilder::PARAM_STR_ARRAY)
 				->setParameter('objecttype', $objectType)
 				->addOrderBy('objectid', 'ASC')
 				->addOrderBy('systemtagid', 'ASC');
@@ -266,7 +266,10 @@ class SystemTagObjectMapper implements ISystemTagObjectMapper {
 			);
 			$missingTagIds = \array_diff($tagIds, $foundTagIds);
 			throw new TagNotFoundException(
-				'Tags not found', 0, null, $missingTagIds
+				'Tags not found',
+				0,
+				null,
+				$missingTagIds
 			);
 		}
 	}

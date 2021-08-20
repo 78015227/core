@@ -5,8 +5,7 @@ Feature: files and folders exist in the trashbin after being deleted
   So that I can recover data easily
 
   Background:
-    Given the administrator has enabled DAV tech_preview
-    And user "Alice" has been created with default attributes and without skeleton files
+    Given user "Alice" has been created with default attributes and without skeleton files
     And user "Alice" has uploaded file with content "to delete" to "/textfile0.txt"
 
   @smokeTest
@@ -124,8 +123,8 @@ Feature: files and folders exist in the trashbin after being deleted
       | new      |
 
   @local_storage
-    @skipOnEncryptionType:user-keys @encryption-issue-42
-    @skip_on_objectstore
+  @skipOnEncryptionType:user-keys @encryption-issue-42
+  @skip_on_objectstore
   Scenario Outline: Deleting a folder into external storage moves it to the trashbin
     Given using <dav-path> DAV path
     And the administrator has invoked occ command "files:scan --all"
@@ -184,7 +183,7 @@ Feature: files and folders exist in the trashbin after being deleted
     And user "Brian" has been created with default attributes and without skeleton files
     And user "testtrashbin102" has deleted file "/textfile0.txt"
     And user "testtrashbin102" has deleted file "/textfile2.txt"
-    And the administrator deletes user "testtrashbin102" using the provisioning API
+    And the administrator has deleted user "testtrashbin102" using the provisioning API
     And these users have been created with default attributes and small skeleton files but not initialized:
       | username        |
       | testtrashbin102 |

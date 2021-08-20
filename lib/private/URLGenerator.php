@@ -52,7 +52,7 @@ class URLGenerator implements IURLGenerator {
 	private $router;
 	/** @var ITheme */
 	private $theme;
-	
+
 	/** @var EnvironmentHelper */
 	private $environmentHelper;
 
@@ -62,10 +62,11 @@ class URLGenerator implements IURLGenerator {
 	 * @param IRouter $router
 	 * @param EnvironmentHelper $environmentHelper
 	 */
-	public function __construct(IConfig $config,
-								ICacheFactory $cacheFactory,
-								IRouter $router,
-								EnvironmentHelper $environmentHelper
+	public function __construct(
+		IConfig $config,
+		ICacheFactory $cacheFactory,
+		IRouter $router,
+		EnvironmentHelper $environmentHelper
 	) {
 		$this->config = $config;
 		$this->cacheFactory = $cacheFactory;
@@ -204,20 +205,21 @@ class URLGenerator implements IURLGenerator {
 			$file = $directory . $imageName;
 
 			if ($themeDirectory !== ''
-				&& $imagePath = $this->getImagePathOrFallback($this->theme->getBaseDirectory() . '/' . $themeDirectory . $file)
+				&& $this->getImagePathOrFallback($this->theme->getBaseDirectory() . '/' . $themeDirectory . $file)
 			) {
 				return $this->theme->getWebPath() . $file;
 			}
 
-			if ($imagePath = $this->getImagePathOrFallback($this->environmentHelper->getServerRoot() . $file)) {
+			if ($this->getImagePathOrFallback($this->environmentHelper->getServerRoot() . $file)) {
 				return $webRoot . $file;
 			}
 		}
+		return '';
 	}
 
 	/**
 	 * @param string $file
-	 * @return string
+	 * @return string|false
 	 */
 	private function getImagePathOrFallback($file) {
 		$fallback = \substr($file, 0, -3) . 'png';
@@ -227,6 +229,7 @@ class URLGenerator implements IURLGenerator {
 				return $location;
 			}
 		}
+		return false;
 	}
 
 	/**
@@ -253,10 +256,11 @@ class URLGenerator implements IURLGenerator {
 
 	/**
 	 * @param string $key
+	 * @param string|null $ocVersion ownCloud version to look for in the docs. Defaults to the version of this onwCloud instance
 	 * @return string url to the online documentation
 	 */
-	public function linkToDocs($key) {
+	public function linkToDocs($key, $ocVersion = null) {
 		$theme = new OC_Defaults();
-		return $theme->buildDocLinkToKey($key);
+		return $theme->buildDocLinkToKey($key, $ocVersion);
 	}
 }

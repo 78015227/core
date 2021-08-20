@@ -25,6 +25,7 @@ use Behat\Behat\Hook\Scope\AfterScenarioScope;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Gherkin\Node\TableNode;
 use Behat\MinkExtension\Context\RawMinkContext;
+use Page\GeneralErrorPage;
 use Page\LoginPage;
 use Page\UsersPage;
 use Page\OwncloudPage;
@@ -53,6 +54,12 @@ class WebUIUsersContext extends RawMinkContext implements Context {
 
 	/**
 	 *
+	 * @var GeneralErrorPage
+	 */
+	private $generalErrorPage;
+
+	/**
+	 *
 	 * @var WebUIGeneralContext
 	 */
 	private $webUIGeneralContext;
@@ -71,11 +78,14 @@ class WebUIUsersContext extends RawMinkContext implements Context {
 	 * @param UsersPage $usersPage
 	 * @param LoginPage $loginPage
 	 * @param OwncloudPage $owncloudPage
+	 * @param GeneralErrorPage $generalErrorPage
+
 	 */
-	public function __construct(UsersPage $usersPage, LoginPage $loginPage, OwncloudPage $owncloudPage) {
+	public function __construct(UsersPage $usersPage, LoginPage $loginPage, OwncloudPage $owncloudPage, GeneralErrorPage $generalErrorPage) {
 		$this->usersPage = $usersPage;
 		$this->loginPage = $loginPage;
 		$this->owncloudPage = $owncloudPage;
+		$this->generalErrorPage = $generalErrorPage;
 	}
 
 	/**
@@ -98,7 +108,8 @@ class WebUIUsersContext extends RawMinkContext implements Context {
 	 * @return void
 	 */
 	public function theAdministratorSetsTheQuotaOfUserUsingTheWebUI(
-		$username, $quota
+		$username,
+		$quota
 	) {
 		$username = $this->featureContext->getActualUsername($username);
 		$this->usersPage->setQuotaOfUserTo($username, $quota, $this->getSession());
@@ -113,11 +124,15 @@ class WebUIUsersContext extends RawMinkContext implements Context {
 	 * @return void
 	 */
 	public function theAdministratorSetsInvalidQuotaOfUserUsingTheWebUI(
-		$username, $quota
+		$username,
+		$quota
 	) {
 		$username = $this->featureContext->getActualUsername($username);
 		$this->usersPage->setQuotaOfUserTo(
-			$username, $quota, $this->getSession(), false
+			$username,
+			$quota,
+			$this->getSession(),
+			false
 		);
 	}
 
@@ -133,7 +148,11 @@ class WebUIUsersContext extends RawMinkContext implements Context {
 	 * @return void
 	 */
 	public function theAdminCreatesAUserUsingTheWebUI(
-		$attemptTo, $username, $password, $email = null, TableNode $groupsTable = null
+		$attemptTo,
+		$username,
+		$password,
+		$email = null,
+		TableNode $groupsTable = null
 	) {
 		$username = $this->featureContext->getActualUsername($username);
 		$password = $this->featureContext->getActualPassword($password);
@@ -145,13 +164,21 @@ class WebUIUsersContext extends RawMinkContext implements Context {
 			$groups = null;
 		}
 		$this->usersPage->createUser(
-			$this->getSession(), $username, $password, $email, $groups
+			$this->getSession(),
+			$username,
+			$password,
+			$email,
+			$groups
 		);
 
 		$shouldExist = ($attemptTo === "creates");
 
 		$this->featureContext->addUserToCreatedUsersList(
-			$username, $password, $username, $email, $shouldExist
+			$username,
+			$password,
+			$username,
+			$email,
+			$shouldExist
 		);
 		if (\is_array($groups)) {
 			foreach ($groups as $group) {
@@ -171,7 +198,9 @@ class WebUIUsersContext extends RawMinkContext implements Context {
 		foreach ($table->getHash() as $row) {
 			$user = $row['user'];
 			$this->theAdminCreatesAUserUsingTheWebUI(
-				"attempts to create", $user, $row['password']
+				"attempts to create",
+				$user,
+				$row['password']
 			);
 			$expectedNotification = $row['notification'];
 			$actualNotification = $this->owncloudPage->getNotifications();
@@ -197,11 +226,92 @@ class WebUIUsersContext extends RawMinkContext implements Context {
 	 * @return void
 	 */
 	public function theAdminCreatesAUserUsingWithoutAPasswordTheWebUI(
-		$attemptTo, $username, $email, TableNode $groupsTable = null
+		$attemptTo,
+		$username,
+		$email,
+		TableNode $groupsTable = null
 	) {
 		$this->theAdminCreatesAUserUsingTheWebUI(
-			$attemptTo, $username, null, $email, $groupsTable
+			$attemptTo,
+			$username,
+			null,
+			$email,
+			$groupsTable
 		);
+	}
+
+	/**
+	 * @When the administrator resends invitation email for user with the name :username using the webUI
+	 *
+	 * @param string $username
+	 *
+	 * @return void
+	 */
+	public function theAdminResendsInvitationEmailUsingTheWebUI(
+		string $username
+	) {
+		$this->usersPage->resendInvitationEmail($username, $this->getSession());
+	}
+
+	/**
+	 * @Then /^the (?:subadmin|administrator) should (not|)\s?be able\s? to see password field in new user form on the webUI$/
+	 *
+	 * @param string $shouldOrNot
+	 *
+	 * @return void
+	 */
+	public function subadminShouldBeAbleToSeePasswordFieldInNewUserForm($shouldOrNot) {
+		$expected = true;
+		$expectedMsg = "The password field of new user was expected to be visible in new user form, but is not visible.";
+		if ($shouldOrNot == "not") {
+			$expected = false;
+			$expectedMsg = "The password field of new user was expected to be not visible in new user form, but is visible.";
+		}
+
+		$isVisible = $this->usersPage->isPasswordFieldOfNewUserVisible();
+		Assert::assertEquals(
+			$expected,
+			$isVisible,
+			__METHOD__
+			. "\n" . $expectedMsg
+		);
+	}
+
+	/**
+	 * @Then /^the (?:subadmin|administrator) should (not|)\s?be able\s? to see email field in new user form on the webUI$/
+	 *
+	 * @param string $shouldOrNot
+	 *
+	 * @return void
+	 */
+	public function subadminShouldBeAbleToSeeEmailFieldInNewUserForm($shouldOrNot) {
+		$expected = true;
+		$expectedMsg = "The email field of new user was expected to be visible in new user form, but is not visible.";
+		if ($shouldOrNot == "not") {
+			$expected = false;
+			$expectedMsg = "The email field of new user was expected to be not visible in new user form, but is visible.";
+		}
+
+		$isVisible = $this->usersPage->isEmailFieldOfNewUserVisible();
+		Assert::assertEquals(
+			$expected,
+			$isVisible,
+			__METHOD__
+			. "\n" . $expectedMsg
+		);
+	}
+
+	/**
+	 * @Then the user should see an error message saying :message
+	 *
+	 * @param string $message
+	 *
+	 * @return void
+	 */
+	public function theUserShouldSeeAnErrorWithMessage(
+		string $message
+	) {
+		Assert::assertEquals($message, $this->generalErrorPage->getErrorMessage());
 	}
 
 	/**
@@ -270,7 +380,9 @@ class WebUIUsersContext extends RawMinkContext implements Context {
 	public function theGroupNameShouldBeListed($groupName) {
 		$groups = $this->usersPage->getAllGroups();
 		Assert::assertContains(
-			$groupName, $groups, "Expected '" . $groupName . "' does not exist"
+			$groupName,
+			$groups,
+			"Expected '" . $groupName . "' does not exist"
 		);
 	}
 
@@ -299,7 +411,8 @@ class WebUIUsersContext extends RawMinkContext implements Context {
 	 * @throws Exception
 	 */
 	public function theseGroupsShouldBeListedOnTheWebUI(
-		$shouldOrNot, TableNode $table
+		$shouldOrNot,
+		TableNode $table
 	) {
 		$should = ($shouldOrNot !== "not");
 		$groups = $this->usersPage->getAllGroups();
@@ -359,7 +472,9 @@ class WebUIUsersContext extends RawMinkContext implements Context {
 		 * @var DisabledUserPage $disabledPage
 		 */
 		$disabledPage = $this->loginPage->loginAs(
-			$username, $password, 'DisabledUserPage'
+			$username,
+			$password,
+			'DisabledUserPage'
 		);
 		$disabledPage->waitTillPageIsLoaded($this->getSession());
 	}
@@ -406,6 +521,7 @@ class WebUIUsersContext extends RawMinkContext implements Context {
 
 	/**
 	 * @When /^the administrator (enables|disables) the setting "([^"]*)" in the User Management page using the webUI$/
+	 * @Given /^the administrator has (enabled|disabled) the setting "([^"]*)" in the User Management page using the webUI$/
 	 *
 	 * @param string $action
 	 * @param string $setting
@@ -413,7 +529,7 @@ class WebUIUsersContext extends RawMinkContext implements Context {
 	 * @return void
 	 */
 	public function enableOrDisableSettings($action, $setting) {
-		$value = $action === 'enables' ? true : false;
+		$value = ($action === 'enables' || $action === 'enabled') ? true : false;
 		$this->usersPage->setSetting($setting, $value);
 	}
 
@@ -655,7 +771,8 @@ class WebUIUsersContext extends RawMinkContext implements Context {
 				$this->featureContext->getBaseUrl(),
 				$this->featureContext->getAdminUsername(),
 				$this->featureContext->getAdminPassword(),
-				'core'
+				'core',
+				$this->featureContext->getStepLineRef()
 			);
 			$results = [];
 			foreach ($appConfigs as $appConfig) {
@@ -683,7 +800,8 @@ class WebUIUsersContext extends RawMinkContext implements Context {
 			$this->featureContext->getBaseUrl(),
 			$this->featureContext->getAdminUsername(),
 			$this->featureContext->getAdminPassword(),
-			$this->appParameterValues
+			$this->appParameterValues,
+			$this->featureContext->getStepLineRef()
 		);
 	}
 
@@ -800,7 +918,8 @@ class WebUIUsersContext extends RawMinkContext implements Context {
 	public function theUserCountOfGroupShouldNotBeDisplayedOnTheWebui($group) {
 		$count = $this->usersPage->getUserCountOfGroup($group);
 		Assert::assertNull(
-			$count, "Failed asserting that user count of group $group is not displayed"
+			$count,
+			"Failed asserting that user count of group $group is not displayed"
 		);
 	}
 }

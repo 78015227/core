@@ -34,10 +34,18 @@ namespace OCP\Files\Cache;
  * @since 9.0.0
  */
 interface ICache {
-	const NOT_FOUND = 0;
-	const PARTIAL = 1; //only partial data available, file not cached in the database
-	const SHALLOW = 2; //folder in cache, but not all child files are completely scanned
-	const COMPLETE = 3;
+	public const NOT_FOUND = 0;
+	public const PARTIAL = 1; //only partial data available, file not cached in the database
+	public const SHALLOW = 2; //folder in cache, but not all child files are completely scanned
+	public const COMPLETE = 3;
+	/**
+	 * folder in cache, but contents not scanned yet. This is different than SHALLOW
+	 * because SHALLOW implies a partial scan.
+	 * If there are "/A/D1" (folder) and "/A/F1" (file), "/A" should be with SHALLOW status
+	 * (we have data for D1 and F1), but "/A/D1" should be with NOT_SCANNED status because
+	 * we don't know what is inside.
+	 */
+	public const NOT_SCANNED = 4;
 
 	/**
 	 * Get the numeric storage id for this cache's storage

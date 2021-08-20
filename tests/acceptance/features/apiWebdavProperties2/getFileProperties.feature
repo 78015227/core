@@ -232,17 +232,23 @@ Feature: get file properties
       | old         |
       | new         |
 
-  @issue-ocis-reva-163
+
   Scenario Outline: Do a PROPFIND to a non-existing URL
-    And user "Alice" requests "<url>" with "PROPFIND" using basic auth
+    When user "Alice" requests "<url>" with "PROPFIND" using basic auth
     Then the value of the item "/d:error/s:message" in the response about user "Alice" should be "<message>"
     And the value of the item "/d:error/s:exception" in the response about user "Alice" should be "Sabre\DAV\Exception\NotFound"
+    @skipOnOcis
     Examples:
       | url                                  | message                                      |
       | /remote.php/dav/files/does-not-exist | Principal with name does-not-exist not found |
       | /remote.php/dav/does-not-exist       | File not found: does-not-exist in 'root'     |
+    @skipOnOcV10
+    Examples:
+      | url                                  | message                                  |
+      | /remote.php/dav/files/does-not-exist | Resource /users/does-not-exist not found |
+      | /remote.php/dav/does-not-exist       | File not found in root                   |
 
-  @issue-ocis-reva-57 @issue-ocis-reva-217
+  @issue-ocis-reva-217
   Scenario: add, receive multiple custom meta properties to a file
     Given user "Alice" has created folder "/TestFolder"
     And user "Alice" has uploaded file with content "test data one" to "/TestFolder/test1.txt"
@@ -262,7 +268,7 @@ Feature: get file properties
       | /TestFolder/test1.txt | status       | HTTP/1.1 200 OK |
 
   @issue-36920
-  @skipOnOcV10.3 @skipOnOcV10.4.0 @issue-ocis-reva-57 @issue-ocis-reva-217
+  @skipOnOcV10.3 @skipOnOcV10.4.0 @issue-ocis-reva-217
   Scenario: add multiple properties to files inside a folder and do a propfind of the parent folder
     Given user "Alice" has created folder "/TestFolder"
     And user "Alice" has uploaded file with content "test data one" to "/TestFolder/test1.txt"
@@ -288,7 +294,7 @@ Feature: get file properties
       | /TestFolder/test2.txt | testprop2    | DDDDD                  |
       | /TestFolder/          | status       | HTTP/1.1 404 Not Found |
 
-  @issue-ocis-reva-57
+
   Scenario Outline: Propfind the last modified date of a folder using webdav api
     Given using <dav_version> DAV path
     And user "Alice" has created folder "/test"
@@ -301,7 +307,7 @@ Feature: get file properties
       | old         |
       | new         |
 
-  @issue-ocis-reva-57
+
   Scenario Outline: Propfind the content type of a folder using webdav api
     Given using <dav_version> DAV path
     And user "Alice" has created folder "/test"
@@ -314,14 +320,14 @@ Feature: get file properties
       | old         |
       | new         |
 
-  @issue-ocis-reva-57
+
   Scenario Outline: Propfind the content type of a file using webdav api
     Given using <dav_version> DAV path
     And user "Alice" has uploaded file with content "uploaded content" to "file.txt"
     When user "Alice" gets the following properties of folder "file.txt" using the WebDAV API
       | propertyName     |
       | d:getcontenttype |
-    Then the single response should contain a property "d:getcontenttype" with value "text/plain"
+    Then the single response should contain a property "d:getcontenttype" with value "text/plain.*"
     Examples:
       | dav_version |
       | old         |
@@ -363,7 +369,7 @@ Feature: get file properties
       | old         |
       | new         |
 
-  @issue-ocis-reva-57
+
   Scenario Outline: Propfind the size of a folder using webdav api
     Given using <dav_version> DAV path
     And user "Alice" has created folder "/test"
@@ -376,7 +382,7 @@ Feature: get file properties
       | old         |
       | new         |
 
-  @issue-ocis-reva-57
+
   Scenario Outline: Propfind the file id of a file using webdav api
     Given using <dav_version> DAV path
     And user "Alice" has uploaded file with content "uploaded content" to "file.txt"
@@ -389,7 +395,7 @@ Feature: get file properties
       | old         |
       | new         |
 
-  @issue-ocis-reva-57
+
   Scenario Outline: Propfind the file id of a folder using webdav api
     Given using <dav_version> DAV path
     And user "Alice" has created folder "/test"
@@ -402,7 +408,7 @@ Feature: get file properties
       | old         |
       | new         |
 
-  @issue-ocis-reva-57
+
   Scenario Outline: Propfind the owner display name of a file using webdav api
     Given using <dav_version> DAV path
     And user "Alice" has uploaded file with content "uploaded content" to "file.txt"
@@ -415,7 +421,7 @@ Feature: get file properties
       | old         |
       | new         |
 
-  @issue-ocis-reva-57
+
   Scenario Outline: Propfind the owner display name of a folder using webdav api
     Given using <dav_version> DAV path
     And user "Alice" has created folder "/test"
@@ -428,7 +434,7 @@ Feature: get file properties
       | old         |
       | new         |
 
-  @issue-ocis-reva-57
+
   Scenario Outline: Propfind the permissions on a file using webdav api
     Given using <dav_version> DAV path
     And user "Alice" has uploaded file with content "uploaded content" to "file.txt"
@@ -441,7 +447,7 @@ Feature: get file properties
       | old         |
       | new         |
 
-  @issue-ocis-reva-57
+
   Scenario Outline: Propfind the permissions on a folder using webdav api
     Given using <dav_version> DAV path
     And user "Alice" has created folder "/test"

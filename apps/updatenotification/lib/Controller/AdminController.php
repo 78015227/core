@@ -64,15 +64,17 @@ class AdminController extends Controller implements ISettings {
 	 * @param UpdateChecker $updateChecker
 	 * @param IDateTimeFormatter $dateTimeFormatter
 	 */
-	public function __construct($appName,
-								IRequest $request,
-								IJobList $jobList,
-								ISecureRandom $secureRandom,
-								IConfig $config,
-								ITimeFactory $timeFactory,
-								IL10N $l10n,
-								UpdateChecker $updateChecker,
-								IDateTimeFormatter $dateTimeFormatter) {
+	public function __construct(
+		$appName,
+		IRequest $request,
+		IJobList $jobList,
+		ISecureRandom $secureRandom,
+		IConfig $config,
+		ITimeFactory $timeFactory,
+		IL10N $l10n,
+		UpdateChecker $updateChecker,
+		IDateTimeFormatter $dateTimeFormatter
+	) {
 		parent::__construct($appName, $request);
 		$this->jobList = $jobList;
 		$this->secureRandom = $secureRandom;
@@ -127,8 +129,7 @@ class AdminController extends Controller implements ISettings {
 			$varsionParts = \explode(' ', $newVersionString);
 			if (\count($varsionParts) >= 2) {
 				$versionParts = \explode('.', $varsionParts[1]); // remove the 'ownCloud' prefix
-				\array_splice($versionParts, 2); // remove minor version info from parts
-				$changeLogUrl = 'https://owncloud.org/changelog/#latest' . \implode('.', $versionParts);
+				$changeLogUrl = 'https://owncloud.com/changelog/server/#' . \implode('.', $versionParts);
 			}
 		}
 

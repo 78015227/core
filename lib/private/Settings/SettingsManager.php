@@ -123,20 +123,22 @@ class SettingsManager implements ISettingsManager {
 	 * @param CertificateManager $certificateManager
 	 * @param IFactory $lfactory
 	 */
-	public function __construct(IL10N $l,
-								IAppManager $appManager,
-								IUserSession $userSession,
-								ILogger $logger,
-								IGroupManager $groupManager,
-								IConfig $config,
-								Defaults $defaults,
-								IURLGenerator $urlGenerator,
-								Helper $helper,
-								ILockingProvider $lockingProvider,
-								IDBConnection $dbconnection,
-								ILicenseManager $licenseManager,
-								$certificateManager,
-								IFactory $lfactory) {
+	public function __construct(
+		IL10N $l,
+		IAppManager $appManager,
+		IUserSession $userSession,
+		ILogger $logger,
+		IGroupManager $groupManager,
+		IConfig $config,
+		Defaults $defaults,
+		IURLGenerator $urlGenerator,
+		Helper $helper,
+		ILockingProvider $lockingProvider,
+		IDBConnection $dbconnection,
+		ILicenseManager $licenseManager,
+		$certificateManager,
+		IFactory $lfactory
+	) {
 		$this->l = $l;
 		$this->appManager = $appManager;
 		$this->userSession = $userSession;
@@ -224,6 +226,7 @@ class SettingsManager implements ISettingsManager {
 				new Section('additional', $this->l->t('Additional'), -10, 'more'),
 			];
 		}
+		return [];
 	}
 
 	/**
@@ -260,6 +263,7 @@ class SettingsManager implements ISettingsManager {
 				Quota::class
 			];
 		}
+		return [];
 	}
 
 	/**
@@ -284,14 +288,16 @@ class SettingsManager implements ISettingsManager {
 			Cors::class => new Cors(
 				$this->userSession,
 				$this->urlGenerator,
-				$this->config),
+				$this->config
+			),
 			Quota::class => new Quota($this->helper),
 			// Admin
 			BackgroundJobs::class => new BackgroundJobs($this->config),
 			Certificates::class => new Certificates(
 				$this->config,
 				$this->urlGenerator,
-				$this->certificateManager),
+				$this->certificateManager
+			),
 			Encryption::class => new Encryption(),
 			FileSharing::class => new FileSharing($this->config, $this->helper, $this->lfactory),
 			Logging::class => new Logging($this->config, $this->urlGenerator, $this->helper),
@@ -302,7 +308,8 @@ class SettingsManager implements ISettingsManager {
 				$this->config,
 				$this->dbconnection,
 				$this->helper,
-				$this->lockingProvider),
+				$this->lockingProvider
+			),
 			Tips::class => new Tips(),
 			LegacyAdmin::class => new LegacyAdmin($this->helper),
 			Apps::class => new Apps($this->config),
@@ -373,7 +380,7 @@ class SettingsManager implements ISettingsManager {
 	 * Attempts to load a ISettings using the class name
 	 * @param string $className
 	 * @throws QueryException
-	 * @return ISettings
+	 * @return ISettings|false
 	 */
 	protected function loadPanel($className) {
 		try {
@@ -383,7 +390,9 @@ class SettingsManager implements ISettingsManager {
 			if (!$panel instanceof ISettings) {
 				$this->log->error(
 					'Class: {class} not an instance of OCP\Settings\ISettings',
-					['class' => $className]);
+					['class' => $className]
+				);
+				return false;
 			} else {
 				return $panel;
 			}
@@ -393,7 +402,8 @@ class SettingsManager implements ISettingsManager {
 				[
 					'class' => $className,
 					'error' => $e->getMessage()
-				]);
+				]
+			);
 			throw $e;
 		}
 	}
@@ -418,10 +428,11 @@ class SettingsManager implements ISettingsManager {
 			// Attempt to load the panel
 			try {
 				$panel = $this->loadPanel($panelClassName);
-				$section = $this->loadSection($type, $panel->getSectionID());
-				$this->panels[$type][$section->getID()][] = $panel;
-				$this->sections[$type][$section->getID()] = $section;
-				// Now try and initialise the ISection from the panel
+				if ($panel !== false) {
+					$section = $this->loadSection($type, $panel->getSectionID());
+					$this->panels[$type][$section->getID()][] = $panel;
+					$this->sections[$type][$section->getID()] = $section;
+				}
 			} catch (QueryException $e) {
 				// Just skip this panel, either its section or panel could not be loaded
 			}

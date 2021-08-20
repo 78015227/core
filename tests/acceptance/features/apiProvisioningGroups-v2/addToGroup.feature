@@ -163,7 +163,7 @@ Feature: add users to group
     And the HTTP status code should be "400"
     And the API should not return any data
 
-  @skipOnLDAP
+  @skipOnLDAP @notToImplementOnOCIS
   Scenario: subadmin adds users to groups the subadmin is responsible for
     Given these users have been created with default attributes and without skeleton files:
       | username       |
@@ -176,7 +176,7 @@ Feature: add users to group
     And the HTTP status code should be "403"
     And user "brand-new-user" should not belong to group "brand-new-group"
 
-  @skipOnLDAP
+  @skipOnLDAP @notToImplementOnOCIS
   Scenario: subadmin tries to add user to groups the subadmin is not responsible for
     Given these users have been created with default attributes and without skeleton files:
       | username         |
@@ -189,6 +189,22 @@ Feature: add users to group
     Then the OCS status code should be "403"
     And the HTTP status code should be "403"
     And user "brand-new-user" should not belong to group "brand-new-group"
+
+  @skipOnLDAP @skipOnOcV10.6 @skipOnOcV10.7 @skipOnOcV10.8.0 @notToImplementOnOCIS
+  Scenario: a subadmin can add users to other groups the subadmin is responsible for
+    Given these users have been created with default attributes and without skeleton files:
+      | username         |
+      | brand-new-user   |
+      | another-subadmin |
+    And group "brand-new-group" has been created
+    And group "another-new-group" has been created
+    And user "brand-new-user" has been added to group "brand-new-group"
+    And user "another-subadmin" has been made a subadmin of group "brand-new-group"
+    And user "another-subadmin" has been made a subadmin of group "another-new-group"
+    When user "another-subadmin" tries to add user "brand-new-user" to group "another-new-group" using the provisioning API
+    Then the OCS status code should be "200"
+    And the HTTP status code should be "200"
+    And user "brand-new-user" should belong to group "brand-new-group"
 
   # merge this with scenario on line 62 once the issue is fixed
   @issue-31015 @skipOnLDAP @toImplementOnOCIS @issue-product-284

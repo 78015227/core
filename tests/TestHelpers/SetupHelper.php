@@ -57,6 +57,7 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 	 *
 	 * @param string $userName
 	 * @param string $password
+	 * @param string $xRequestId
 	 * @param string $displayName
 	 * @param string $email
 	 *
@@ -65,6 +66,7 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 	public static function createUser(
 		$userName,
 		$password,
+		$xRequestId = '',
 		$displayName = null,
 		$email = null
 	) {
@@ -76,18 +78,28 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 			$occCommand = \array_merge($occCommand, ["--email", $email]);
 		}
 		\putenv("OC_PASS=" . $password);
-		return self::runOcc(\array_merge($occCommand, [$userName]));
+		return self::runOcc(
+			\array_merge($occCommand, [$userName]),
+			$xRequestId
+		);
 	}
 
 	/**
 	 * deletes a user
 	 *
 	 * @param string $userName
+	 * @param string $xRequestId
 	 *
 	 * @return string[] associated array with "code", "stdOut", "stdErr"
 	 */
-	public static function deleteUser($userName) {
-		return self::runOcc(['user:delete', $userName]);
+	public static function deleteUser(
+		$userName,
+		$xRequestId = ''
+	) {
+		return self::runOcc(
+			['user:delete', $userName],
+			$xRequestId
+		);
 	}
 
 	/**
@@ -96,14 +108,20 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 	 * @param string $app
 	 * @param string $key
 	 * @param string $value
+	 * @param string $xRequestId
 	 *
 	 * @return string[]
 	 */
 	public static function changeUserSetting(
-		$userName, $app, $key, $value
+		$userName,
+		$app,
+		$key,
+		$value,
+		$xRequestId = ''
 	) {
 		return self::runOcc(
-			['user:setting', '--value ' . $value, $userName, $app, $key]
+			['user:setting', '--value ' . $value, $userName, $app, $key],
+			$xRequestId
 		);
 	}
 
@@ -111,11 +129,18 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 	 * creates a group
 	 *
 	 * @param string $groupName
+	 * @param string $xRequestId
 	 *
 	 * @return string[] associated array with "code", "stdOut", "stdErr"
 	 */
-	public static function createGroup($groupName) {
-		return self::runOcc(['group:add', $groupName]);
+	public static function createGroup(
+		$groupName,
+		$xRequestId = ''
+	) {
+		return self::runOcc(
+			['group:add', $groupName],
+			$xRequestId
+		);
 	}
 
 	/**
@@ -123,12 +148,18 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 	 *
 	 * @param string $groupName
 	 * @param string $userName
+	 * @param string $xRequestId
 	 *
 	 * @return string[] associated array with "code", "stdOut", "stdErr"
 	 */
-	public static function addUserToGroup($groupName, $userName) {
+	public static function addUserToGroup(
+		$groupName,
+		$userName,
+		$xRequestId = ''
+	) {
 		return self::runOcc(
-			['group:add-member', '--member', $userName, $groupName]
+			['group:add-member', '--member', $userName, $groupName],
+			$xRequestId
 		);
 	}
 
@@ -137,12 +168,18 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 	 *
 	 * @param string $groupName
 	 * @param string $userName
+	 * @param string $xRequestId
 	 *
 	 * @return string[] associated array with "code", "stdOut", "stdErr"
 	 */
-	public static function removeUserFromGroup($groupName, $userName) {
+	public static function removeUserFromGroup(
+		$groupName,
+		$userName,
+		$xRequestId = ''
+	) {
 		return self::runOcc(
-			['group:remove-member', '--member', $userName, $groupName]
+			['group:remove-member', '--member', $userName, $groupName],
+			$xRequestId
 		);
 	}
 
@@ -150,20 +187,34 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 	 * deletes a group
 	 *
 	 * @param string $groupName
+	 * @param string $xRequestId
 	 *
 	 * @return string[] associated array with "code", "stdOut", "stdErr"
 	 */
-	public static function deleteGroup($groupName) {
-		return self::runOcc(['group:delete', $groupName]);
+	public static function deleteGroup(
+		$groupName,
+		$xRequestId = ''
+	) {
+		return self::runOcc(
+			['group:delete', $groupName],
+			$xRequestId
+		);
 	}
 
 	/**
 	 *
+	 * @param string $xRequestId
+	 *
 	 * @return string[]
 	 */
-	public static function getGroups() {
+	public static function getGroups(
+		$xRequestId = ''
+	) {
 		return \json_decode(
-			self::runOcc(['group:list', '--output=json'])['stdOut']
+			self::runOcc(
+				['group:list', '--output=json'],
+				$xRequestId
+			)['stdOut']
 		);
 	}
 	/**
@@ -199,7 +250,10 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 	 * @return void
 	 */
 	public static function init(
-		$adminUsername, $adminPassword, $baseUrl, $ocPath
+		$adminUsername,
+		$adminPassword,
+		$baseUrl,
+		$ocPath
 	) {
 		foreach (\func_get_args() as $variableToCheck) {
 			if (!\is_string($variableToCheck)) {
@@ -235,16 +289,24 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 	 * @param string $baseUrl
 	 * @param string $adminUsername
 	 * @param string $adminPassword
+	 * @param string $xRequestId
 	 *
 	 * @return SimpleXMLElement
 	 * @throws Exception
 	 */
 	public static function getSysInfo(
-		$baseUrl, $adminUsername, $adminPassword
+		$baseUrl,
+		$adminUsername,
+		$adminPassword,
+		$xRequestId = ''
 	) {
 		$result = OcsApiHelper::sendRequest(
-			$baseUrl, $adminUsername, $adminPassword, "GET",
-			"/apps/testing/api/v1/sysinfo"
+			$baseUrl,
+			$adminUsername,
+			$adminPassword,
+			"GET",
+			"/apps/testing/api/v1/sysinfo",
+			$xRequestId
 		);
 		if ($result->getStatusCode() !== 200) {
 			throw new \Exception(
@@ -259,15 +321,22 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 	 * @param string $baseUrl
 	 * @param string $adminUsername
 	 * @param string $adminPassword
+	 * @param string $xRequestId
 	 *
 	 * @return string
 	 * @throws Exception
 	 */
 	public static function getServerRoot(
-		$baseUrl, $adminUsername, $adminPassword
+		$baseUrl,
+		$adminUsername,
+		$adminPassword,
+		$xRequestId = ''
 	) {
 		$sysInfo = self::getSysInfo(
-			$baseUrl, $adminUsername, $adminPassword
+			$baseUrl,
+			$adminUsername,
+			$adminPassword,
+			$xRequestId
 		);
 		return $sysInfo->server_root;
 	}
@@ -338,6 +407,7 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 	/**
 	 *
 	 * @param string $dirPathFromServerRoot e.g. 'apps2/myapp/appinfo'
+	 * @param string $xRequestId
 	 * @param string|null $baseUrl
 	 * @param string|null $adminUsername
 	 * @param string|null $adminPassword
@@ -347,6 +417,7 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 	 */
 	public static function mkDirOnServer(
 		$dirPathFromServerRoot,
+		$xRequestId = '',
 		$baseUrl = null,
 		$adminUsername = null,
 		$adminPassword = null
@@ -355,8 +426,12 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 		$adminUsername = self::checkAdminUsername($adminUsername, "mkDirOnServer");
 		$adminPassword = self::checkAdminPassword($adminPassword, "mkDirOnServer");
 		$result = OcsApiHelper::sendRequest(
-			$baseUrl, $adminUsername, $adminPassword, "POST",
+			$baseUrl,
+			$adminUsername,
+			$adminPassword,
+			"POST",
 			"/apps/testing/api/v1/dir",
+			$xRequestId,
 			['dir' => $dirPathFromServerRoot]
 		);
 
@@ -370,6 +445,7 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 	/**
 	 *
 	 * @param string $dirPathFromServerRoot e.g. 'apps2/myapp/appinfo'
+	 * @param string $xRequestId
 	 * @param string|null $baseUrl
 	 * @param string|null $adminUsername
 	 * @param string|null $adminPassword
@@ -379,6 +455,7 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 	 */
 	public static function rmDirOnServer(
 		$dirPathFromServerRoot,
+		$xRequestId = '',
 		$baseUrl = null,
 		$adminUsername = null,
 		$adminPassword = null
@@ -387,8 +464,12 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 		$adminUsername = self::checkAdminUsername($adminUsername, "rmDirOnServer");
 		$adminPassword = self::checkAdminPassword($adminPassword, "rmDirOnServer");
 		$result = OcsApiHelper::sendRequest(
-			$baseUrl, $adminUsername, $adminPassword, "DELETE",
+			$baseUrl,
+			$adminUsername,
+			$adminPassword,
+			"DELETE",
 			"/apps/testing/api/v1/dir",
+			$xRequestId,
 			['dir' => $dirPathFromServerRoot]
 		);
 
@@ -403,6 +484,7 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 	 *
 	 * @param string $filePathFromServerRoot e.g. 'app2/myapp/appinfo/info.xml'
 	 * @param string $content
+	 * @param string $xRequestId
 	 * @param string|null $baseUrl
 	 * @param string|null $adminUsername
 	 * @param string|null $adminPassword
@@ -413,6 +495,7 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 	public static function createFileOnServer(
 		$filePathFromServerRoot,
 		$content,
+		$xRequestId = '',
 		$baseUrl = null,
 		$adminUsername = null,
 		$adminPassword = null
@@ -421,8 +504,12 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 		$adminUsername = self::checkAdminUsername($adminUsername, "createFileOnServer");
 		$adminPassword = self::checkAdminPassword($adminPassword, "createFileOnServer");
 		$result = OcsApiHelper::sendRequest(
-			$baseUrl, $adminUsername, $adminPassword, "POST",
+			$baseUrl,
+			$adminUsername,
+			$adminPassword,
+			"POST",
 			"/apps/testing/api/v1/file",
+			$xRequestId,
 			[
 				'file' => $filePathFromServerRoot,
 				'content' => $content
@@ -439,6 +526,7 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 	/**
 	 *
 	 * @param string $filePathFromServerRoot e.g. 'app2/myapp/appinfo/info.xml'
+	 * @param string $xRequestId
 	 * @param string|null $baseUrl
 	 * @param string|null $adminUsername
 	 * @param string|null $adminPassword
@@ -448,6 +536,7 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 	 */
 	public static function deleteFileOnServer(
 		$filePathFromServerRoot,
+		$xRequestId = '',
 		$baseUrl = null,
 		$adminUsername = null,
 		$adminPassword = null
@@ -456,8 +545,12 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 		$adminUsername = self::checkAdminUsername($adminUsername, "deleteFileOnServer");
 		$adminPassword = self::checkAdminPassword($adminPassword, "deleteFileOnServer");
 		$result = OcsApiHelper::sendRequest(
-			$baseUrl, $adminUsername, $adminPassword, "DELETE",
+			$baseUrl,
+			$adminUsername,
+			$adminPassword,
+			"DELETE",
 			"/apps/testing/api/v1/file",
+			$xRequestId,
 			[
 				'file' => $filePathFromServerRoot
 			]
@@ -472,6 +565,7 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 
 	/**
 	 * @param string $fileInCore e.g. 'app2/myapp/appinfo/info.xml'
+	 * @param string $xRequestId
 	 * @param string|null $baseUrl
 	 * @param string|null $adminUsername
 	 * @param string|null $adminPassword
@@ -481,16 +575,19 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 	 */
 	public static function readFileFromServer(
 		$fileInCore,
+		$xRequestId = '',
 		$baseUrl  = null,
 		$adminUsername = null,
 		$adminPassword = null
 	) {
 		$baseUrl = self::checkBaseUrl($baseUrl, "readFile");
 		$adminUsername = self::checkAdminUsername(
-			$adminUsername, "readFile"
+			$adminUsername,
+			"readFile"
 		);
 		$adminPassword = self::checkAdminPassword(
-			$adminPassword, "readFile"
+			$adminPassword,
+			"readFile"
 		);
 
 		$response = OcsApiHelper::sendRequest(
@@ -498,7 +595,8 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 			$adminUsername,
 			$adminPassword,
 			'GET',
-			"/apps/testing/api/v1/file?file={$fileInCore}"
+			"/apps/testing/api/v1/file?file={$fileInCore}",
+			$xRequestId
 		);
 		self::assertSame(
 			200,
@@ -514,6 +612,7 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 	 * returns the content of a file in a skeleton folder
 	 *
 	 * @param string $fileInSkeletonFolder
+	 * @param string $xRequestId
 	 * @param string|null $baseUrl
 	 * @param string|null $adminUsername
 	 * @param string|null $adminPassword
@@ -522,21 +621,25 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 	 */
 	public static function readSkeletonFile(
 		$fileInSkeletonFolder,
+		$xRequestId = '',
 		$baseUrl = null,
 		$adminUsername = null,
 		$adminPassword = null
 	) {
 		$baseUrl = self::checkBaseUrl($baseUrl, "readSkeletonFile");
 		$adminUsername = self::checkAdminUsername(
-			$adminUsername, "readSkeletonFile"
+			$adminUsername,
+			"readSkeletonFile"
 		);
 		$adminPassword = self::checkAdminPassword(
-			$adminPassword, "readSkeletonFile"
+			$adminPassword,
+			"readSkeletonFile"
 		);
 
 		//find the absolute path of the currently set skeletondirectory
 		$occResponse = self::runOcc(
 			['config:system:get', 'skeletondirectory'],
+			$xRequestId,
 			$adminUsername,
 			$adminPassword,
 			$baseUrl
@@ -554,7 +657,8 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 			$adminUsername,
 			$adminPassword,
 			'GET',
-			"/apps/testing/api/v1/file?file={$fileInSkeletonFolder}&absolute=true"
+			"/apps/testing/api/v1/file?file={$fileInSkeletonFolder}&absolute=true",
+			$xRequestId
 		);
 		self::assertSame(
 			200,
@@ -571,33 +675,54 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 	 * enables an app
 	 *
 	 * @param string $appName
+	 * @param string $xRequestId
 	 *
 	 * @return string[] associated array with "code", "stdOut", "stdErr"
 	 */
-	public static function enableApp($appName) {
-		return self::runOcc(['app:enable', $appName]);
+	public static function enableApp(
+		$appName,
+		$xRequestId = ''
+	) {
+		return self::runOcc(
+			['app:enable', $appName],
+			$xRequestId
+		);
 	}
 
 	/**
 	 * disables an app
 	 *
 	 * @param string $appName
+	 * @param string $xRequestId
 	 *
 	 * @return string[] associated array with "code", "stdOut", "stdErr"
 	 */
-	public static function disableApp($appName) {
-		return self::runOcc(['app:disable', $appName]);
+	public static function disableApp(
+		$appName,
+		$xRequestId = ''
+	) {
+		return self::runOcc(
+			['app:disable', $appName],
+			$xRequestId
+		);
 	}
 
 	/**
 	 * checks if an app is currently enabled
 	 *
 	 * @param string $appName
+	 * @param string $xRequestId
 	 *
 	 * @return bool true if enabled, false if disabled or not existing
 	 */
-	public static function isAppEnabled($appName) {
-		$result = self::runOcc(['app:list', '^' . $appName . '$']);
+	public static function isAppEnabled(
+		$appName,
+		$xRequestId = ''
+	) {
+		$result = self::runOcc(
+			['app:list', '^' . $appName . '$'],
+			$xRequestId
+		);
 		return \strtolower(\substr($result['stdOut'], 0, 7)) === 'enabled';
 	}
 
@@ -605,12 +730,19 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 	 * lists app status (enabled or disabled)
 	 *
 	 * @param string $appName
+	 * @param string $xRequestId
 	 *
 	 * @return bool true if the app needed to be enabled, false otherwise
 	 */
-	public static function enableAppIfNotEnabled($appName) {
-		if (!self::isAppEnabled($appName)) {
-			self::enableApp($appName);
+	public static function enableAppIfNotEnabled(
+		$appName,
+		$xRequestId = ''
+	) {
+		if (!self::isAppEnabled($appName, $xRequestId)) {
+			self::enableApp(
+				$appName,
+				$xRequestId
+			);
 			return true;
 		}
 
@@ -621,6 +753,7 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 	 * Runs a list of occ commands at once
 	 *
 	 * @param Array $commands
+	 * @param string $xRequestId
 	 * @param string|null $adminUsername
 	 * @param string|null $adminPassword
 	 * @param string|null $baseUrl
@@ -629,6 +762,7 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 	 */
 	public static function runBulkOcc(
 		$commands,
+		$xRequestId = '',
 		$adminUsername = null,
 		$adminPassword = null,
 		$baseUrl = null
@@ -663,8 +797,13 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 		}
 		try {
 			$result = OcsApiHelper::sendRequest(
-				$baseUrl, $adminUsername, $adminPassword,
-				"POST", "/apps/testing/api/v1/occ/bulk?format=json", \json_encode($bodies)
+				$baseUrl,
+				$adminUsername,
+				$adminPassword,
+				"POST",
+				"/apps/testing/api/v1/occ/bulk?format=json",
+				$xRequestId,
+				\json_encode($bodies)
 			);
 		} catch (ServerException $e) {
 			throw new Exception(
@@ -683,6 +822,7 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 	 *
 	 * @param array $args anything behind "occ".
 	 *                    For example: "files:transfer-ownership"
+	 * @param string $xRequestId
 	 * @param string|null $adminUsername
 	 * @param string|null $adminPassword
 	 * @param string|null $baseUrl
@@ -694,6 +834,7 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 	 */
 	public static function runOcc(
 		$args,
+		$xRequestId = '',
 		$adminUsername = null,
 		$adminPassword = null,
 		$baseUrl = null,
@@ -730,8 +871,13 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 
 		try {
 			$result = OcsApiHelper::sendRequest(
-				$baseUrl, $adminUsername, $adminPassword,
-				"POST", $ocPath, $body
+				$baseUrl,
+				$adminUsername,
+				$adminPassword,
+				"POST",
+				$ocPath,
+				$xRequestId,
+				$body
 			);
 		} catch (ServerException $e) {
 			throw new Exception(
@@ -798,7 +944,12 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 		$return['code'] = $return['code'][0]->__toString();
 		$return['stdOut'] = $return['stdOut'][0]->__toString();
 		$return['stdErr'] = $return['stdErr'][0]->__toString();
-		self::resetOpcache($baseUrl, $adminUsername, $adminPassword);
+		self::resetOpcache(
+			$baseUrl,
+			$adminUsername,
+			$adminPassword,
+			$xRequestId
+		);
 		return $return;
 	}
 
@@ -806,18 +957,24 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 	 * @param string $baseUrl
 	 * @param string $user
 	 * @param string $password
+	 * @param string $xRequestId
 	 *
 	 * @return ResponseInterface
 	 */
 	public static function resetOpcache(
 		$baseUrl,
 		$user,
-		$password
+		$password,
+		$xRequestId = ''
 	) {
 		try {
 			return OcsApiHelper::sendRequest(
-				$baseUrl, $user,
-				$password, "DELETE", "/apps/testing/api/v1/opcache"
+				$baseUrl,
+				$user,
+				$password,
+				"DELETE",
+				"/apps/testing/api/v1/opcache",
+				$xRequestId
 			);
 		} catch (ServerException $e) {
 			echo "could not reset opcache, if tests fail try to set " .
@@ -829,17 +986,25 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 	 * Create local storage mount
 	 *
 	 * @param string $mount (name of local storage mount)
+	 * @param string $xRequestId
 	 *
 	 * @return string[] associated array with "code", "stdOut", "stdErr", "storageId"
 	 */
-	public static function createLocalStorageMount($mount) {
+	public static function createLocalStorageMount(
+		$mount,
+		$xRequestId = ''
+	) {
 		$mountPath = TEMPORARY_STORAGE_DIR_ON_REMOTE_SERVER . "/$mount";
-		SetupHelper::mkDirOnServer($mountPath);
+		SetupHelper::mkDirOnServer(
+			$mountPath,
+			$xRequestId
+		);
 		// files_external:create requires absolute path
 		$serverRoot = self::getServerRoot(
 			self::$baseUrl,
 			self::$adminUsername,
-			self::$adminPassword
+			self::$adminPassword,
+			$xRequestId
 		);
 		$result = self::runOcc(
 			[
@@ -849,7 +1014,8 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 				'null::null',
 				'-c',
 				'datadir=' . $serverRoot . '/' . $mountPath
-			]
+			],
+			$xRequestId
 		);
 		// stdOut should have a string like "Storage created with id 65"
 		$storageIdWords = \explode(" ", \trim($result['stdOut']));
@@ -862,6 +1028,7 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 	 * error output.
 	 *
 	 * @param string $key
+	 * @param string $xRequestId
 	 * @param string|null $output e.g. json
 	 * @param string|null $adminUsername
 	 * @param string|null $adminPassword
@@ -873,6 +1040,7 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 	 */
 	public static function getSystemConfig(
 		$key,
+		$xRequestId = '',
 		$output = null,
 		$adminUsername = null,
 		$adminPassword = null,
@@ -892,6 +1060,7 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 
 		return self::runOcc(
 			$args,
+			$xRequestId,
 			$adminUsername,
 			$adminPassword,
 			$baseUrl,
@@ -904,6 +1073,7 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 	 *
 	 * @param string $key
 	 * @param string $value
+	 * @param string $xRequestId
 	 * @param string|null $type e.g. boolean or json
 	 * @param string|null $output e.g. json
 	 * @param string|null $adminUsername
@@ -917,6 +1087,7 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 	public static function setSystemConfig(
 		$key,
 		$value,
+		$xRequestId = '',
 		$type = null,
 		$output = null,
 		$adminUsername = null,
@@ -946,6 +1117,7 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 		}
 		return self::runOcc(
 			$args,
+			$xRequestId,
 			$adminUsername,
 			$adminPassword,
 			$baseUrl,
@@ -957,6 +1129,7 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 	 * Get the value of a system config setting
 	 *
 	 * @param string $key
+	 * @param string $xRequestId
 	 * @param string|null $output e.g. json
 	 * @param string|null $adminUsername
 	 * @param string|null $adminPassword
@@ -968,6 +1141,7 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 	 */
 	public static function getSystemConfigValue(
 		$key,
+		$xRequestId = '',
 		$output = null,
 		$adminUsername = null,
 		$adminPassword = null,
@@ -979,6 +1153,7 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 		}
 		return self::getSystemConfig(
 			$key,
+			$xRequestId,
 			$output,
 			$adminUsername,
 			$adminPassword,
@@ -1009,6 +1184,7 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 	 * Delete a system config setting
 	 *
 	 * @param string $key
+	 * @param string $xRequestId
 	 * @param string|null $adminUsername
 	 * @param string|null $adminPassword
 	 * @param string|null $baseUrl
@@ -1019,6 +1195,7 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 	 */
 	public static function deleteSystemConfig(
 		$key,
+		$xRequestId = '',
 		$adminUsername = null,
 		$adminPassword = null,
 		$baseUrl = null,
@@ -1034,6 +1211,7 @@ class SetupHelper extends \PHPUnit\Framework\Assert {
 		}
 		return SetupHelper::runOcc(
 			$args,
+			$xRequestId,
 			$adminUsername,
 			$adminPassword,
 			$baseUrl,

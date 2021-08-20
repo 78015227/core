@@ -33,7 +33,7 @@ use OCP\Files\External\IStorageConfig;
 class GlobalStoragesServiceTest extends StoragesServiceTest {
 	public function setUp(): void {
 		parent::setUp();
-		$this->service = new GlobalStoragesService($this->backendService, $this->dbConfig, $this->mountCache);
+		$this->service = new GlobalStoragesService($this->backendService, $this->dbConfig, $this->mountCache, $this->crypto);
 	}
 
 	public function tearDown(): void {
@@ -448,7 +448,8 @@ class GlobalStoragesServiceTest extends StoragesServiceTest {
 		$sourceApplicableGroups,
 		$updatedApplicableUsers,
 		$updatedApplicableGroups,
-		$expectedCalls) {
+		$expectedCalls
+	) {
 		$storage = $this->makeTestStorageData();
 		$storage->setApplicableUsers($sourceApplicableUsers);
 		$storage->setApplicableGroups($sourceApplicableGroups);
@@ -606,7 +607,8 @@ class GlobalStoragesServiceTest extends StoragesServiceTest {
 	public function testHooksDeleteStorage(
 		$sourceApplicableUsers,
 		$sourceApplicableGroups,
-		$expectedCalls) {
+		$expectedCalls
+	) {
 		$storage = $this->makeTestStorageData();
 		$storage->setApplicableUsers($sourceApplicableUsers);
 		$storage->setApplicableGroups($sourceApplicableGroups);

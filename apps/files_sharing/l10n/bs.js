@@ -2,11 +2,13 @@ OC.L10N.register(
     "files_sharing",
     {
     "Cancel" : "Odustani",
+    "Add" : "Dodaj",
     "Share" : "Dijeli",
     "Pending" : "Na čekanju",
     "Shared by" : "Dijeli",
     "Sharing" : "Dijeljenje",
     "Password" : "Lozinka",
+    "Proceed" : "Nastavi",
     "Name" : "Ime",
     "Expiration date" : "Datum isteka",
     "Download" : "Preuzmite"

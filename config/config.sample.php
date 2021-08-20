@@ -264,10 +264,11 @@ $CONFIG = [
 /**
  * Define how to relax same site cookie settings
  *
- * Possible values: Strict, Lax or None
- * Setting the same site cookie to None is necessary in case of OpenID Connect.
+ * Possible values: `Strict`, `Lax` or `None`.
+ * Setting the same site cookie to `None` is necessary in case of OpenID Connect.
  * For more information about the impact of the values see:
- * https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite#values
+ * https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite#values and
+ * https://web.dev/schemeful-samesite/
  */
 
 'http.cookie.samesite' => 'Strict',
@@ -480,14 +481,24 @@ $CONFIG = [
 
 /**
  * Define the Web base URL
- * If web.baseUrl is set, public and private links will be redirected to this url.
- * Web will handle these links accordingly.
+ *
+ * This key is necessary for the navigation item to the new ownCloud Web UI and for redirecting
+ * public and private links.
+ */
+'web.baseUrl' => '',
+
+/**
+ * Define rewrite private and public links
+ *
+ * Rewrite private and public links to the new ownCloud Web UI (if available).
+ * If web.rewriteLinks is set to 'true', public and private links will be redirected to this url.
+ * The Web UI will handle these links accordingly.
  *
  * As an example, in case 'web.baseUrl' is set to 'http://web.example.com',
  * the shared link 'http://ocx.example.com/index.php/s/THoQjwYYMJvXMdW' will be redirected
  * by ownCloud to 'http://web.example.com/index.html#/s/THoQjwYYMJvXMdW'.
  */
-'web.baseUrl' => '',
+'web.rewriteLinks' => false,
 
 /**
  * Define clean URLs without `/index.php`
@@ -579,6 +590,45 @@ $CONFIG = [
 'trashbin_purge_limit' => 50,
 
 /**
+ * Define trashbin directory skip list
+ * Define a list of directories that will skip the trashbin and therefore be deleted immediately.
+ * Only defined directories and only in the root of a mount will skip the trashbin.
+ * Consider not to use reserved directory names when using snapshot capable storage systems.
+ * The setting expects folder names with or without trailing slash.
+ * All the content of such directories including their subdirectories will also skip the trashbin.
+ *
+ */
+'trashbin_skip_directories' => [
+	'temp',
+],
+
+/**
+ * Define trashbin file extension skip list
+ * Define a list of file extensions to determine files that will skip the trashbin and therefore be deleted immediately.
+ * Extension names are valid for all mount points, take care when selecting the names.
+ *
+ * Values must not have a leading ".", otherwise corresponding files wont be detected.
+ * Values are case insensitive
+ *
+ */
+'trashbin_skip_extensions' => [
+	'iso',
+	'mkv',
+],
+
+/**
+ * Define trashbin threshold size
+ * Define a threshold for files to skip the trashbin and delete immediately
+ * Once the size of a resource is greater than or equal the given value, the trashbin will be skipped.
+ * File sizes are valid for all mount points, take care when defining the threshold.
+ *
+ * All positive numbers and zero is allowed. Append one of the following options directly and without space:
+ * B, K, KB, MB, M, GB, G, TB, T, PB, P
+ *
+ */
+'trashbin_skip_size_threshold' => "1GB",
+
+/**
  * File versions
  *
  * These parameters control the Versions app.
@@ -602,7 +652,7 @@ $CONFIG = [
  *
  * * `auto`
  *     default setting. Automatically expire versions according to expire
- *     rules. Please refer to https://doc.owncloud.org/server/latestadmin_manual/configuration/files/file_versioning.html
+ *     rules. Please refer to https://doc.owncloud.com/server/latest/admin_manual/configuration/files/file_versioning.html
  *    for more information.
  * * `D, auto`
  *     keep versions at least for D days, apply expire rules to all versions
@@ -904,9 +954,9 @@ $CONFIG = [
 
 /**
  * Define preview providers
- * Only register providers that have been explicitly enabled
+ * Show thumbnails for register providers that have been explicitly enabled.
  *
- * The following providers are enabled by default:
+ * The following providers are enabled by default if no other providers are selected:
  *
  *  - OC\Preview\PNG
  *  - OC\Preview\JPEG
@@ -917,33 +967,12 @@ $CONFIG = [
  *  - OC\Preview\MP3
  *  - OC\Preview\TXT
  *
- * The following providers are disabled by default due to performance or privacy
- * concerns:
- *
- *  - OC\Preview\Illustrator
- *  - OC\Preview\Movie
- *  - OC\Preview\MSOffice2003
- *  - OC\Preview\MSOffice2007
- *  - OC\Preview\MSOfficeDoc
- *  - OC\Preview\OpenDocument
- *  - OC\Preview\PDF
- *  - OC\Preview\Photoshop
- *  - OC\Preview\Postscript
- *  - OC\Preview\StarOffice
- *  - OC\Preview\SVG
- *  - OC\Preview\TIFF
- *  - OC\Preview\Font
- *
- * The following providers are not available in Microsoft Windows:
- *
- *  - OC\Preview\Movie
- *  - OC\Preview\MSOfficeDoc
- *  - OC\Preview\MSOffice2003
- *  - OC\Preview\MSOffice2007
- *  - OC\Preview\OpenDocument
- *  - OC\Preview\StarOffice
+ * See the Previews Configuration documentation for more details.
  */
 'enabledPreviewProviders' => [
+	'OC\Preview\PDF',
+	'OC\Preview\SGI',
+	'OC\Preview\Heic',
 	'OC\Preview\PNG',
 	'OC\Preview\JPEG',
 	'OC\Preview\GIF',
@@ -1099,6 +1128,7 @@ $CONFIG = [
 	'timeout' => 0.0,
 	'read_timeout' => 0.0,
 	'failover_mode' => \RedisCluster::FAILOVER_DISTRIBUTE,
+	'password' => '', // Optional, if not defined no password will be used.
 	 // Optional config option
 	 // In order to use connection_parameters php-redis extension >= 5.3.0 is required
 	 // In order to use SSL/TLS redis server >= 6.0 is required

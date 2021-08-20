@@ -41,6 +41,7 @@ class UploadHelper extends \PHPUnit\Framework\Assert {
 	 * @param string $password
 	 * @param string $source
 	 * @param string $destination
+	 * @param string $xRequestId
 	 * @param array  $headers
 	 * @param int    $davPathVersionToUse (1|2)
 	 * @param int    $chunkingVersion     (1|2|null)
@@ -55,6 +56,7 @@ class UploadHelper extends \PHPUnit\Framework\Assert {
 		$password,
 		$source,
 		$destination,
+		$xRequestId = '',
 		$headers = [],
 		$davPathVersionToUse = 1,
 		$chunkingVersion = null,
@@ -71,6 +73,7 @@ class UploadHelper extends \PHPUnit\Framework\Assert {
 				"PUT",
 				$destination,
 				$headers,
+				$xRequestId,
 				$data,
 				$davPathVersionToUse
 			);
@@ -92,6 +95,7 @@ class UploadHelper extends \PHPUnit\Framework\Assert {
 				'MKCOL',
 				$v2ChunksDestination,
 				$headers,
+				$xRequestId,
 				null,
 				$davPathVersionToUse,
 				"uploads"
@@ -118,6 +122,7 @@ class UploadHelper extends \PHPUnit\Framework\Assert {
 				"PUT",
 				$filename,
 				$headers,
+				$xRequestId,
 				$chunk,
 				$davPathVersionToUse,
 				$davRequestType
@@ -139,6 +144,7 @@ class UploadHelper extends \PHPUnit\Framework\Assert {
 				'MOVE',
 				$source,
 				$headers,
+				$xRequestId,
 				null,
 				$davPathVersionToUse,
 				"uploads"
@@ -158,13 +164,22 @@ class UploadHelper extends \PHPUnit\Framework\Assert {
 	 * @param string $password
 	 * @param string $source source file path
 	 * @param string $destination destination path on the server
+	 * @param string $xRequestId
 	 * @param bool $overwriteMode when false creates separate files to test uploading brand new files,
 	 *                            when true it just overwrites the same file over and over again with the same name
+	 * @param string $exceptChunkingType empty string or "old" or "new"
 	 *
 	 * @return array of ResponseInterface
 	 */
 	public static function uploadWithAllMechanisms(
-		$baseUrl, $user, $password, $source, $destination, $overwriteMode = false
+		$baseUrl,
+		$user,
+		$password,
+		$source,
+		$destination,
+		$xRequestId = '',
+		$overwriteMode = false,
+		$exceptChunkingType = ''
 	) {
 		$responses = [];
 		foreach ([1, 2] as $davPathVersion) {
@@ -174,7 +189,22 @@ class UploadHelper extends \PHPUnit\Framework\Assert {
 				$davHuman = 'new';
 			}
 
+			switch ($exceptChunkingType) {
+				case 'old':
+					$exceptChunkingVersion = 1;
+					break;
+				case 'new':
+					$exceptChunkingVersion = 2;
+					break;
+				default:
+					$exceptChunkingVersion = -1;
+					break;
+			}
+
 			foreach ([null, 1, 2] as $chunkingVersion) {
+				if ($chunkingVersion === $exceptChunkingVersion) {
+					continue;
+				}
 				$valid = WebDavHelper::isValidDavChunkingCombination(
 					$davPathVersion,
 					$chunkingVersion
@@ -194,6 +224,7 @@ class UploadHelper extends \PHPUnit\Framework\Assert {
 					$password,
 					$source,
 					$finalDestination,
+					$xRequestId,
 					[],
 					$davPathVersion,
 					$chunkingVersion,
@@ -247,10 +278,12 @@ class UploadHelper extends \PHPUnit\Framework\Assert {
 		}
 		\fclose($file);
 		self::assertEquals(
-			1, \file_exists($name)
+			1,
+			\file_exists($name)
 		);
 		self::assertEquals(
-			$size, \filesize($name)
+			$size,
+			\filesize($name)
 		);
 	}
 
@@ -267,7 +300,8 @@ class UploadHelper extends \PHPUnit\Framework\Assert {
 		\fwrite($file, $text);
 		\fclose($file);
 		self::assertEquals(
-			1, \file_exists($name)
+			1,
+			\file_exists($name)
 		);
 	}
 

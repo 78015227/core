@@ -132,11 +132,13 @@ class Server {
 		$this->server->addPlugin(new BlockLegacyClientPlugin($config));
 		$this->server->addPlugin(new CorsPlugin(OC::$server->getUserSession()));
 		$authPlugin = new Plugin();
+		$isPublicAccess = false;
 		if ($this->isRequestForSubtree(['public-files'])
 		) {
 			$this->server->addPlugin(new PublicFilesPlugin());
 			$authPlugin->addBackend(new PublicSharingAuth($this->server, OC::$server->getShareManager()));
 			$this->server->addPlugin(new PublicLinkEventsPlugin(\OC::$server->getEventDispatcher()));
+			$isPublicAccess = true;
 		}
 		$authPlugin->addBackend(new PublicAuth());
 		$this->server->addPlugin($authPlugin);
@@ -157,9 +159,9 @@ class Server {
 
 		$this->server->addPlugin(new ExceptionLoggerPlugin('webdav', $logger));
 		$this->server->addPlugin(new \Sabre\DAV\Sync\Plugin());
-		$this->server->addPlugin(new LockPlugin());
+		$this->server->addPlugin(new LockPlugin(\OC::$server->getConfig(), \OC::$server->getGroupManager()));
 
-		$fileLocksBackend = new FileLocksBackend($this->server->tree, false, OC::$server->getTimeFactory());
+		$fileLocksBackend = new FileLocksBackend($this->server->tree, false, OC::$server->getTimeFactory(), $isPublicAccess);
 		$this->server->addPlugin(new \OCA\DAV\Connector\Sabre\PublicDavLocksPlugin($fileLocksBackend, function ($uri) {
 			if (\strpos($uri, "public-files/") === 0) {
 				return true;
@@ -274,11 +276,13 @@ class Server {
 
 				if ($view !== null) {
 					$this->server->addPlugin(
-						new QuotaPlugin($view));
+						new QuotaPlugin($view)
+					);
 				}
 				$this->server->addPlugin(
 					new TagsPlugin(
-						$this->server->tree, OC::$server->getTagManager()
+						$this->server->tree,
+						OC::$server->getTagManager()
 					)
 				);
 				// TODO: switch to LazyUserFolder

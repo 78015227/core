@@ -46,6 +46,7 @@ class AdminStorageSettingsPage extends OwncloudPage {
 	protected $newBackendTypeXpath = "//tr[@id='addMountPoint']//select[@id='selectBackend']";
 	protected $newLocationXpath = "//tr[@id='addMountPoint']/preceding-sibling::tr[1]//input[@placeholder='Location']";
 	protected $statusSymbolXpath = "//tr[@id='addMountPoint']/preceding-sibling::tr[1]//td[@class='status']/span";
+	protected $selectAllListElementXpath  = "//div[@id='select2-drop']//li[@class='selectAllApplicableUsers']";
 
 	protected $lastMountApplicableXpath = "//tr[@id='addMountPoint']/preceding-sibling::tr[1]//td[@class='applicable']//li/input";
 	protected $userOrGroupListXpath = "//div[@id='select2-drop']//li[contains(@class, 'select2-result')]";
@@ -131,6 +132,18 @@ class AdminStorageSettingsPage extends OwncloudPage {
 			"could not find select field for backend type"
 		);
 		$newBackendType->selectOption("Local");
+
+		$this->waitForAjaxCallsToStartAndFinish($session);
+
+		$selectAllListElement = $this->find("xpath", $this->selectAllListElementXpath);
+		$this->assertElementNotNull(
+			$selectAllListElement,
+			__METHOD__ .
+			" xpath $this->selectAllListElementXpath " .
+			"could not find select all for available for"
+		);
+		$selectAllListElement->click();
+
 		$newLocation = $this->find("xpath", $this->newLocationXpath);
 		$this->assertElementNotNull(
 			$newLocation,
@@ -193,11 +206,13 @@ class AdminStorageSettingsPage extends OwncloudPage {
 		$applicableUsersList = $this->findAll("xpath", $this->applicableUsersListXpath);
 		for ($i = 1; $i <= \count($applicableUsersList); $i++) {
 			$applicableUser = $this->find(
-				"xpath", \sprintf($this->applicableUserXpath, $i)
+				"xpath",
+				\sprintf($this->applicableUserXpath, $i)
 			);
 			if ($this->getTrimmedText($applicableUser) === \strtolower($user)) {
 				$applicableUserDelete = $this->find(
-					"xpath", \sprintf($this->applicableUserDeleteXpath, $i)
+					"xpath",
+					\sprintf($this->applicableUserDeleteXpath, $i)
 				);
 				$applicableUserDelete->click();
 				$this->waitUntilSuccessOrFailureSymbolAppears();
@@ -218,7 +233,8 @@ class AdminStorageSettingsPage extends OwncloudPage {
 	 */
 	public function deleteLastCreatedLocalMount($session) {
 		$lastCreatedMountDeleteButton = $this->find(
-			"xpath", $this->lastCreatedMountDeleteButtonXpath
+			"xpath",
+			$this->lastCreatedMountDeleteButtonXpath
 		);
 		$this->assertElementNotNull(
 			$lastCreatedMountDeleteButton,
@@ -239,12 +255,14 @@ class AdminStorageSettingsPage extends OwncloudPage {
 	 */
 	public function checkIfLastCreatedMountIsPresent($lastCreatedMountName) {
 		$lastCreatedMountList = $this->findAll(
-			"xpath", $this->lastCreatedMountListXpath
+			"xpath",
+			$this->lastCreatedMountListXpath
 		);
 		$i = 1;
 		foreach ($lastCreatedMountList as $mount) {
 			$mountPointName = $this->find(
-				"xpath", \sprintf($this->mountPointNameXpath, $i)
+				"xpath",
+				\sprintf($this->mountPointNameXpath, $i)
 			);
 			if ($mountPointName->getValue() === $lastCreatedMountName) {
 				return true;
@@ -294,7 +312,8 @@ class AdminStorageSettingsPage extends OwncloudPage {
 	 */
 	public function openMountOptions($session) {
 		$lastCreatedMountOptionsButton = $this->find(
-			"xpath", $this->lastCreatedMountOptionsButtonXpath
+			"xpath",
+			$this->lastCreatedMountOptionsButtonXpath
 		);
 		$this->assertElementNotNull(
 			$lastCreatedMountOptionsButton,
@@ -400,7 +419,8 @@ class AdminStorageSettingsPage extends OwncloudPage {
 	) {
 		$this->waitForAjaxCallsToStartAndFinish($session);
 		$this->waitTillXpathIsVisible(
-			$this->filesExternalFormXpath, $timeout_msec
+			$this->filesExternalFormXpath,
+			$timeout_msec
 		);
 	}
 }

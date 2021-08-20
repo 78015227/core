@@ -2,31 +2,39 @@
 Feature: persistent-locking in case of a public link
 
   Background:
-    Given the administrator has enabled DAV tech_preview
-    And user "Alice" has been created with default attributes and without skeleton files
+    Given user "Alice" has been created with default attributes and without skeleton files
     And user "Alice" has created folder "PARENT"
     And user "Alice" has created folder "PARENT/CHILD"
     And user "Alice" has uploaded file "filesForUpload/textfile.txt" to "PARENT/parent.txt"
     And user "Alice" has uploaded file "filesForUpload/textfile.txt" to "PARENT/CHILD/child.txt"
 
-  @skipOnOcV10 @smokeTest @issue-36064
+  @smokeTest
   Scenario Outline: Uploading a file into a locked public folder
     Given using <dav-path> DAV path
     And user "Alice" has created folder "FOLDER"
     And user "Alice" has created a public link share of folder "FOLDER" with change permission
     When user "Alice" locks folder "FOLDER" using the WebDAV API setting the following properties
       | lockscope | <lock-scope> |
-    Then uploading a file should not work using the old public WebDAV API
-    And uploading a file should not work using the new public WebDAV API
+    Then uploading a file should not work using the <webdav_api_version> public WebDAV API
     And the HTTP status code should be "423"
-    Examples:
-      | dav-path | lock-scope |
-      | old      | shared     |
-      | old      | exclusive  |
-      | new      | shared     |
-      | new      | exclusive  |
 
-  @skipOnOcV10 @issue-36064
+    @notToImplementOnOCIS @issue-ocis-2079
+    Examples:
+      | dav-path | lock-scope | webdav_api_version |
+      | old      | shared     | old                |
+      | old      | exclusive  | old                |
+      | new      | shared     | old                |
+      | new      | exclusive  | old                |
+
+    @skipOnOcV10.6 @skipOnOcV10.7
+    Examples:
+      | dav-path | lock-scope | webdav_api_version |
+      | old      | shared     | new                |
+      | old      | exclusive  | new                |
+      | new      | shared     | new                |
+      | new      | exclusive  | new                |
+
+  @skipOnOcV10.6 @skipOnOcV10.7
   Scenario Outline: Uploading a file into a locked subfolder of a public folder
     Given user "Alice" has created a public link share of folder "PARENT" with change permission
     And user "Alice" has locked folder "PARENT/CHILD" setting the following properties
@@ -41,20 +49,25 @@ Feature: persistent-locking in case of a public link
       | new                       | shared     |
       | new                       | exclusive  |
 
-  @skipOnOcV10 @smokeTest @issue-36064
+  @smokeTest @skipOnOcV10.6 @skipOnOcV10.7
   Scenario Outline: Overwrite a file inside a locked public folder
     Given user "Alice" has created a public link share of folder "PARENT" with change permission
     And user "Alice" has locked folder "PARENT" setting the following properties
       | lockscope | <lock-scope> |
     When the public uploads file "parent.txt" with content "test" using the <public-webdav-api-version> public WebDAV API
     Then the HTTP status code should be "423"
-    And the content of file "/PARENT/parent.txt" for user "Alice" should be "ownCloud test text file parent" plus end-of-line
+    And the content of file "/PARENT/parent.txt" for user "Alice" should be:
+      """
+      This is a testfile.
+
+      Cheers.
+      """
     Examples:
       | public-webdav-api-version | lock-scope |
       | new                       | shared     |
       | new                       | exclusive  |
 
-  @skipOnOcV10 @issue-36064
+  @skipOnOcV10.6 @skipOnOcV10.7
   Scenario Outline: Overwrite a file inside a locked subfolder of a public folder
     Given user "Alice" has created a public link share of folder "PARENT" with change permission
     And user "Alice" has locked folder "PARENT/CHILD" setting the following properties
@@ -63,7 +76,12 @@ Feature: persistent-locking in case of a public link
     And the public uploads file "CHILD/child.txt" with content "test" using the <public-webdav-api-version> public WebDAV API
     Then the HTTP status code should be "423"
     And the content of file "/PARENT/parent.txt" for user "Alice" should be "changed text"
-    But the content of file "/PARENT/CHILD/child.txt" for user "Alice" should be "ownCloud test text file child" plus end-of-line
+    But the content of file "/PARENT/CHILD/child.txt" for user "Alice" should be:
+      """
+      This is a testfile.
+
+      Cheers.
+      """
     Examples:
       | public-webdav-api-version | lock-scope |
       | new                       | shared     |
@@ -76,9 +94,15 @@ Feature: persistent-locking in case of a public link
       | lockscope | <lock-scope> |
     Then the HTTP status code should be "405"
     And the value of the item "//s:message" in the response should be "Locking not allowed from public endpoint"
+
+    @notToImplementOnOCIS @issue-ocis-2079
     Examples:
       | public-webdav-api-version | lock-scope |
       | old                       | shared     |
       | old                       | exclusive  |
+
+
+    Examples:
+      | public-webdav-api-version | lock-scope |
       | new                       | shared     |
       | new                       | exclusive  |

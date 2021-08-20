@@ -22,7 +22,7 @@ Feature: delete folder
   @issue-ocis-reva-269
   Scenario Outline: delete a folder when 2 folder exist with different case
     Given using <dav_version> DAV path
-    And user "Alice" creates folder "/parent" using the WebDAV API
+    And user "Alice" has created folder "/parent"
     When user "Alice" deletes folder "/PARENT" using the WebDAV API
     Then the HTTP status code should be "204"
     And as "Alice" folder "/PARENT" should not exist
@@ -35,7 +35,7 @@ Feature: delete folder
   @issue-ocis-reva-269
   Scenario Outline: delete a sub-folder
     Given using <dav_version> DAV path
-    And user "Alice" creates folder "/PARENT/CHILD" using the WebDAV API
+    And user "Alice" has created folder "/PARENT/CHILD"
     And user "Alice" has uploaded file "filesForUpload/lorem.txt" to "/PARENT/parent.txt"
     When user "Alice" deletes folder "/PARENT/CHILD" using the WebDAV API
     Then the HTTP status code should be "204"
@@ -47,7 +47,7 @@ Feature: delete folder
       | old         |
       | new         |
 
-  @files_sharing-app-required @issue-ocis-reva-11
+  @files_sharing-app-required @notToImplementOnOCIS
   Scenario Outline: delete a folder when there is a default folder for received shares
     Given using <dav_version> DAV path
     And the administrator has set the default folder for received shares to "<share_folder>"
@@ -69,7 +69,7 @@ Feature: delete folder
       | old         | ReceivedShares  |
       | new         | ReceivedShares  |
 
-  @files_sharing-app-required @issue-ocis-reva-11
+  @files_sharing-app-required @notToImplementOnOCIS
   Scenario Outline: delete a folder when there is a default folder for received shares that is a multi-level path
     Given using <dav_version> DAV path
     And the administrator has set the default folder for received shares to "/My/Received/Shares"
@@ -90,3 +90,26 @@ Feature: delete folder
       | dav_version |
       | old         |
       | new         |
+
+  Scenario Outline: deleting folder with dot in the name
+    Given using <dav_version> DAV path
+    And user "Alice" has created folder "<folder_name>"
+    When user "Alice" deletes folder "<folder_name>" using the WebDAV API
+    Then the HTTP status code should be "204"
+    And as "Alice" folder "<folder_name>" should not exist
+    Examples:
+      | dav_version | folder_name |
+      | old         | /fo.        |
+      | old         | /fo.1       |
+      | old         | /fo...1..   |
+      | old         | /...        |
+      | old         | /..fo       |
+      | old         | /fo.xyz     |
+      | old         | /fo.exe     |
+      | new         | /fo.        |
+      | new         | /fo.1       |
+      | new         | /fo...1..   |
+      | new         | /...        |
+      | new         | /..fo       |
+      | new         | /fo.xyz     |
+      | old         | /fo.exe     |

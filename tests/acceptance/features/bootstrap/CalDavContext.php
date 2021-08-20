@@ -62,6 +62,7 @@ class CalDavContext implements \Behat\Behat\Context\Context {
 			. '/remote.php/dav/calendars/admin/MyCalendar';
 		HttpRequestHelper::delete(
 			$davUrl,
+			$this->featureContext->getStepLineRef(),
 			$this->featureContext->getAdminUsername(),
 			$this->featureContext->getAdminPassword()
 		);
@@ -81,13 +82,17 @@ class CalDavContext implements \Behat\Behat\Context\Context {
 		$ofUser = $this->featureContext->getActualUsername($ofUser);
 		$normalizedUser = $this->featureContext->normalizeUsername($ofUser);
 		$calendar = $this->featureContext->substituteInLineCodes(
-			$calendar, $normalizedUser
+			$calendar,
+			$normalizedUser
 		);
 		$davUrl = $this->featureContext->getBaseUrl()
 			. "/remote.php/dav/calendars/$calendar";
 
 		$this->response = HttpRequestHelper::get(
-			$davUrl, $user, $this->featureContext->getPasswordForUser($user)
+			$davUrl,
+			$this->featureContext->getStepLineRef(),
+			$user,
+			$this->featureContext->getPasswordForUser($user)
 		);
 		$this->featureContext->setResponseXml(
 			HttpRequestHelper::parseResponseAsXml($this->response)
@@ -125,6 +130,37 @@ class CalDavContext implements \Behat\Behat\Context\Context {
 	}
 
 	/**
+	 * @Then as user :user a new calendar with name :calendar should be present in the WebDAV API Response
+	 *
+	 * @param string $user
+	 * @param string $calendar
+	 *
+	 * @return void
+	 * @throws \Exception
+	 */
+	public function userCalendarShouldBePresentInTheWebdavApiResponse($user, $calendar) {
+		$user = $this->featureContext->getActualUsername($user);
+		$normalizedUser = $this->featureContext->normalizeUsername($user);
+		$calendar = $this->featureContext->substituteInLineCodes(
+			$calendar,
+			$normalizedUser
+		);
+		$davUrl = $this->featureContext->getBaseUrl()
+			. "/remote.php/dav/calendars/$calendar";
+
+		$this->response = HttpRequestHelper::get(
+			$davUrl,
+			$this->featureContext->getStepLineRef(),
+			$user,
+			$this->featureContext->getPasswordForUser($user)
+		);
+		$this->featureContext->setResponseXml(
+			HttpRequestHelper::parseResponseAsXml($this->response)
+		);
+		$this->theCalDavHttpStatusCodeShouldBe("200");
+	}
+
+	/**
 	 * @Given user :user has successfully created a calendar named :name
 	 *
 	 * @param string $user
@@ -149,8 +185,13 @@ class CalDavContext implements \Behat\Behat\Context\Context {
 			'</c:mkcalendar>';
 
 		$this->response = HttpRequestHelper::sendRequest(
-			$davUrl, "MKCALENDAR", $user,
-			$this->featureContext->getPasswordForUser($user), null, $body
+			$davUrl,
+			$this->featureContext->getStepLineRef(),
+			"MKCALENDAR",
+			$user,
+			$this->featureContext->getPasswordForUser($user),
+			null,
+			$body
 		);
 		$this->theCalDavHttpStatusCodeShouldBe("201");
 		$this->featureContext->setResponseXml(
