@@ -27,6 +27,8 @@
  *
  */
 
+use OCP\Util;
+
 \OCA\Files_Sharing\Helper::registerHooks();
 
 \OCP\Share::registerBackend('file', 'OCA\Files_Sharing\ShareBackend\File');
@@ -44,6 +46,7 @@ $eventDispatcher->addListener(
 	function () {
 		\OCP\Util::addScript('files_sharing', 'share');
 		\OCP\Util::addScript('files_sharing', 'sharetabview');
+		\OCP\Util::addScript('files_sharing', 'sharedialogview');
 		if (\OC::$server->getConfig()->getAppValue('files_sharing', 'incoming_server2server_share_enabled', 'yes') === 'yes') {
 			\OCP\Util::addScript('files_sharing', 'external');
 		}
@@ -55,10 +58,10 @@ $eventDispatcher->addListener(
 
 \OC::$server->getActivityManager()->registerExtension(function () {
 	return new \OCA\Files_Sharing\Activity(
-			\OC::$server->query('L10NFactory'),
-			\OC::$server->getURLGenerator(),
-			\OC::$server->getActivityManager()
-		);
+		\OC::$server->query('L10NFactory'),
+		\OC::$server->getURLGenerator(),
+		\OC::$server->getActivityManager()
+	);
 });
 
 $config = \OC::$server->getConfig();

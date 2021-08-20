@@ -12,14 +12,18 @@ Feature: dav-versions
     Then the version folder of file "/davtest.txt" for user "Alice" should contain "0" elements
 
   @issue-ocis-reva-17 @issue-ocis-reva-56
-  Scenario: Upload file and no version is available using various chunking methods
-    When user "Alice" uploads file "filesForUpload/davtest.txt" to filenames based on "/davtest.txt" with all mechanisms using the WebDAV API
+  Scenario: Upload file and no version is available using various chunking methods (except new chunking)
+    When user "Alice" uploads file "filesForUpload/davtest.txt" to filenames based on "/davtest.txt" with all mechanisms except new chunking using the WebDAV API
     Then the version folder of file "/davtest.txt-olddav-regular" for user "Alice" should contain "0" elements
     And the version folder of file "/davtest.txt-newdav-regular" for user "Alice" should contain "0" elements
     And the version folder of file "/davtest.txt-olddav-oldchunking" for user "Alice" should contain "0" elements
-    And the version folder of file "/davtest.txt-newdav-newchunking" for user "Alice" should contain "0" elements
 
-  @issue-ocis-reva-56
+  @issue-ocis-reva-17 @issue-ocis-reva-56 @notToImplementOnOCIS @newChunking @issue-ocis-1321
+  Scenario: Upload file and no version is available using new chunking
+    When user "Alice" uploads file "filesForUpload/davtest.txt" to "/davtest.txt" in 2 chunks with new chunking and using the WebDAV API
+    Then the version folder of file "/davtest.txt" for user "Alice" should contain "0" elements
+
+  @issue-ocis-reva-56 @notToImplementOnOCIS @newChunking @issue-ocis-1321
   Scenario: Upload file and no version is available using async upload
     Given the administrator has enabled async operations
     When user "Alice" uploads file "filesForUpload/davtest.txt" asynchronously to "/davtest.txt" in 3 chunks with new chunking and using the WebDAV API
@@ -33,15 +37,20 @@ Feature: dav-versions
     And the content length of file "/davtest.txt" with version index "1" for user "Alice" in versions folder should be "8"
 
   @issue-ocis-reva-17 @issue-ocis-reva-56
-  Scenario: Upload a file twice and versions are available using various chunking methods
-    When user "Alice" uploads file "filesForUpload/davtest.txt" to filenames based on "/davtest.txt" with all mechanisms using the WebDAV API
-    And user "Alice" uploads file "filesForUpload/davtest.txt" to filenames based on "/davtest.txt" with all mechanisms using the WebDAV API
+  Scenario: Upload a file twice and versions are available using various chunking methods (except new chunking)
+    When user "Alice" uploads file "filesForUpload/davtest.txt" to filenames based on "/davtest.txt" with all mechanisms except new chunking using the WebDAV API
+    And user "Alice" uploads file "filesForUpload/davtest.txt" to filenames based on "/davtest.txt" with all mechanisms except new chunking using the WebDAV API
     Then the version folder of file "/davtest.txt-olddav-regular" for user "Alice" should contain "1" element
     And the version folder of file "/davtest.txt-newdav-regular" for user "Alice" should contain "1" element
     And the version folder of file "/davtest.txt-olddav-oldchunking" for user "Alice" should contain "1" element
-    And the version folder of file "/davtest.txt-newdav-newchunking" for user "Alice" should contain "1" element
 
-  @issue-ocis-reva-17 @issue-ocis-reva-56
+  @issue-ocis-reva-17 @issue-ocis-reva-56 @notToImplementOnOCIS @newChunking @issue-ocis-1321
+  Scenario: Upload a file twice and versions are available using new chunking
+    When user "Alice" uploads file "filesForUpload/davtest.txt" to "/davtest.txt" in 2 chunks with new chunking and using the WebDAV API
+    And user "Alice" uploads file "filesForUpload/davtest.txt" to "/davtest.txt" in 2 chunks with new chunking and using the WebDAV API
+    Then the version folder of file "/davtest.txt" for user "Alice" should contain "1" element
+
+  @issue-ocis-reva-17 @issue-ocis-reva-56 @notToImplementOnOCIS @newChunking @issue-ocis-1321
   Scenario: Upload a file twice and versions are available using async upload
     Given the administrator has enabled async operations
     When user "Alice" uploads file "filesForUpload/davtest.txt" asynchronously to "/davtest.txt" in 2 chunks with new chunking and using the WebDAV API
@@ -85,10 +94,13 @@ Feature: dav-versions
     Then the content of file "/textfile0.txt" for user "Alice" should be "Dav-Test"
     Examples:
       | dav-path |
-      | new      |
       | old      |
+    @notToImplementOnOCIS @newChunking @issue-ocis-1321
+    Examples:
+      | dav-path |
+      | new      |
 
-  @skipOnStorage:ceph @files_primary_s3-issue-161
+  @skipOnStorage:ceph @files_primary_s3-issue-161 @notToImplementOnOCIS @newChunking @issue-ocis-1321
   @issue-ocis-reva-17 @issue-ocis-reva-56
   Scenario: Uploading a file asynchronously does create the correct version that can be restored
     Given the administrator has enabled async operations
@@ -119,6 +131,7 @@ Feature: dav-versions
     Then the content of file "/davtest.txt" for user "Alice" should be "AAAAABBBBBCCCCC"
     And as user "Alice" the webdav checksum of "/davtest.txt" via propfind should match "SHA1:acfa6b1565f9710d4d497c6035d5c069bd35a8e8 MD5:45a72715acdd5019c5be30bdbb75233e ADLER32:1ecd03df"
 
+
   Scenario: User cannot access meta folder of a file which is owned by somebody else
     Given user "Brian" has been created with default attributes and without skeleton files
     And user "Alice" has uploaded file with content "123" to "/davtest.txt"
@@ -126,7 +139,7 @@ Feature: dav-versions
     When user "Brian" sends HTTP method "PROPFIND" to URL "/remote.php/dav/meta/<<FILEID>>"
     Then the HTTP status code should be "404"
 
-  @files_sharing-app-required
+  @files_sharing-app-required @notToImplementOnOCIS
   Scenario: User can access meta folder of a file which is owned by somebody else but shared with that user
     Given user "Brian" has been created with default attributes and without skeleton files
     And user "Alice" has uploaded file with content "123" to "/davtest.txt"
@@ -139,8 +152,7 @@ Feature: dav-versions
       | permissions | read         |
     Then the version folder of fileId "<<FILEID>>" for user "Brian" should contain "1" element
 
-  @files_sharing-app-required
-  @notToImplementOnOCIS @issue-ocis-reva-243
+  @files_sharing-app-required @notToImplementOnOCIS
   Scenario: sharer of a file can see the old version information when the sharee changes the content of the file
     Given user "Brian" has been created with default attributes and without skeleton files
     And user "Alice" has uploaded file with content "First content" to "sharefile.txt"
@@ -149,8 +161,7 @@ Feature: dav-versions
     Then the HTTP status code should be "204"
     And the version folder of file "/sharefile.txt" for user "Alice" should contain "1" element
 
-  @files_sharing-app-required
-  @notToImplementOnOCIS @issue-ocis-reva-243
+  @files_sharing-app-required @notToImplementOnOCIS
   Scenario: sharer of a file can restore the original content of a shared file after the file has been modified by the sharee
     Given user "Brian" has been created with default attributes and without skeleton files
     And user "Alice" has uploaded file with content "First content" to "sharefile.txt"
@@ -161,8 +172,7 @@ Feature: dav-versions
     And the content of file "/sharefile.txt" for user "Alice" should be "First content"
     And the content of file "/sharefile.txt" for user "Brian" should be "First content"
 
-  @files_sharing-app-required
-  @notToImplementOnOCIS @issue-ocis-reva-243
+  @files_sharing-app-required @notToImplementOnOCIS
   Scenario: sharer can restore a file inside a shared folder modified by sharee
     Given user "Brian" has been created with default attributes and without skeleton files
     And user "Alice" has created folder "/sharingfolder"
@@ -174,8 +184,7 @@ Feature: dav-versions
     And the content of file "/sharingfolder/sharefile.txt" for user "Alice" should be "First content"
     And the content of file "/sharingfolder/sharefile.txt" for user "Brian" should be "First content"
 
-  @files_sharing-app-required
-  @notToImplementOnOCIS @issue-ocis-reva-243
+  @files_sharing-app-required @notToImplementOnOCIS
   Scenario: sharee can restore a file inside a shared folder modified by sharee
     Given user "Brian" has been created with default attributes and without skeleton files
     And user "Alice" has created folder "/sharingfolder"
@@ -187,8 +196,7 @@ Feature: dav-versions
     And the content of file "/sharingfolder/sharefile.txt" for user "Alice" should be "First content"
     And the content of file "/sharingfolder/sharefile.txt" for user "Brian" should be "First content"
 
-  @files_sharing-app-required
-  @notToImplementOnOCIS @issue-ocis-reva-243
+  @files_sharing-app-required @notToImplementOnOCIS
   Scenario: sharer can restore a file inside a shared folder created by sharee and modified by sharer
     Given user "Brian" has been created with default attributes and without skeleton files
     And user "Alice" has created folder "/sharingfolder"
@@ -200,8 +208,7 @@ Feature: dav-versions
     And the content of file "/sharingfolder/sharefile.txt" for user "Alice" should be "First content"
     And the content of file "/sharingfolder/sharefile.txt" for user "Brian" should be "First content"
 
-  @files_sharing-app-required
-  @notToImplementOnOCIS @issue-ocis-reva-243
+  @files_sharing-app-required @notToImplementOnOCIS
   Scenario: sharee can restore a file inside a shared folder created by sharee and modified by sharer
     Given user "Brian" has been created with default attributes and without skeleton files
     And user "Alice" has created folder "/sharingfolder"
@@ -213,8 +220,7 @@ Feature: dav-versions
     And the content of file "/sharingfolder/sharefile.txt" for user "Alice" should be "First content"
     And the content of file "/sharingfolder/sharefile.txt" for user "Brian" should be "First content"
 
-  @files_sharing-app-required
-  @notToImplementOnOCIS @issue-ocis-reva-243
+  @files_sharing-app-required @notToImplementOnOCIS
   Scenario: sharer can restore a file inside a shared folder created by sharee and modified by sharee
     Given user "Brian" has been created with default attributes and without skeleton files
     And user "Alice" has created folder "/sharingfolder"
@@ -226,8 +232,7 @@ Feature: dav-versions
     And the content of file "/sharingfolder/sharefile.txt" for user "Alice" should be "old content"
     And the content of file "/sharingfolder/sharefile.txt" for user "Brian" should be "old content"
 
-  @files_sharing-app-required
-  @notToImplementOnOCIS @issue-ocis-reva-243
+  @files_sharing-app-required @notToImplementOnOCIS
   Scenario: sharee can restore a file inside a shared folder created by sharer and modified by sharer
     Given user "Brian" has been created with default attributes and without skeleton files
     And user "Alice" has created folder "/sharingfolder"
@@ -239,8 +244,7 @@ Feature: dav-versions
     And the content of file "/sharingfolder/sharefile.txt" for user "Alice" should be "old content"
     And the content of file "/sharingfolder/sharefile.txt" for user "Brian" should be "old content"
 
-  @files_sharing-app-required
-  @notToImplementOnOCIS @issue-ocis-reva-243
+  @files_sharing-app-required @notToImplementOnOCIS
   Scenario: sharee can restore a file inside a shared folder created by sharer and modified by sharer, when the folder has been moved by the sharee
     Given user "Brian" has been created with default attributes and without skeleton files
     And user "Alice" has created folder "/sharingfolder"
@@ -254,8 +258,7 @@ Feature: dav-versions
     And the content of file "/sharingfolder/sharefile.txt" for user "Alice" should be "old content"
     And the content of file "/received/sharingfolder/sharefile.txt" for user "Brian" should be "old content"
 
-  @files_sharing-app-required
-  @notToImplementOnOCIS @issue-ocis-reva-243
+  @files_sharing-app-required @notToImplementOnOCIS
   Scenario: sharee can restore a shared file created and modified by sharer, when the file has been moved by the sharee (file is at the top level of the sharer)
     Given user "Brian" has been created with default attributes and without skeleton files
     And user "Alice" has uploaded file with content "old content" to "/sharefile.txt"
@@ -268,8 +271,7 @@ Feature: dav-versions
     And the content of file "/sharefile.txt" for user "Alice" should be "old content"
     And the content of file "/received/sharefile.txt" for user "Brian" should be "old content"
 
-  @files_sharing-app-required
-  @notToImplementOnOCIS @issue-ocis-reva-243
+  @files_sharing-app-required @notToImplementOnOCIS
   Scenario: sharee can restore a shared file created and modified by sharer, when the file has been moved by the sharee (file is inside a folder of the sharer)
     Given user "Brian" has been created with default attributes and without skeleton files
     And user "Alice" has created folder "/sharingfolder"
@@ -283,8 +285,7 @@ Feature: dav-versions
     And the content of file "/sharingfolder/sharefile.txt" for user "Alice" should be "old content"
     And the content of file "/received/sharefile.txt" for user "Brian" should be "old content"
 
-  @files_sharing-app-required
-  @issue-ocis-reva-34
+  @files_sharing-app-required @issue-ocis-1289 @issue-ocis-1321 @notToImplementOnOCIS
   Scenario: sharer can restore a file inside a group shared folder modified by sharee
     Given user "Brian" has been created with default attributes and without skeleton files
     And user "Carol" has been created with default attributes and without skeleton files
@@ -302,8 +303,7 @@ Feature: dav-versions
     And the content of file "/sharingfolder/sharefile.txt" for user "Brian" should be "First content"
     And the content of file "/sharingfolder/sharefile.txt" for user "Carol" should be "First content"
 
-  @files_sharing-app-required
-  @notToImplementOnOCIS @issue-ocis-reva-243 @issue-ocis-reva-386
+  @files_sharing-app-required @notToImplementOnOCIS @issue-ocis-1238
   Scenario Outline: Moving a file (with versions) into a shared folder as the sharee and as the sharer
     Given using <dav_version> DAV path
     And user "Brian" has been created with default attributes and without skeleton files
@@ -330,8 +330,7 @@ Feature: dav-versions
       | old         | Brian |
       | new         | Brian |
 
-  @files_sharing-app-required
-  @notToImplementOnOCIS @issue-ocis-reva-243 @issue-ocis-reva-386
+  @files_sharing-app-required @notToImplementOnOCIS @issue-ocis-1238
   Scenario Outline: Moving a file (with versions) out of a shared folder as the sharee and as the sharer
     Given using <dav_version> DAV path
     And user "Brian" has been created with default attributes and without skeleton files
@@ -357,8 +356,7 @@ Feature: dav-versions
       | old         | Brian |
       | new         | Brian |
 
-  @skipOnOcV10.3.0 @files_sharing-app-required
-  @issue-ocis-reva-382
+  @skipOnOcV10.3.0 @files_sharing-app-required @issue-ocis-1238 @notToImplementOnOCIS
   Scenario: Receiver tries to get file versions of unshared file from the sharer
     Given user "Brian" has been created with default attributes and without skeleton files
     And user "Alice" has uploaded file with content "textfile0" to "textfile0.txt"
@@ -368,8 +366,7 @@ Feature: dav-versions
     Then the HTTP status code should be "404"
     And the value of the item "//s:exception" in the response about user "Alice" should be "Sabre\DAV\Exception\NotFound"
 
-  @skipOnStorage:ceph @files_primary_s3-issue-161 @files_sharing-app-required
-  @issue-ocis-reva-376
+  @skipOnStorage:ceph @files_primary_s3-issue-161 @files_sharing-app-required @notToImplementOnOCIS
   Scenario: Receiver tries get file versions of shared file from the sharer
     Given user "Brian" has been created with default attributes and without skeleton files
     And user "Alice" has uploaded file with content "textfile0" to "textfile0.txt"
@@ -381,10 +378,12 @@ Feature: dav-versions
     Then the HTTP status code should be "207"
     And the number of versions should be "3"
 
+
   Scenario: User cannot access meta folder of a file which does not exists
     Given user "Brian" has been created with default attributes and without skeleton files
     When user "Brian" sends HTTP method "PROPFIND" to URL "/remote.php/dav/meta/MTI4NGQyMzgtYWE5Mi00MmNlLWJkYzQtMGIwMDAwMDA5MTU2OjhjY2QyNzUxLTkwYTQtNDBmMi1iOWYzLTYxZWRmODQ0MjFmNA=="
     Then the HTTP status code should be "404"
+
 
   Scenario Outline: User cannot access meta folder of a file with invalid fileid
     Given user "Brian" has been created with default attributes and without skeleton files
@@ -396,6 +395,7 @@ Feature: dav-versions
       | MTI4NGQyMzgtYWE5Mi00MmNlLWJkYzQtMGIwMDAwMDA5MTU3OGNjZDI3NTEtOTBhNC00MGYyLWI5ZjMtNjFlZGY4NDQyMWY0     | 1284d238-aa92-42ce-bdc4-0b00000091578ccd2751-90a4-40f2-b9f3-61edf84421f4  | no = sign          |
       | c29tZS1yYW5kb20tZmlsZUlkPWFub3RoZXItcmFuZG9tLWZpbGVJZA==                                             | some-random-fileId=another-random-fileId                                  | some random string |
       | MTI4NGQyMzgtYWE5Mi00MmNlLWJkxzQtMGIwMDAwMDA5MTU2OjhjY2QyNzUxLTkwYTQtNDBmMi1iOWYzLTYxZWRmODQ0MjFmNA== | 1284d238-aa92-42ce-bd�4-0b0000009156:8ccd2751-90a4-40f2-b9f3-61edf84421f4 | with : and  � sign |
+
 
   Scenario: the version history is preserved when a file is renamed
     Given user "Alice" has uploaded file with content "old content" to "/textfile.txt"
@@ -417,6 +417,7 @@ Feature: dav-versions
     Then the HTTP status code should be "207"
     And the number of versions should be "3"
 
+
   Scenario: Original file has version number 0
     Given user "Alice" has uploaded file with content "uploaded content" to "textfile0.txt"
     When user "Alice" gets the number of versions of file "textfile0.txt"
@@ -431,3 +432,40 @@ Feature: dav-versions
     Then the HTTP status code should be "207"
     And the number of etag elements in the response should be "2"
     And the number of versions should be "2"
+
+
+  Scenario: download old versions of a file
+    Given user "Alice" has uploaded file with content "uploaded content" to "textfile0.txt"
+    And user "Alice" has uploaded file with content "version 1" to "textfile0.txt"
+    And user "Alice" has uploaded file with content "version 2" to "textfile0.txt"
+    When user "Alice" downloads the version of file "textfile0.txt" with the index "1"
+    Then the HTTP status code should be "200"
+    And the following headers should be set
+      | header              | value                                                                |
+      | Content-Disposition | attachment; filename*=UTF-8''textfile0.txt; filename="textfile0.txt" |
+    And the downloaded content should be "version 1"
+    When user "Alice" downloads the version of file "textfile0.txt" with the index "2"
+    Then the HTTP status code should be "200"
+    And the following headers should be set
+      | header              | value                                                                |
+      | Content-Disposition | attachment; filename*=UTF-8''textfile0.txt; filename="textfile0.txt" |
+    And the downloaded content should be "uploaded content"
+
+  @skipOnStorage:ceph @skipOnStorage:scality @files_primary_s3-issue-463
+  Scenario: download an old version of a restored file
+    Given user "Alice" has uploaded file with content "uploaded content" to "textfile0.txt"
+    And user "Alice" has uploaded file with content "version 1" to "textfile0.txt"
+    And user "Alice" has uploaded file with content "version 2" to "textfile0.txt"
+    And user "Alice" has restored version index "1" of file "textfile0.txt"
+    When user "Alice" downloads the version of file "textfile0.txt" with the index "1"
+    Then the HTTP status code should be "200"
+    And the following headers should be set
+      | header              | value                                                                |
+      | Content-Disposition | attachment; filename*=UTF-8''textfile0.txt; filename="textfile0.txt" |
+    And the downloaded content should be "version 2"
+    When user "Alice" downloads the version of file "textfile0.txt" with the index "2"
+    Then the HTTP status code should be "200"
+    And the following headers should be set
+      | header              | value                                                                |
+      | Content-Disposition | attachment; filename*=UTF-8''textfile0.txt; filename="textfile0.txt" |
+    And the downloaded content should be "uploaded content"

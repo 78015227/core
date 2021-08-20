@@ -274,9 +274,9 @@ default:
         - WebDavPropertiesContext:
         - AuthContext:
 
-    apiShareOperationsToRoot:
+    apiShareOperationsToRoot1:
       paths:
-        - '%paths.base%/../features/apiShareOperationsToRoot'
+        - '%paths.base%/../features/apiShareOperationsToRoot1'
       context: *common_ldap_suite_context
       contexts:
         - FeatureContext: *common_feature_context_params
@@ -285,9 +285,31 @@ default:
         - TrashbinContext:
         - WebDavPropertiesContext:
 
-    apiShareOperationsToShares:
+    apiShareOperationsToRoot2:
       paths:
-        - '%paths.base%/../features/apiShareOperationsToShares'
+        - '%paths.base%/../features/apiShareOperationsToRoot2'
+      context: *common_ldap_suite_context
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - OccContext:
+        - PublicWebDavContext:
+        - TrashbinContext:
+        - WebDavPropertiesContext:
+
+    apiShareOperationsToShares1:
+      paths:
+        - '%paths.base%/../features/apiShareOperationsToShares1'
+      context: *common_ldap_suite_context
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - OccContext:
+        - PublicWebDavContext:
+        - TrashbinContext:
+        - WebDavPropertiesContext:
+
+    apiShareOperationsToShares2:
+      paths:
+        - '%paths.base%/../features/apiShareOperationsToShares2'
       context: *common_ldap_suite_context
       contexts:
         - FeatureContext: *common_feature_context_params
@@ -451,6 +473,18 @@ default:
         - OccContext:
         - TrashbinContext:
         - AppConfigurationContext:
+        - WebDavPropertiesContext:
+
+    apiTrashbinRestore:
+      paths:
+        - '%paths.base%/../features/apiTrashbinRestore'
+      context: *common_ldap_suite_context
+      contexts:
+        - FeatureContext: *common_feature_context_params
+        - OccContext:
+        - TrashbinContext:
+        - AppConfigurationContext:
+        - WebDavPropertiesContext:
 
     apiVersions:
       paths:
@@ -540,6 +574,7 @@ default:
         - PublicWebDavContext:
         - WebDavPropertiesContext:
         - TagsContext:
+        - TrashbinContext:
 
     apiWebdavPreviews:
       paths:
@@ -557,6 +592,7 @@ default:
       contexts:
         - FeatureContext: *common_feature_context_params
         - LoggingContext:
+        - OccContext:
         - WebDavPropertiesContext:
         - AppConfigurationContext:
 
@@ -682,6 +718,8 @@ default:
       contexts:
         - FeatureContext: *common_feature_context_params
         - OccContext:
+        - CalDavContext:
+        - CardDavContext:
         - TransferOwnershipContext:
         - FederationContext:
         - WebDavPropertiesContext:
@@ -750,6 +788,7 @@ default:
         - WebUIGeneralContext:
         - WebUILoginContext:
         - WebUISharingContext:
+        - WebUINewFileMenuContext:
 
     webUIFavorites:
       paths:
@@ -1138,6 +1177,7 @@ default:
       contexts:
         - FeatureContext: *common_feature_context_params
         - WebDavLockingContext:
+        - WebUIAdminGeneralSettingsContext:
         - WebUIFilesContext:
         - WebUIGeneralContext:
         - WebUILoginContext:

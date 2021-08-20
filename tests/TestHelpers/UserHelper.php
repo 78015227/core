@@ -39,12 +39,20 @@ class UserHelper {
 	 * @param string $value
 	 * @param string $adminUser
 	 * @param string $adminPassword
+	 * @param string $xRequestId
 	 * @param int $ocsApiVersion
 	 *
 	 * @return ResponseInterface
 	 */
 	public static function editUser(
-		$baseUrl, $user, $key, $value, $adminUser, $adminPassword, $ocsApiVersion = 2
+		$baseUrl,
+		$user,
+		$key,
+		$value,
+		$adminUser,
+		$adminPassword,
+		$xRequestId  = '',
+		$ocsApiVersion = 2
 	) {
 		return OcsApiHelper::sendRequest(
 			$baseUrl,
@@ -52,6 +60,7 @@ class UserHelper {
 			$adminPassword,
 			"PUT",
 			"/cloud/users/" . $user,
+			$xRequestId,
 			["key" => $key, "value" => $value],
 			$ocsApiVersion
 		);
@@ -65,12 +74,18 @@ class UserHelper {
 	 * @param array $editData ['user' => '', 'key' => '', 'value' => '']
 	 * @param string $adminUser
 	 * @param string $adminPassword
+	 * @param string $xRequestId
 	 * @param int $ocsApiVersion
 	 *
 	 * @return array
 	 */
 	public static function editUserBatch(
-		$baseUrl, $editData, $adminUser, $adminPassword, $ocsApiVersion = 2
+		$baseUrl,
+		$editData,
+		$adminUser,
+		$adminPassword,
+		$xRequestId = '',
+		$ocsApiVersion = 2
 	) {
 		$requests = [];
 		$client = HttpRequestHelper::createClient(
@@ -88,6 +103,7 @@ class UserHelper {
 					$baseUrl,
 					'PUT',
 					$path,
+					$xRequestId,
 					$body
 				)
 			);
@@ -113,12 +129,18 @@ class UserHelper {
 	 * @param string $userName
 	 * @param string $adminUser
 	 * @param string $adminPassword
+	 * @param string $xRequestId
 	 * @param int $ocsApiVersion
 	 *
 	 * @return ResponseInterface
 	 */
 	public static function getUser(
-		$baseUrl, $userName, $adminUser, $adminPassword, $ocsApiVersion = 2
+		$baseUrl,
+		$userName,
+		$adminUser,
+		$adminPassword,
+		$xRequestId = '',
+		$ocsApiVersion = 2
 	) {
 		return OcsApiHelper::sendRequest(
 			$baseUrl,
@@ -126,6 +148,7 @@ class UserHelper {
 			$adminPassword,
 			"GET",
 			"/cloud/users/" . $userName,
+			$xRequestId,
 			[],
 			$ocsApiVersion
 		);
@@ -137,12 +160,18 @@ class UserHelper {
 	 * @param string $userName
 	 * @param string $adminUser
 	 * @param string $adminPassword
+	 * @param string $xRequestId
 	 * @param int $ocsApiVersion
 	 *
 	 * @return ResponseInterface
 	 */
 	public static function deleteUser(
-		$baseUrl, $userName, $adminUser, $adminPassword, $ocsApiVersion = 2
+		$baseUrl,
+		$userName,
+		$adminUser,
+		$adminPassword,
+		$xRequestId = '',
+		$ocsApiVersion = 2
 	) {
 		return OcsApiHelper::sendRequest(
 			$baseUrl,
@@ -150,6 +179,7 @@ class UserHelper {
 			$adminPassword,
 			"DELETE",
 			"/cloud/users/" . $userName,
+			$xRequestId,
 			[],
 			$ocsApiVersion
 		);
@@ -161,15 +191,25 @@ class UserHelper {
 	 * @param string $group
 	 * @param string $adminUser
 	 * @param string $adminPassword
+	 * @param string $xRequestId
 	 *
 	 * @return ResponseInterface
 	 */
 	public static function createGroup(
-		$baseUrl, $group, $adminUser, $adminPassword
+		$baseUrl,
+		$group,
+		$adminUser,
+		$adminPassword,
+		$xRequestId = ''
 	) {
 		return OcsApiHelper::sendRequest(
-			$baseUrl, $adminUser, $adminPassword,
-			"POST", "/cloud/groups", ['groupid' => $group]
+			$baseUrl,
+			$adminUser,
+			$adminPassword,
+			"POST",
+			"/cloud/groups",
+			$xRequestId,
+			['groupid' => $group]
 		);
 	}
 
@@ -179,17 +219,29 @@ class UserHelper {
 	 * @param string $group
 	 * @param string $adminUser
 	 * @param string $adminPassword
+	 * @param string $xRequestId
 	 * @param int $ocsApiVersion
 	 *
 	 * @return ResponseInterface
 	 */
 	public static function deleteGroup(
-		$baseUrl, $group, $adminUser, $adminPassword, $ocsApiVersion = 2
+		$baseUrl,
+		$group,
+		$adminUser,
+		$adminPassword,
+		$xRequestId = '',
+		$ocsApiVersion = 2
 	) {
 		$group = \rawurlencode($group);
 		return OcsApiHelper::sendRequest(
-			$baseUrl, $adminUser, $adminPassword,
-			"DELETE", "/cloud/groups/" . $group, [], $ocsApiVersion
+			$baseUrl,
+			$adminUser,
+			$adminPassword,
+			"DELETE",
+			"/cloud/groups/" . $group,
+			$xRequestId,
+			[],
+			$ocsApiVersion
 		);
 	}
 
@@ -200,16 +252,28 @@ class UserHelper {
 	 * @param string $group
 	 * @param string $adminUser
 	 * @param string $adminPassword
+	 * @param string $xRequestId
 	 * @param integer $ocsApiVersion (1|2)
 	 *
 	 * @return ResponseInterface
 	 */
 	public static function addUserToGroup(
-		$baseUrl, $user, $group, $adminUser, $adminPassword, $ocsApiVersion = 2
+		$baseUrl,
+		$user,
+		$group,
+		$adminUser,
+		$adminPassword,
+		$xRequestId = '',
+		$ocsApiVersion = 2
 	) {
 		return OcsApiHelper::sendRequest(
-			$baseUrl, $adminUser, $adminPassword, "POST",
-			"/cloud/users/" . $user . "/groups", ['groupid' => $group],
+			$baseUrl,
+			$adminUser,
+			$adminPassword,
+			"POST",
+			"/cloud/users/" . $user . "/groups",
+			$xRequestId,
+			['groupid' => $group],
 			$ocsApiVersion
 		);
 	}
@@ -221,16 +285,28 @@ class UserHelper {
 	 * @param string $group
 	 * @param string $adminUser
 	 * @param string $adminPassword
+	 * @param string $xRequestId
 	 * @param integer $ocsApiVersion (1|2)
 	 *
 	 * @return ResponseInterface
 	 */
 	public static function removeUserFromGroup(
-		$baseUrl, $user, $group, $adminUser, $adminPassword, $ocsApiVersion = 2
+		$baseUrl,
+		$user,
+		$group,
+		$adminUser,
+		$adminPassword,
+		$xRequestId,
+		$ocsApiVersion = 2
 	) {
 		return OcsApiHelper::sendRequest(
-			$baseUrl, $adminUser, $adminPassword, "DELETE",
-			"/cloud/users/" . $user . "/groups", ['groupid' => $group],
+			$baseUrl,
+			$adminUser,
+			$adminPassword,
+			"DELETE",
+			"/cloud/users/" . $user . "/groups",
+			$xRequestId,
+			['groupid' => $group],
 			$ocsApiVersion
 		);
 	}
@@ -240,16 +316,25 @@ class UserHelper {
 	 * @param string $baseUrl
 	 * @param string $adminUser
 	 * @param string $adminPassword
+	 * @param string $xRequestId
 	 * @param string $search
 	 *
 	 * @return ResponseInterface
 	 */
 	public static function getGroups(
-		$baseUrl, $adminUser, $adminPassword, $search =""
+		$baseUrl,
+		$adminUser,
+		$adminPassword,
+		$xRequestId = '',
+		$search =""
 	) {
 		return OcsApiHelper::sendRequest(
-			$baseUrl, $adminUser, $adminPassword, "GET",
-			"/cloud/groups?search=" . $search
+			$baseUrl,
+			$adminUser,
+			$adminPassword,
+			"GET",
+			"/cloud/groups?search=" . $search,
+			$xRequestId
 		);
 	}
 
@@ -258,14 +343,25 @@ class UserHelper {
 	 * @param string $baseUrl
 	 * @param string $adminUser
 	 * @param string $adminPassword
+	 * @param string $xRequestId
 	 * @param string $search
 	 *
 	 * @return string[]
 	 */
 	public static function getGroupsAsArray(
-		$baseUrl, $adminUser, $adminPassword, $search =""
+		$baseUrl,
+		$adminUser,
+		$adminPassword,
+		$xRequestId = '',
+		$search =""
 	) {
-		$result = self::getGroups($baseUrl, $adminUser, $adminPassword, $search);
+		$result = self::getGroups(
+			$baseUrl,
+			$adminUser,
+			$adminPassword,
+			$xRequestId,
+			$search
+		);
 		$groups = HttpRequestHelper::getResponseXml($result, __METHOD__)->xpath(".//groups")[0];
 		$return = [];
 		foreach ($groups as $group) {

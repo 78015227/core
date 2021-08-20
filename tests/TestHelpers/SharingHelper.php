@@ -30,7 +30,7 @@ use Psr\Http\Message\ResponseInterface;
  *
  */
 class SharingHelper {
-	const PERMISSION_TYPES = [
+	public const PERMISSION_TYPES = [
 			'read' => 1,
 			'update' => 2,
 			'create' => 4,
@@ -38,14 +38,14 @@ class SharingHelper {
 			'share' => 16,
 	];
 
-	const SHARE_TYPES = [
+	public const SHARE_TYPES = [
 			'user' => 0,
 			'group' => 1,
 			'public_link' => 3,
 			'federated' => 6,
 	];
 
-	const SHARE_STATES = [
+	public const SHARE_STATES = [
 			'accepted' => 0,
 			'pending' => 1,
 			'rejected' => 2,
@@ -62,6 +62,7 @@ class SharingHelper {
 	 *                              0 = user, 1 = group, 3 = public (link),
 	 *                              6 = federated (cloud share).
 	 *                              Pass either the number or the keyword.
+	 * @param string $xRequestId
 	 * @param string|null $shareWith The user or group id with which the file should
 	 *                               be shared.
 	 * @param boolean $publicUpload Whether to allow public upload to a public
@@ -91,6 +92,7 @@ class SharingHelper {
 		$password,
 		$path,
 		$shareType,
+		$xRequestId = '',
 		$shareWith = null,
 		$publicUpload = false,
 		$sharePassword = null,
@@ -150,7 +152,14 @@ class SharingHelper {
 		}
 		$headers = ['OCS-APIREQUEST' => 'true'];
 
-		return HttpRequestHelper::post($fullUrl, $user, $password, $headers, $fd);
+		return HttpRequestHelper::post(
+			$fullUrl,
+			$xRequestId,
+			$user,
+			$password,
+			$headers,
+			$fd
+		);
 	}
 
 	/**
@@ -233,7 +242,8 @@ class SharingHelper {
 	 * @return string
 	 */
 	public static function getLastShareIdFromResponse(
-		$responseXmlObject, $errorMessage = "cannot find share id in response"
+		$responseXmlObject,
+		$errorMessage = "cannot find share id in response"
 	) {
 		$xmlPart = $responseXmlObject->xpath("//data/element[last()]/id");
 

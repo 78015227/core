@@ -125,7 +125,9 @@ class FavoritesContext implements Context {
 	 */
 	public function userUnfavoritesElement($user, $path) {
 		$response = $this->changeFavStateOfAnElement(
-			$user, $path, 0
+			$user,
+			$path,
+			0
 		);
 		$this->featureContext->setResponse($response);
 	}
@@ -165,12 +167,16 @@ class FavoritesContext implements Context {
 	 * @return void
 	 */
 	public function checkFavoritedElements(
-		$user, $shouldOrNot, $expectedElements
+		$user,
+		$shouldOrNot,
+		$expectedElements
 	) {
 		$user = $this->featureContext->getActualUsername($user);
 		$this->userListsFavorites($user, null);
 		$this->featureContext->propfindResultShouldContainEntries(
-			$shouldOrNot, $expectedElements, $user
+			$shouldOrNot,
+			$expectedElements,
+			$user
 		);
 	}
 
@@ -200,7 +206,14 @@ class FavoritesContext implements Context {
 
 		$body .= "	</oc:filter-files>";
 		$response = WebDavHelper::makeDavRequest(
-			$baseUrl, $renamedUser, $password, "REPORT", "/", null, $body,
+			$baseUrl,
+			$renamedUser,
+			$password,
+			"REPORT",
+			"/",
+			null,
+			$this->featureContext->getStepLineRef(),
+			$body,
 			$this->featureContext->getDavPathVersion()
 		);
 		$this->featureContext->setResponse($response);
@@ -253,7 +266,10 @@ class FavoritesContext implements Context {
 	public function asUserFileOrFolderShouldBeFavorited($user, $path, $expectedValue = 1) {
 		$property = "oc:favorite";
 		$this->webDavPropertiesContext->asUserFolderShouldContainAPropertyWithValue(
-			$user, $path, $property, $expectedValue
+			$user,
+			$path,
+			$property,
+			$expectedValue
 		);
 	}
 
@@ -279,7 +295,9 @@ class FavoritesContext implements Context {
 	 */
 	public function asTheUserFileOrFolderShouldBeFavorited($path, $expectedValue = 1) {
 		$this->asUserFileOrFolderShouldBeFavorited(
-			$this->featureContext->getCurrentUser(), $path, $expectedValue
+			$this->featureContext->getCurrentUser(),
+			$path,
+			$expectedValue
 		);
 	}
 
@@ -304,14 +322,20 @@ class FavoritesContext implements Context {
 	 * @return ResponseInterface
 	 */
 	public function changeFavStateOfAnElement(
-		$user, $path, $favOrUnfav
+		$user,
+		$path,
+		$favOrUnfav
 	) {
 		$renamedUser = $this->featureContext->getActualUsername($user);
 		return WebDavHelper::proppatch(
 			$this->featureContext->getBaseUrl(),
 			$renamedUser,
 			$this->featureContext->getPasswordForUser($user),
-			$path, 'favorite', $favOrUnfav, "oc='http://owncloud.org/ns'",
+			$path,
+			'favorite',
+			$favOrUnfav,
+			$this->featureContext->getStepLineRef(),
+			"oc='http://owncloud.org/ns'",
 			$this->featureContext->getDavPathVersion()
 		);
 	}

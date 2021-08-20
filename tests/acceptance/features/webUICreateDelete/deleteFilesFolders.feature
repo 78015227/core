@@ -203,7 +203,7 @@ Feature: deleting files and folders
     And user "Alice" has uploaded file "filesForUpload/lorem.txt" to "simple-folder/lorem.txt"
     And user "Alice" has uploaded file "filesForUpload/strängé filename (duplicate #2 &).txt" to "simple-folder/strängé filename (duplicate #2 &).txt"
     And user "Alice" has logged in using the webUI
-    Given user "Alice" has created a public link share with settings
+    And user "Alice" has created a public link share with settings
       | path        | /simple-folder            |
       | permissions | read,update,create,delete |
     And the public accesses the last created public link using the webUI
@@ -298,3 +298,21 @@ Feature: deleting files and folders
       | /ReceivedShares     | ReceivedShares         | Received      | Top         | ReceivedShares |
       | ReceivedShares      | ReceivedShares         | Received      | Top         | ReceivedShares |
       | /My/Received/Shares | My                     | M             | Received    | Shares         |
+
+
+  Scenario: Delete folder with an emoji in the name
+    Given user "Alice" has created the following folders
+      | path              |
+      | ⛹ game day video |
+      | skiing photos ⛷  |
+    And user "Alice" has logged in using the webUI
+    And the user has browsed to the files page
+    When the user deletes the following elements using the webUI
+      | name              |
+      | ⛹ game day video |
+      | skiing photos ⛷  |
+    And the user reloads the current page of the webUI
+    Then the following folder should not be listed on the webUI
+      | name-parts        |
+      | ⛹ game day video |
+      | skiing photos ⛷  |

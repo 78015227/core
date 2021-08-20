@@ -20,6 +20,8 @@
 namespace OC\License;
 
 use OCP\License\ILicenseManager;
+use OCP\License\Exceptions\LicenseException;
+use OCP\License\Exceptions\LicenseManagerException;
 use OCP\IConfig;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -149,6 +151,16 @@ class LicenseManager implements ILicenseManager {
 	}
 
 	/**
+	 * @inheritDoc
+	 */
+	public function removeLicenseString() {
+		// we can only remove the ownCloud's license for now
+		$this->licenseFetcher->removeOwncloudLicense();
+
+		$this->config->deleteAppValues('core-license-complains');
+	}
+
+	/**
 	 * Per-app licenses aren't implemented at the moment. This method will return the state
 	 * of the ownCloud's license for all apps (including public community apps)
 	 * Returns an array with the license object and the state of the license (any of the
@@ -220,6 +232,33 @@ class LicenseManager implements ILicenseManager {
 			$messageData['type'] = $info[0]->getType();
 		}
 		return $messageData;
+	}
+
+	public function askLicenseFor(string $appid, string $method, array $params = []) {
+		$info = $this->getLicenseWithState($appid);
+		$licenseObj = $info[0];
+		if ($licenseObj === null) {
+			throw new LicenseManagerException("No license available for app $appid", 1);
+		}
+
+		if (!\is_callable([$licenseObj, $method])) {
+			throw new LicenseManagerException("Method $method can't be called", 2);
+		}
+
+		// function names are case-insensitive...
+		$lowerCaseMethods = \array_map(function ($value) {
+			return \strtolower($value);
+		}, $licenseObj->getProtectedMethods());
+
+		if (\in_array(\strtolower($method), $lowerCaseMethods, true)) {
+			throw new LicenseManagerException("License doesn't allow method $method to be called", 3);
+		}
+
+		try {
+			return $licenseObj->$method(...$params);
+		} catch (LicenseException $ex) {
+			throw new LicenseManagerException("Method $method failed", 99, $ex);
+		}
 	}
 
 	/**

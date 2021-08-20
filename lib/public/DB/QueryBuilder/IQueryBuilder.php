@@ -23,6 +23,8 @@
 namespace OCP\DB\QueryBuilder;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\ForwardCompatibility\DriverStatement;
+use Doctrine\DBAL\ForwardCompatibility\DriverResultStatement;
 
 /**
  * This class provides a wrapper around Doctrine's QueryBuilder
@@ -33,36 +35,36 @@ interface IQueryBuilder {
 	/**
 	 * @since 9.0.0
 	 */
-	const PARAM_NULL = \PDO::PARAM_NULL;
+	public const PARAM_NULL = \PDO::PARAM_NULL;
 	/**
 	 * @since 9.0.0
 	 */
-	const PARAM_BOOL = \PDO::PARAM_BOOL;
+	public const PARAM_BOOL = \PDO::PARAM_BOOL;
 	/**
 	 * @since 9.0.0
 	 */
-	const PARAM_INT = \PDO::PARAM_INT;
+	public const PARAM_INT = \PDO::PARAM_INT;
 	/**
 	 * @since 9.0.0
 	 */
-	const PARAM_STR = \PDO::PARAM_STR;
+	public const PARAM_STR = \PDO::PARAM_STR;
 	/**
 	 * @since 9.0.0
 	 */
-	const PARAM_LOB = \PDO::PARAM_LOB;
+	public const PARAM_LOB = \PDO::PARAM_LOB;
 	/**
 	 * @since 9.0.0
 	 */
-	const PARAM_DATE = 'datetime';
+	public const PARAM_DATE = 'datetime';
 
 	/**
 	 * @since 9.0.0
 	 */
-	const PARAM_INT_ARRAY = Connection::PARAM_INT_ARRAY;
+	public const PARAM_INT_ARRAY = Connection::PARAM_INT_ARRAY;
 	/**
 	 * @since 9.0.0
 	 */
-	const PARAM_STR_ARRAY = Connection::PARAM_STR_ARRAY;
+	public const PARAM_STR_ARRAY = Connection::PARAM_STR_ARRAY;
 
 	/**
 	 * Enable/disable automatic prefixing of table names with the oc_ prefix
@@ -122,7 +124,7 @@ interface IQueryBuilder {
 	 * Uses {@see Connection::executeQuery} for select statements and {@see Connection::executeUpdate}
 	 * for insert, update and delete statements.
 	 *
-	 * @return \Doctrine\DBAL\Driver\Statement|int
+	 * @return DriverStatement|DriverResultStatement|int
 	 * @since 8.2.0
 	 */
 	public function execute();

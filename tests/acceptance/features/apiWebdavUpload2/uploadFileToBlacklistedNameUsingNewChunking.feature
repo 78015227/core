@@ -1,4 +1,4 @@
-@api @issue-ocis-reva-56
+@api @issue-ocis-reva-56 @notToImplementOnOCIS @newChunking @issue-ocis-1321
 Feature: users cannot upload a file to a blacklisted name using new chunking
   As an administrator
   I want to be able to prevent users from uploading files to specified file names
@@ -8,6 +8,7 @@ Feature: users cannot upload a file to a blacklisted name using new chunking
     Given using OCS API version "1"
     And using new DAV path
     And user "Alice" has been created with default attributes and without skeleton files
+
 
   Scenario: Upload a file to a filename that is banned by default using new chunking
     When user "Alice" creates a new chunking upload with id "chunking-42" using the WebDAV API

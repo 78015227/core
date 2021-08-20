@@ -33,12 +33,17 @@ class EmailHelper {
 	 * retrieving emails sent from mailhog
 	 *
 	 * @param string $localMailhogUrl
+	 * @param string $xRequestId
 	 *
 	 * @return mixed JSON encoded contents
 	 */
-	public static function getEmails($localMailhogUrl) {
+	public static function getEmails(
+		$localMailhogUrl,
+		$xRequestId = ''
+	) {
 		$response = HttpRequestHelper::get(
 			$localMailhogUrl . "/api/v2/messages",
+			$xRequestId,
 			null,
 			null,
 			['Content-Type' => 'application/json']
@@ -52,6 +57,7 @@ class EmailHelper {
 	 *
 	 * @param string $localMailhogUrl
 	 * @param string $emailAddress
+	 * @param string $xRequestId
 	 * @param int $waitTimeSec Time to wait for the email
 	 *
 	 * @throws \Exception
@@ -59,10 +65,17 @@ class EmailHelper {
 	 * @return string
 	 */
 	public static function getBodyOfLastEmail(
-		$localMailhogUrl, $emailAddress, $waitTimeSec = EMAIL_WAIT_TIMEOUT_SEC
+		$localMailhogUrl,
+		$emailAddress,
+		$xRequestId,
+		$waitTimeSec = EMAIL_WAIT_TIMEOUT_SEC
 	) {
 		return self::getBodyOfEmail(
-			$localMailhogUrl, $emailAddress, 1, $waitTimeSec
+			$localMailhogUrl,
+			$emailAddress,
+			$xRequestId,
+			1,
+			$waitTimeSec
 		);
 	}
 
@@ -70,6 +83,7 @@ class EmailHelper {
 	 *
 	 * @param string $localMailhogUrl
 	 * @param string $emailAddress
+	 * @param string $xRequestId
 	 * @param int $emailNumber which number of multiple emails to read (first email is 1)
 	 * @param int $waitTimeSec Time to wait for the email
 	 *
@@ -80,6 +94,7 @@ class EmailHelper {
 	public static function getBodyOfEmail(
 		$localMailhogUrl,
 		$emailAddress,
+		$xRequestId = '',
 		$emailNumber = 1,
 		$waitTimeSec = EMAIL_WAIT_TIMEOUT_SEC
 	) {
@@ -88,7 +103,7 @@ class EmailHelper {
 
 		while ($currentTime <= $endTime) {
 			$skip = 1;
-			foreach (self::getEmails($localMailhogUrl)->items as $item) {
+			foreach (self::getEmails($localMailhogUrl, $xRequestId)->items as $item) {
 				$thisEmailAddress
 					= $item->To[0]->Mailbox . "@" . $item->To[0]->Domain;
 				if ($thisEmailAddress === $emailAddress) {
@@ -98,7 +113,8 @@ class EmailHelper {
 					}
 
 					$body = \str_replace(
-						"\r\n", "\n",
+						"\r\n",
+						"\n",
 						\quoted_printable_decode($item->Content->Body)
 					);
 					return $body;
@@ -115,6 +131,7 @@ class EmailHelper {
 	 *
 	 * @param string $localMailhogUrl
 	 * @param string $emailAddress
+	 * @param string $xRequestId
 	 * @param int $waitTimeSec Time to wait for the email
 	 *
 	 * @throws \Exception
@@ -124,11 +141,15 @@ class EmailHelper {
 	public static function emailReceived(
 		$localMailhogUrl,
 		$emailAddress,
+		$xRequestId,
 		$waitTimeSec = EMAIL_WAIT_TIMEOUT_SEC
 	) {
 		try {
 			self::getBodyOfLastEmail(
-				$localMailhogUrl, $emailAddress, $waitTimeSec
+				$localMailhogUrl,
+				$emailAddress,
+				$xRequestId,
+				$waitTimeSec
 			);
 		} catch (\Exception $err) {
 			return false;
@@ -141,6 +162,7 @@ class EmailHelper {
 	 *
 	 * @param string $localMailhogUrl
 	 * @param string $emailAddress
+	 * @param string $xRequestId
 	 * @param int $emailNumber which number of multiple emails to read (first email is 1)
 	 * @param int $waitTimeSec Time to wait for the email
 	 *
@@ -151,6 +173,7 @@ class EmailHelper {
 	public static function getSenderOfEmail(
 		$localMailhogUrl,
 		$emailAddress,
+		$xRequestId = '',
 		$emailNumber = 1,
 		$waitTimeSec = EMAIL_WAIT_TIMEOUT_SEC
 	) {
@@ -159,7 +182,7 @@ class EmailHelper {
 
 		while ($currentTime <= $endTime) {
 			$skip = 1;
-			foreach (self::getEmails($localMailhogUrl)->items as $item) {
+			foreach (self::getEmails($localMailhogUrl, $xRequestId)->items as $item) {
 				$thisEmailAddress
 					= $item->To[0]->Mailbox . "@" . $item->To[0]->Domain;
 				if ($thisEmailAddress === $emailAddress) {
@@ -179,12 +202,17 @@ class EmailHelper {
 	/**
 	 *
 	 * @param string $localMailhogUrl
+	 * @param string $xRequestId
 	 *
 	 * @return ResponseInterface
 	 */
-	public static function deleteAllMessages($localMailhogUrl) {
+	public static function deleteAllMessages(
+		$localMailhogUrl,
+		$xRequestId
+	) {
 		return HttpRequestHelper::delete(
-			$localMailhogUrl . "/api/v1/messages"
+			$localMailhogUrl . "/api/v1/messages",
+			$xRequestId
 		);
 	}
 

@@ -96,6 +96,13 @@ class Db implements IDb {
 	/**
 	 * @inheritdoc
 	 */
+	public function executeStatement($query, array $params = [], array $types = []) {
+		return $this->connection->executeStatement($query, $params, $types);
+	}
+
+	/**
+	 * @inheritdoc
+	 */
 	public function lastInsertId($table = null) {
 		return $this->connection->lastInsertId($table);
 	}
@@ -203,6 +210,13 @@ class Db implements IDb {
 	 */
 	public function getDatabasePlatform() {
 		return $this->connection->getDatabasePlatform();
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function getDatabaseVersionString() {
+		return $this->connection->getDatabaseVersionString();
 	}
 
 	/**

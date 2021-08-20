@@ -847,15 +847,15 @@ class RequestTest extends TestCase {
 	 */
 	public function testUserAgent($testAgent, $userAgent, $matches) {
 		$request = new Request(
-				[
+			[
 						'server' => [
 								'HTTP_USER_AGENT' => $testAgent,
 						]
 				],
-				$this->secureRandom,
-				$this->config,
-				$this->csrfTokenManager,
-				$this->stream
+			$this->secureRandom,
+			$this->config,
+			$this->csrfTokenManager,
+			$this->stream
 		);
 
 		$this->assertSame($matches, $request->isUserAgent($userAgent));
@@ -869,11 +869,11 @@ class RequestTest extends TestCase {
 	 */
 	public function testUndefinedUserAgent($testAgent, $userAgent, $matches) {
 		$request = new Request(
-				[],
-				$this->secureRandom,
-				$this->config,
-				$this->csrfTokenManager,
-				$this->stream
+			[],
+			$this->secureRandom,
+			$this->config,
+			$this->csrfTokenManager,
+			$this->stream
 		);
 
 		$this->assertFalse($request->isUserAgent($userAgent));
@@ -1147,7 +1147,7 @@ class RequestTest extends TestCase {
 			->expects($this->at(0))
 			->method('getSystemValue')
 			->with('overwritehost')
-			->will($this->returnValue('www.owncloud.org'));
+			->will($this->returnValue('www.owncloud.com'));
 		$this->config
 			->expects($this->at(1))
 			->method('getSystemValue')
@@ -1157,7 +1157,7 @@ class RequestTest extends TestCase {
 			->expects($this->at(2))
 			->method('getSystemValue')
 			->with('overwritehost')
-			->will($this->returnValue('www.owncloud.org'));
+			->will($this->returnValue('www.owncloud.com'));
 
 		$request = new Request(
 			[],
@@ -1167,7 +1167,7 @@ class RequestTest extends TestCase {
 			$this->stream
 		);
 
-		$this->assertSame('www.owncloud.org', self::invokePrivate($request, 'getOverwriteHost'));
+		$this->assertSame('www.owncloud.com', self::invokePrivate($request, 'getOverwriteHost'));
 	}
 
 	public function testGetPathInfoWithSetEnv() {

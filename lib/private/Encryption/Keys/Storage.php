@@ -34,7 +34,7 @@ use OC\User\NoUserException;
 class Storage implements IStorage {
 
 	// hidden file which indicate that the folder is a valid key storage
-	const KEY_STORAGE_MARKER = '.oc_key_storage';
+	public const KEY_STORAGE_MARKER = '.oc_key_storage';
 
 	/** @var View */
 	private $view;
@@ -154,6 +154,7 @@ class Storage implements IStorage {
 			// user's home is gone and so are the keys
 			//
 			// So there is nothing to do, just ignore.
+			return true;
 		}
 	}
 
@@ -200,6 +201,7 @@ class Storage implements IStorage {
 
 			return false;
 		}
+		return false;
 	}
 
 	/**

@@ -63,16 +63,16 @@ class OC_Defaults {
 		$this->defaultEntity = 'ownCloud'; /* e.g. company name, used for footers and copyright notices */
 		$this->defaultName = 'ownCloud'; /* short name, used when referring to the software */
 		$this->defaultTitle = 'ownCloud'; /* can be a longer name, for titles */
-		$this->defaultBaseUrl = 'https://owncloud.org';
-		$this->defaultSyncClientUrl = 'https://owncloud.org/install/#install-clients';
+		$this->defaultBaseUrl = 'https://owncloud.com';
+		$this->defaultSyncClientUrl = 'https://owncloud.com/desktop-app/';
 		$this->defaultiOSClientUrl = 'https://apps.apple.com/app/id1359583808';
 		$this->defaultiTunesAppId = '1359583808';
 		$this->defaultAndroidClientUrl = 'https://play.google.com/store/apps/details?id=com.owncloud.android';
-		$this->defaultDocBaseUrl = 'https://doc.owncloud.org';
+		$this->defaultDocBaseUrl = 'https://doc.owncloud.com';
 		$this->defaultDocVersion = $version[0] . '.' . $version[1]; // used to generate doc links
 		$this->defaultSlogan = $this->l->t('A safe home for all your data');
 		$this->defaultLogoClaim = '';
-		$this->defaultMailHeaderColor = '#1B223D'; /* header color of mail notifications */
+		$this->defaultMailHeaderColor = '#041e42'; /* header color of mail notifications */
 
 		$themePath = OC_Util::getTheme()->getDirectory();
 
@@ -285,12 +285,20 @@ class OC_Defaults {
 
 	/**
 	 * @param string $key
+	 * @param string|null $ocVersion ownCloud version to look for in the docs. Defaults to the version of this onwCloud instance
 	 */
-	public function buildDocLinkToKey($key) {
+	public function buildDocLinkToKey($key, $ocVersion = null) {
 		if ($this->themeExist('buildDocLinkToKey')) {
 			return $this->theme->buildDocLinkToKey($key);
 		}
-		return $this->getDocBaseUrl() . '/server/' . $this->defaultDocVersion . '/go.php?to=' . $key;
+
+		if ($ocVersion) {
+			$version = $ocVersion;
+		} else {
+			$version = $this->defaultDocVersion;
+		}
+
+		return $this->getDocBaseUrl() . '/server/' . $version . '/go.php?to=' . $key;
 	}
 
 	/**

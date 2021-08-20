@@ -59,12 +59,16 @@ class CreateCalendar extends Command {
 		$this
 			->setName('dav:create-calendar')
 			->setDescription('Create a dav calendar')
-			->addArgument('user',
+			->addArgument(
+				'user',
 				InputArgument::REQUIRED,
-				'User for whom the calendar will be created')
-			->addArgument('name',
+				'User for whom the calendar will be created'
+			)
+			->addArgument(
+				'name',
 				InputArgument::REQUIRED,
-				'Name of the calendar');
+				'Name of the calendar'
+			);
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
@@ -85,5 +89,6 @@ class CreateCalendar extends Command {
 		$name = $input->getArgument('name');
 		$caldav = new CalDavBackend($this->dbConnection, $principalBackend, $groupPrincipalBackend, $random);
 		$caldav->createCalendar("principals/users/$user", $name, []);
+		return 0;
 	}
 }

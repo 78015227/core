@@ -59,8 +59,13 @@ class ResetPasswordTest extends TestCase {
 		$this->timeFactory = $this->createMock(ITimeFactory::class);
 		$this->environmentHelper = $this->createMock(EnvironmentHelper::class);
 		$this->lostController = $this->createMock(LostController::class);
-		$this->resetPassword = new ResetPassword($this->userManager, $this->config, $this->timeFactory,
-			$this->environmentHelper, $this->lostController);
+		$this->resetPassword = new ResetPassword(
+			$this->userManager,
+			$this->config,
+			$this->timeFactory,
+			$this->environmentHelper,
+			$this->lostController
+		);
 	}
 
 	public function testResetPasswordFromEnv() {
@@ -91,7 +96,7 @@ class ResetPasswordTest extends TestCase {
 			->method('get')
 			->willReturn($user);
 
-		$this->assertNull($this->invokePrivate($this->resetPassword, 'execute', [$input, $output]));
+		$this->assertEquals(0, $this->invokePrivate($this->resetPassword, 'execute', [$input, $output]));
 	}
 
 	public function testDisplayLink() {

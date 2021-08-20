@@ -255,7 +255,6 @@ OC.L10N.register(
     "For larger installations we recommend to choose a different database backend." : "Pre veľké inštalácie odporúčame vybrať si iné databázové riešenie.",
     "Especially when using the desktop client for file syncing the use of SQLite is discouraged." : "Najmä pri používaní klientských aplikácií na synchronizáciu s desktopom neodporúčame používať SQLite.",
     "Finish setup" : "Dokončiť inštaláciu",
-    "Finishing …" : "Dokončujem...",
     "Need help?" : "Potrebujete pomoc?",
     "See the documentation" : "Pozri dokumentáciu",
     "Hey there,<br><br>just letting you know that %s shared <strong>%s</strong> with you.<br><a href=\"%s\">View it!</a><br><br>" : "Dobrý deň,<br><br>Používateľ %s zdieľa s vami súbor, alebo priečinok s názvom »%s«.<br><a href=\"%s\">Pre zobrazenie kliknite na túto linku!</a><br><br>",
@@ -275,7 +274,6 @@ OC.L10N.register(
     "Alternative Logins" : "Alternatívne prihlásenie",
     "Use the following link to reset your password: {link}" : "Použite nasledujúci odkaz pre obnovenie vášho hesla: {link}",
     "New password" : "Nové heslo",
-    "New Password" : "Nové heslo",
     "Reset password" : "Obnovenie hesla",
     "This ownCloud instance is currently in single user mode." : "Táto inštancia ownCloudu je teraz v jednopoužívateľskom móde.",
     "This means only administrators can use the instance." : "Len správca systému môže používať túto inštanciu.",
@@ -294,7 +292,6 @@ OC.L10N.register(
     "Start update" : "Spustiť aktualizáciu",
     "To avoid timeouts with larger installations, you can instead run the following command from your installation directory:" : "Aby nedošlo k vypršaniu časového limitu vo väčších inštaláciách, môžete namiesto toho použiť nasledujúci príkaz z inštalačného priečinka:",
     "Detailed logs" : "Podrobné záznamy",
-    "Update needed" : "Je potrebná aktualizácia",
     "For help, see the  <a target=\"_blank\" rel=\"noreferrer\" href=\"%s\">documentation</a>." : "Pomoc nájdete v  <a target=\"_blank\" rel=\"noreferrer\" href=\"%s\">dokumentácii</a>.",
     "This %s instance is currently in maintenance mode, which may take a while." : "Táto %s inštancia je v súčasnej dobe v režime údržby. Počkajte prosím.",
     "This page will refresh itself when the %s instance is available again." : "Táto stránka sa obnoví sama hneď ako bude %s inštancia znovu dostupná."

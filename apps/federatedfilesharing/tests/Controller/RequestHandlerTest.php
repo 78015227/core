@@ -50,7 +50,7 @@ use OCP\Share\IShare;
  * @group DB
  */
 class RequestHandlerTest extends TestCase {
-	const DEFAULT_TOKEN = 'abc';
+	public const DEFAULT_TOKEN = 'abc';
 
 	/**
 	 * @var IRequest | \PHPUnit\Framework\MockObject\MockObject
@@ -447,6 +447,9 @@ class RequestHandlerTest extends TestCase {
 		$this->ocmMiddleware->expects($this->once())
 			->method('getValidShare')
 			->willReturn($share);
+		$this->fedShareManager->expects($this->once())
+			->method('isFederatedReShare')
+			->willReturn(true);
 		$this->requestHandlerController->updatePermissions(5);
 	}
 

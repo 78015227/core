@@ -130,7 +130,8 @@ class ShareesController extends OCSController {
 	 * @param SharingBlacklist $sharingBlacklist
 	 * @param UserSearch $userSearch
 	 */
-	public function __construct($appName,
+	public function __construct(
+		$appName,
 		IRequest $request,
 		IGroupManager $groupManager,
 		IUserManager $userManager,
@@ -374,7 +375,7 @@ class ShareesController extends OCSController {
 
 	/**
 	 * @param string $search
-	 * @return array possible sharees
+	 * @return void
 	 */
 	protected function getRemote($search) {
 		$this->result['remotes'] = [];

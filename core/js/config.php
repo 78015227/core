@@ -241,7 +241,7 @@ $array = [
 ];
 
 if (\OC::$server->getUserSession() !== null && \OC::$server->getUserSession()->isLoggedIn()) {
-	$array['oc_appconfig']['federatedCloudShareDoc'] = \OC::$server->getURLGenerator()->linkToDocs('user-sharing-federated');
+	$array['oc_appconfig']['core']['federatedCloudShareDoc'] = \OC::$server->getURLGenerator()->linkToDocs('user-sharing-federated');
 	$array['oc_config']['version'] = \implode('.', \OCP\Util::getVersion());
 	$array['oc_config']['versionstring'] = OC_Util::getVersionString();
 	$array['oc_defaults']['docBaseUrl'] = $defaults->getDocBaseUrl();
@@ -253,10 +253,13 @@ if (\OC::$server->getUserSession() !== null && \OC::$server->getUserSession()->i
 
 	$user = \OC::$server->getUserSession()->getUser();
 	if ($user !== null) {
+		$groups = \OC::$server->getGroupManager()->getUserGroupIds($user);
+
 		$array['oc_user'] = \json_encode([
 			'uid' => $user->getUID(),
 			'displayName' => $user->getDisplayName(),
-			'email' => $user->getEMailAddress()
+			'email' => $user->getEMailAddress(),
+			'groups' => $groups,
 		]);
 	}
 }

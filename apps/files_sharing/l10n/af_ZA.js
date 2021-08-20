@@ -3,6 +3,7 @@ OC.L10N.register(
     {
     "Uploading..." : "Laai tans op…",
     "Cancel" : "Kanseleer",
+    "Add" : "Voeg Toe",
     "Share" : "Deel",
     "Pending" : "Hangend",
     "Sharing" : "Deling",
@@ -10,8 +11,9 @@ OC.L10N.register(
     "Accept" : "Aanvaar",
     "Decline" : "Verwerp",
     "This share is password-protected" : "Hierdie deling word met ’n wagwoord beskerm",
-    "The password is wrong. Try again." : "ie wagwoord is verkeerd. Probeer weer.",
     "Password" : "Wagwoord",
+    "The password is wrong. Try again." : "ie wagwoord is verkeerd. Probeer weer.",
+    "Proceed" : "Gaan voort",
     "No entries found in this folder" : "Geen inskrywings in hierdie vouer gevind",
     "Name" : "Naam",
     "Expiration date" : "Verval datum",

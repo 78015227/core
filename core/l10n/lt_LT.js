@@ -209,7 +209,6 @@ OC.L10N.register(
     "Database host" : "Duomenų bazės serveris",
     "SQLite will be used as database." : "Bus naudojama SQLite bazė.",
     "Finish setup" : "Baigti diegimą",
-    "Finishing …" : "Baigiama ...",
     "Need help?" : "Reikia pagalbos?",
     "See the documentation" : "Žiūrėti dokumentaciją",
     "Menu" : "Meniu",
@@ -224,13 +223,11 @@ OC.L10N.register(
     "Alternative Logins" : "Alternatyvūs prisijungimai",
     "Use the following link to reset your password: {link}" : "Slaptažodio atkūrimui naudokite šią nuorodą: {link}",
     "New password" : "Naujas slaptažodis",
-    "New Password" : "Naujas slaptažodis",
     "Reset password" : "Atkurti slaptažodį",
     "This ownCloud instance is currently in single user mode." : "Ši ownCloud sistema yra vieno naudotojo veiksenoje.",
     "This means only administrators can use the instance." : "Tai reiškia, kad tik administratorius gali naudotis sistema.",
     "Contact your system administrator if this message persists or appeared unexpectedly." : "Susisiekite su savo sistemos administratoriumi jei šis pranešimas nedingsta arba jei jis pasirodė netikėtai.",
     "Thank you for your patience." : "Dėkojame už jūsų kantrumą.",
-    "Cancel login" : "Atšaukti prisijungimą",
-    "Update needed" : "Reikalingas atnaujinimas"
+    "Cancel login" : "Atšaukti prisijungimą"
 },
 "nplurals=4; plural=(n % 10 == 1 && (n % 100 > 19 || n % 100 < 11) ? 0 : (n % 10 >= 2 && n % 10 <=9) && (n % 100 > 19 || n % 100 < 11) ? 1 : n % 1 != 0 ? 2: 3);");

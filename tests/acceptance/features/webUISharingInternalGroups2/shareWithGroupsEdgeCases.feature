@@ -13,6 +13,7 @@ Feature: Sharing files and folders with internal groups
     And user "Carol" has created folder "simple-folder"
     And user "Carol" has created folder "simple-folder/simple-empty-folder"
     And user "Carol" has created folder "simple-folder/simple-inner-folder"
+    And user "Carol" has created folder "simple-folder/simple-inner-folder/simple-inner-inner-folder"
 
   Scenario Outline: sharing  files and folder with an internal problematic group name
     Given these groups have been created:
@@ -404,7 +405,7 @@ Feature: Sharing files and folders with internal groups
     And user "Brian" should be able to upload file "filesForUpload/textfile.txt" to "simple-empty-folder/textfile.txt"
 
   @skipOnOcV10.3 @skipOnOcV10.4 @skipOnOcV10.5 @skipOnOcV10.6 @skipOnOcV10.7.0
-  Scenario: Reshare mount received from multiple group reshare by different users and different subfolders 
+  Scenario: Reshare mount received from multiple group reshare by different users and different subfolders
     Given these groups have been created:
       | groupname |
       | grp1      |
@@ -429,3 +430,120 @@ Feature: Sharing files and folders with internal groups
       | edit  | yes |
       | share | yes |
 
+  @skipOnOcV10.6 @skipOnOcV10.7.0
+  Scenario: Simple share of a file within nested folders to a group
+    Given these groups have been created:
+      | groupname |
+      | grp1      |
+    And user "Alice" has been added to group "grp1"
+    And user "Carol" has uploaded file with content "some data" to "/simple-folder/simple-inner-folder/simple-inner-inner-folder/textfile-1.txt"
+    And user "Carol" has logged in using the webUI
+    And the user opens folder "/simple-folder/simple-inner-folder/simple-inner-inner-folder" using the webUI
+    When the user shares file "textfile-1.txt" with group "grp1" using the webUI
+    Then the following permissions are seen for "textfile-1.txt" in the sharing dialog for group "grp1"
+      | edit   | yes |
+      | change | yes |
+      | share  | yes |
+    And the information for user "Alice" about the received share of file "textfile-1.txt" shared with a group should include
+      | share_type  | group           |
+      | file_target | /textfile-1.txt |
+      | uid_owner   | Carol           |
+      | share_with  | grp1            |
+      | permissions | 19              |
+
+  @skipOnOcV10.6 @skipOnOcV10.7.0
+  Scenario: Reshares with groups where the same file ends up in different mountpoints should have correct permissions
+    Given these groups have been created:
+      | groupname |
+      | grp1      |
+      | grp2      |
+      | grp3      |
+    And user "Alice" has been added to group "grp1"
+    And user "Brian" has been added to group "grp1"
+    And user "Alice" has been added to group "grp2"
+    And user "Brian" has been added to group "grp2"
+    And user "Alice" has been added to group "grp3"
+    And user "Brian" has been added to group "grp3"
+    And user "Carol" has uploaded file with content "some data" to "/simple-folder/simple-inner-folder/simple-inner-inner-folder/textfile-2.txt"
+    And user "Carol" has shared folder "/simple-folder" with user "Alice" with permissions "all"
+    And user "Alice" has shared file "/simple-folder" with group "grp2" with permissions "all"
+    And user "Alice" has shared file "/simple-folder/simple-inner-folder" with group "grp1" with permissions "read"
+    And user "Alice" has shared file "/simple-folder/simple-inner-folder/simple-inner-inner-folder" with group "grp2" with permissions "read,share,delete"
+    And user "Brian" has logged in using the webUI
+    And the user opens folder "/simple-folder/simple-inner-folder/simple-inner-inner-folder" using the webUI
+    When the user shares file "textfile-2.txt" with group "grp3" using the webUI
+    Then the following permissions are seen for "textfile-2.txt" in the sharing dialog for group "grp3"
+      | edit   | yes |
+      | change | yes |
+      | share  | yes |
+    And the information for user "Alice" about the received share of file "textfile-2.txt" shared with a group should include
+      | share_type  | group           |
+      | file_target | /textfile-2.txt |
+      | uid_owner   | Brian           |
+      | share_with  | grp3            |
+      | permissions | 19              |
+
+  @skipOnOcV10.6 @skipOnOcV10.7
+  Scenario: Reshares with groups of subfolder with lower permissions
+    Given these groups have been created:
+      | groupname |
+      | grp1      |
+      | grp2      |
+      | grp3      |
+    And user "Alice" has been added to group "grp1"
+    And user "Brian" has been added to group "grp1"
+    And user "Alice" has been added to group "grp2"
+    And user "Brian" has been added to group "grp2"
+    And user "Alice" has been added to group "grp3"
+    And user "Brian" has been added to group "grp3"
+    And user "Carol" has uploaded file with content "some data" to "/simple-folder/simple-inner-folder/simple-inner-inner-folder/textfile-2.txt"
+    And user "Carol" has shared folder "/simple-folder" with user "Alice" with permissions "all"
+    And user "Alice" has shared file "/simple-folder" with group "grp2" with permissions "all"
+    And user "Alice" has shared file "/simple-folder/simple-inner-folder" with group "grp1" with permissions "read"
+    And user "Alice" has logged in using the webUI
+    And the user opens folder "/simple-folder" using the webUI
+    When the user shares folder "simple-inner-folder" with group "grp3" using the webUI
+    Then the following permissions are seen for "simple-inner-folder" in the sharing dialog for group "grp3"
+      | edit   | yes |
+      | change | yes |
+      | share  | yes |
+    And the information for user "Brian" about the received share of folder "simple-inner-folder" shared with a group should include
+      | share_type  | group                |
+      | file_target | /simple-inner-folder |
+      | uid_owner   | Alice                |
+      | share_with  | grp3                 |
+      | permissions | 31                   |
+
+  @skipOnOcV10.6 @skipOnOcV10.7
+  Scenario: Reshares with groups where the same file ends up in different mountpoints that are renamed should have correct permissions
+    Given these groups have been created:
+      | groupname |
+      | grp1      |
+      | grp2      |
+      | grp3      |
+      | grp4      |
+    And user "Alice" has been added to group "grp1"
+    And user "Brian" has been added to group "grp1"
+    And user "Alice" has been added to group "grp2"
+    And user "Brian" has been added to group "grp2"
+    And user "Carol" has uploaded file with content "some data" to "/simple-folder/simple-inner-folder/simple-inner-inner-folder/textfile-2.txt"
+    And user "Carol" has shared folder "/simple-folder" with user "Alice" with permissions "all"
+    And user "Alice" has shared folder "/simple-folder" with group "grp2" with permissions "all"
+    And user "Alice" has shared folder "/simple-folder/simple-inner-folder" with group "grp1" with permissions "read"
+    And user "Brian" has created folder "/renamed-simple-folder"
+    And user "Brian" has logged in using the webUI
+    When the user opens the sharing tab from the file action menu of folder "simple-inner-folder" using the webUI
+    Then the user should see an error message on the share dialog saying "Sharing is not allowed"
+    # now move received simple-inner-folder into some folder
+    And the user moves folder "simple-inner-folder" into folder "renamed-simple-folder" using the webUI
+    And the user opens folder "/renamed-simple-folder" using the webUI
+    When the user opens the sharing tab from the file action menu of folder "simple-inner-folder" using the webUI
+    Then the user should see an error message on the share dialog saying "Sharing is not allowed"
+    # after move, sharing folder simple-inner-folder again but with different group should be possible
+    And the user browses to the home page
+    And the user opens folder "/simple-folder" using the webUI
+    When the user shares folder "simple-inner-folder" with group "grp3" using the webUI
+    Then the following permissions are seen for "simple-inner-folder" in the sharing dialog for group "grp3"
+      | edit   | yes |
+      | change | yes |
+      | share  | yes |

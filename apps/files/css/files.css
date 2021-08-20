@@ -408,6 +408,7 @@ table td.filename .nametext {
 	text-overflow: clip;
 	max-width: 800px;
 	height: 100%;
+	width: 100%;
 }
 
 .has-favorites #fileList td.filename a.name {
@@ -498,8 +499,8 @@ table td.filename .nametext .innernametext {
 /* for smaller resolutions - see mobile.css */
 
 table td.filename .uploadtext {
+	position: absolute;
 	font-weight: normal;
-	margin-left: 55px;
 	margin-top: 5px;
 	height: 20px;
 	padding: 10px 0;
@@ -889,15 +890,21 @@ html.ie8 #controls .button.new {
 }
 
 .newFileMenu {
-	width: 140px;
+	min-width: 140px;
 	margin-left: -56px;
 	margin-top: 25px;
 	z-index: 1001;
+	right: initial;
 }
 
 .newFileMenu .menuitem {
 	white-space: nowrap;
 	overflow: hidden;
+	display: flex;
+}
+
+.newFileMenu .menuitem .icon{
+	margin-top: 7px;
 }
 
 .newFileMenu.popovermenu .menuitem,
@@ -922,12 +929,8 @@ html.ie8 #controls .button.new {
 	right: auto;
 }
 
-.newFileMenu .filenameform {
-	display: inline-block;
-}
-
-.newFileMenu .filenameform input {
-	width: 100px;
+.newFileMenu .action-menu button {
+	font-size: 11px;
 }
 
 #fileList .popovermenu .action {

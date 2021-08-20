@@ -40,7 +40,7 @@ class AppConfigurationContext implements Context {
 	private $featureContext;
 
 	/**
-	 * @When /^the administrator sets parameter "([^"]*)" of app "([^"]*)" to "([^"]*)"$/
+	 * @When /^the administrator sets parameter "([^"]*)" of app "([^"]*)" to ((?:'[^']*')|(?:"[^"]*"))$/
 	 *
 	 * @param string $parameter
 	 * @param string $app
@@ -49,8 +49,13 @@ class AppConfigurationContext implements Context {
 	 * @return void
 	 */
 	public function adminSetsServerParameterToUsingAPI(
-		$parameter, $app, $value
+		$parameter,
+		$app,
+		$value
 	) {
+		// The capturing group of the regex always includes the quotes at each
+		// end of the captured string, so trim them.
+		$value = \trim($value, $value[0]);
 		$this->modifyAppConfig($app, $parameter, $value);
 	}
 
@@ -70,7 +75,7 @@ class AppConfigurationContext implements Context {
 			return;
 		}
 		$value = \trim($value, $value[0]);
-		$this->adminSetsServerParameterToUsingAPI($parameter, $app, $value);
+		$this->modifyAppConfig($app, $parameter, $value);
 	}
 
 	/**
@@ -84,7 +89,9 @@ class AppConfigurationContext implements Context {
 	 * @return void
 	 */
 	public function theCapabilitiesSettingOfAppParameterShouldBe(
-		$capabilitiesApp, $capabilitiesPath, $expectedValue
+		$capabilitiesApp,
+		$capabilitiesPath,
+		$expectedValue
 	) {
 		$this->theAdministratorGetsCapabilitiesCheckResponse();
 		$actualValue = $this->getAppParameter($capabilitiesApp, $capabilitiesPath);
@@ -125,8 +132,14 @@ class AppConfigurationContext implements Context {
 		$password = $this->featureContext->getPasswordForUser($user);
 		$this->featureContext->setResponse(
 			OcsApiHelper::sendRequest(
-				$this->featureContext->getBaseUrl(), $user, $password, 'GET', '/cloud/capabilities',
-				[], $this->featureContext->getOcsApiVersion()
+				$this->featureContext->getBaseUrl(),
+				$user,
+				$password,
+				'GET',
+				'/cloud/capabilities',
+				$this->featureContext->getStepLineRef(),
+				[],
+				$this->featureContext->getOcsApiVersion()
 			)
 		);
 	}
@@ -208,7 +221,9 @@ class AppConfigurationContext implements Context {
 	 * @return string
 	 */
 	public function getParameterValueFromXml(
-		$xml, $capabilitiesApp, $capabilitiesPath
+		$xml,
+		$capabilitiesApp,
+		$capabilitiesPath
 	) {
 		$path_to_element = \explode('@@@', $capabilitiesPath);
 		$answeredValue = $xml->{$capabilitiesApp};
@@ -239,7 +254,9 @@ class AppConfigurationContext implements Context {
 	 * @return boolean
 	 */
 	public function parameterValueExistsInXml(
-		$xml, $capabilitiesApp, $capabilitiesPath
+		$xml,
+		$capabilitiesApp,
+		$capabilitiesPath
 	) {
 		$path_to_element = \explode('@@@', $capabilitiesPath);
 		$answeredValue = $xml->{$capabilitiesApp};
@@ -286,6 +303,7 @@ class AppConfigurationContext implements Context {
 			$app,
 			$parameter,
 			$value,
+			$this->featureContext->getStepLineRef(),
 			$this->featureContext->getOcsApiVersion()
 		);
 	}
@@ -301,6 +319,7 @@ class AppConfigurationContext implements Context {
 			$this->featureContext->getAdminUsername(),
 			$this->featureContext->getAdminPassword(),
 			$appParameterValues,
+			$this->featureContext->getStepLineRef(),
 			$this->featureContext->getOcsApiVersion()
 		);
 	}
@@ -320,6 +339,7 @@ class AppConfigurationContext implements Context {
 			$this->featureContext->getAdminPassword(),
 			'POST',
 			"/apps/testing/api/v1/trustedservers",
+			$this->featureContext->getStepLineRef(),
 			['url' => $this->featureContext->substituteInLineCodes($url)]
 		);
 		$this->featureContext->setResponse($response);
@@ -432,6 +452,7 @@ class AppConfigurationContext implements Context {
 			$this->featureContext->getAdminPassword(),
 			'DELETE',
 			"/apps/testing/api/v1/trustedservers",
+			$this->featureContext->getStepLineRef(),
 			['url' => $this->featureContext->substituteInLineCodes($url)]
 		);
 		$this->featureContext->setResponse($response);
@@ -469,7 +490,8 @@ class AppConfigurationContext implements Context {
 			$adminUser,
 			$this->featureContext->getAdminPassword(),
 			'DELETE',
-			"/apps/testing/api/v1/trustedservers/all"
+			"/apps/testing/api/v1/trustedservers/all",
+			$this->featureContext->getStepLineRef()
 		);
 		$this->featureContext->setResponse($response);
 	}
@@ -504,6 +526,50 @@ class AppConfigurationContext implements Context {
 			$trustedServers,
 			__METHOD__ . " Trusted server list is not empty"
 		);
+	}
+
+	/**
+	 * Expires last created share using the testing API
+	 *
+	 * @return void
+	 */
+	public function expireLastCreatedUserShare() {
+		$adminUser = $this->featureContext->getAdminUsername();
+		$share_id = $this->featureContext->getLastShareId();
+		$response = OcsApiHelper::sendRequest(
+			$this->featureContext->getBaseUrl(),
+			$adminUser,
+			$this->featureContext->getAdminPassword(),
+			'POST',
+			"/apps/testing/api/v1/expire-share/{$share_id}",
+			$this->featureContext->getStepLineRef(),
+			[],
+			$this->featureContext->getOcsApiVersion()
+		);
+		$this->featureContext->setResponse($response);
+	}
+
+	/**
+	 * @Given the administrator has expired the last created share using the testing API
+	 *
+	 * @return void
+	 */
+	public function theAdministratorHasExpiredTheLastCreatedShare() {
+		$this->expireLastCreatedUserShare();
+		Assert::assertSame(
+			200,
+			$this->featureContext->getResponse()->getStatusCode(),
+			"Request to expire last share failed."
+		);
+	}
+
+	/**
+	 * @When the administrator expires the last created share using the testing API
+	 *
+	 * @return void
+	 */
+	public function theAdministratorExpiresTheLastCreatedShare() {
+		$this->expireLastCreatedUserShare();
 	}
 
 	/**

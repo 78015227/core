@@ -54,6 +54,52 @@ $CONFIG = [
 'admin_audit.groups' => ['group1', 'group2'],
 
 /**
+ * App: Files Antivirus
+ *
+ * Possible keys: `files_antivirus.av_path` STRING
+ *
+ * Possible keys: `files_antivirus.av_cmd_options` STRING
+ */
+
+/**
+ * Default path to the _clamscan_ command line anti-virus scanner.
+ * This setting only applies when the operating mode of the `files_antivirus` app is set to executable mode.
+ * See the documentation for more details.
+ */
+'files_antivirus.av_path' => '/usr/bin/clamscan',
+
+/**
+ * Command line options for the _clamscan_ command line anti-virus scanner.
+ * This setting only applies when the operating mode of the `files_antivirus` app is set to executable mode.
+ * See the documentation for more details.
+ */
+'files_antivirus.av_cmd_options' => '',
+
+/**
+ * App: Files Versions
+ *
+ * Possible keys: `versions_retention_obligation` STRING
+ *
+ * Use following values to configure the retention behaviour. Replace `D` with the number of days.
+ *
+ * auto::
+ * Default value if nothing is set
+ * D, auto::
+ * Keep versions at least for D days, apply expiration rules to all versions that are older than D days
+ * auto, D::
+ * Delete all versions that are older than D days automatically, delete other versions according to expiration rules
+ * D1, D2::
+ * Keep versions for at least D1 days and delete when they exceed D2 days
+ * disabled::
+ * Disable Versions; no files will be deleted.
+ */
+
+/**
+ * Pattern to define the expiration date for each backup version created.
+ */
+'versions_retention_obligation' => 'auto',
+
+/**
  * App: Firstrunwizard
  *
  * Possible keys: `customclient_desktop` URL
@@ -70,7 +116,7 @@ $CONFIG = [
  */
 
 'customclient_desktop' =>
-	'https://owncloud.org/install/#install-clients',
+	'https://owncloud.com/desktop-app/',
 'customclient_android' =>
 	'https://play.google.com/store/apps/details?id=com.owncloud.android',
 'customclient_ios' =>
@@ -106,7 +152,7 @@ $CONFIG = [
 /**
  * App: Metrics
  *
- * Note: This app is for Enterprise Customers only.
+ * Note: This app is for Enterprise customers only.
  *
  * Possible keys: `metrics_shared_secret` STRING
  */
@@ -125,7 +171,7 @@ $CONFIG = [
 /**
  * App: Microsoft Office Online (WOPI)
  *
- * Note: This app is for Enterprise Customers only.
+ * Note: This app is for Enterprise customers only.
  *
  * Possible keys: `wopi.token.key` STRING
  *
@@ -199,13 +245,14 @@ $CONFIG = [
  * login without requiring the user to click a button. The default is `false`.
  *
  * auto-provision::
- * If auto-provision is setup, an owncloud user will be created after successful login
- * using openid connect. The config parameters 'mode' and 'search-attribute' will be used
- * to create a unique user so that the lookup mechanism can find the user again.
- * If auto-provision is not setup, it is expected that the user exists.
- * This is where an LDAP setup is usually required. `auto-provision` holds several sub keys,
- * see the example setup with the explanations below.
-*
+ * If auto-provision is setup, an ownCloud user will be created if not exists, after successful
+ * login using openid connect. The config parameters `mode` and `search-attribute` will be used
+ * to create a unique user so that the lookup mechanism can find the user again. This is where
+ * an LDAP setup is usually required.
+ * If auto-provision is not setup or required, it is expected that the user exists and you
+ * MUST declare this with `['enabled' => false]` like shown in the Easy Setup example.
+ * `auto-provision` holds several sub keys, see the example setup with the explanations below.
+ *
  * insecure::
  * Boolean value (`true`/`false`), no SSL verification will take place when talking to the
  * IdP - **DO NOT use in production!**
@@ -270,6 +317,8 @@ $CONFIG = [
  * Easy setup
  */
 'openid-connect' => [
+	  // it is expected that the user already exists in ownCloud
+	'auto-provision' => ['enabled' => false],
 	'provider-url' => 'https://idp.example.net',
 	'client-id' => 'fc9b5c78-ec73-47bf-befc-59d4fe780f6f',
 	'client-secret' => 'e3e5b04a-3c3c-4f4d-b16c-2a6e9fdd3cd1',
@@ -280,8 +329,9 @@ $CONFIG = [
  * Setup auto provisioning mode
  */
 'openid-connect' => [
-	  'auto-provision' => [
-		  // explicit enable the auto provisioning mode
+	  // explicit enable the auto provisioning mode,
+	  // if not exists, the user will be created in ownCloud
+	'auto-provision' => [
 		'enabled' => true,
 		  // documentation about standard claims:
 		  // https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
@@ -293,19 +343,26 @@ $CONFIG = [
 		'picture-claim' => 'picture',
 		  // defines a list of groups to which the newly created user will be added automatically
 		'groups' => ['admin', 'guests', 'employees']
-	  ],
+	],
+	  // `mode` and `search-attribute` will be used to create a unique user in ownCloud
+	'mode' => 'email',
+	'search-attribute' => 'email',
 ],
 
 /**
  * Manual setup
  */
 'openid-connect' => [
+	  // it is expected that the user already exists in ownCloud
+	'auto-provision' => ['enabled' => false],
 	'autoRedirectOnLoginPage' => false,
 	'client-id' => 'fc9b5c78-ec73-47bf-befc-59d4fe780f6f',
 	'client-secret' => 'e3e5b04a-3c3c-4f4d-b16c-2a6e9fdd3cd1',
 	'loginButtonName' => 'OpenId Connect',
 	'mode' => 'userid',
-	  // Only required if the OpenID Connect Provider does not support service discovery
+	'search-attribute' => 'sub',
+	  // only required if the OpenID Connect Provider does not support service discovery
+	  // replace the dots with your values
 	'provider-params' => [
 		'authorization_endpoint' => '...',
 		'end_session_endpoint' => '...',
@@ -316,7 +373,6 @@ $CONFIG = [
 		'userinfo_endpoint' => '...'
 	],
 	'provider-url' => '...',
-	'search-attribute' => 'sub',
 	'use-token-introspection-endpoint' => true
 ],
 
@@ -324,17 +380,19 @@ $CONFIG = [
  * Test setup
  */
 'openid-connect' => [
-	  'provider-url' => 'http://localhost:3000',
-	  'client-id' => 'ownCloud',
-	  'client-secret' => 'ownCloud',
-	  'loginButtonName' => 'node-oidc-provider',
-	  'mode' => 'userid',
-	  'search-attribute' => 'sub',
-	  'use-token-introspection-endpoint' => true,
-		// do not verify tls host or peer
-	  'insecure' => true
+	  // it is expected that the user already exists in ownCloud
+	'auto-provision' => ['enabled' => false],
+	'provider-url' => 'http://localhost:3000',
+	'client-id' => 'ownCloud',
+	'client-secret' => 'ownCloud',
+	'loginButtonName' => 'node-oidc-provider',
+	'mode' => 'userid',
+	'search-attribute' => 'sub',
+	'use-token-introspection-endpoint' => true,
+	  // do not verify tls host or peer
+	'insecure' => true
 ],
-  
+
 /**
  * App: Richdocuments
  *
@@ -345,19 +403,18 @@ $CONFIG = [
  * Define the group name for users allowed to use Collabora
  * Please note, only one group can be defined. Default = empty = no restriction.
  */
-
 'collabora_group' => '',
 
 /**
  * App: Windows Network Drive (WND)
  *
- * Note: This app is for Enterprise Customers only.
+ * Note: This app is for Enterprise customers only.
  *
  * Possible keys: `wnd.listen.reconnectAfterTime` INTEGER
  *
  * Possible keys: `wnd.logging.enable` BOOL
  *
- * Possible keys: `wnd.storage.testForHiddenMount` BOOL
+ * Possible keys: `wnd.fileInfo.parseAttrs.mode` STRING
  *
  * Possible keys: `wnd.in_memory_notifier.enable` BOOL
  *
@@ -368,10 +425,14 @@ $CONFIG = [
  * Possible keys: `wnd.activity.registerExtension` BOOL
  *
  * Possible keys: `wnd.activity.sendToSharees` BOOL
+ *
+ * Possible keys: `wnd.groupmembership.checkUserFirst` BOOL
+ *
+ * *Note* With WND 2.1.0, key `wnd.storage.testForHiddenMount` is obsolete and has been removed completely.
  */
 
 /**
- * Mandatory listener reconnect to the database
+ * Mandatory Listener Reconnect to the Database
  * The listener will reconnect to the DB after given seconds. This will
  * prevent the listener to crash if the connection to the DB is closed after
  * being idle for a long time.
@@ -379,22 +440,33 @@ $CONFIG = [
 'wnd.listen.reconnectAfterTime' => 28800,
 
 /**
- * Enable additional debug logging for the WND app
+ * Enable Additional Debug Logging for the WND App
  */
 'wnd.logging.enable' => false,
 
 /**
- * Check for visible target mount folders when connecting
- * Ensure that the connectivity check verifies the mount point is visible.
- * This means the target folder is NOT hidden.
- * Setting this option to false can speed up the connectivity check by skipping
- * this step. It will be the admin's responsibility to ensure the mount
- * point is visible. This setting will affect all the WND mount points.
+ * The Way File Attributes for Folders and Files will be Handled
+ * There are 3 possible values: "none", "stat" and "getxattr":
+ *
+ * - "stat". This is the default if the option is missing or has an invalid value.
+ *   This means that the file attributes will be evaluated only for files, NOT for folders.
+ *   Folders will be shown even if the "hidden" file attribute is set.
+ *
+ * - "none". This means that the file attributes won't be evaluated in any case. Both
+ *   hidden files and folders will be shown, and you can write on read-only files
+ *   (the action is available in ownCloud, but it will fail in the SMB server).
+ *
+ * - "getxattr". This means that file attributes will always be evaluated. However, due to
+ *   problems in recent libsmbclient versions (4.11+, it might be earlier) it will cause
+ *   malfunctions in ownCloud; permissions are wrongly evaluated. So far, this mode works
+ *   with libsmbclient 4.7 but not with 4.11+ (not tested with any version in between).
+ *
+ * Note that the ACLs (if active) will be evaluated and applied on top of this mechanism.
  */
-'wnd.storage.testForHiddenMount' => true,
+'wnd.fileInfo.parseAttrs.mode' => stat,
 
 /**
- * Enable or disable the WND in-memory notifier for password changes
+ * Enable or Disable the WND In-Memory Notifier for Password Changes
  * Having this feature enabled implies that whenever a WND process detects a
  * wrong password in the storage - maybe the password has changed in the
  * backend - all WND storages that are in-memory will be notified in order to reset
@@ -408,7 +480,7 @@ $CONFIG = [
 'wnd.in_memory_notifier.enable' => true,
 
 /**
- * Maximum number of items for the cache used by the WND permission managers
+ * Maximum Number of Items for the Cache Used by the WND Permission Managers
  * A higher number implies that more items are allowed, increasing the memory usage.
  * Real memory usage per item varies because it depends on the path being cached.
  * Note that this is an in-memory cache used per request.
@@ -418,7 +490,7 @@ $CONFIG = [
 'wnd.permissionmanager.cache.size' => 512,
 
 /**
- * TTL for the WND2 caching wrapper
+ * TTL for the WND2 Caching Wrapper
  * Time to Live (TTL) in seconds to be used to cache information for the WND2 (collaborative)
  * cache wrapper implementation. The value will be used by all WND2 storages. Although the
  * cache isn't exactly per user but per storage id, consider the cache to be per user, because
@@ -430,7 +502,7 @@ $CONFIG = [
 'wnd2.cachewrapper.ttl' => 1800,  // 30 minutes
 
 /**
- * Enable to push WND events to the activity app
+ * Enable to Push WND Events to the Activity App
  * Register WND as extension into the Activity app in order to send information about what
  * the `wnd:process-queue` command is doing. The activity sent will be based on what
  * the `wnd:process-queue` detects, and the activity will be sent to each affected user. There
@@ -442,12 +514,45 @@ $CONFIG = [
 'wnd.activity.registerExtension' => false,
 
 /**
- * Enable to send WND activity notifications to sharees
+ * Enable to Send WND Activity Notifications to Sharees
  * The `wnd:process-queue` command will also send activity notifications to the sharees
  * if a WND file or folder is shared (or accessible via a share). It's REQUIRED that the
  * `wnd.activity.registerExtension` flag is set to true (see above), otherwise this flag will
  * be ignored. This flag depends on the `wnd.activity.registerExtension` and has the same restrictions.
  */
 'wnd.activity.sendToSharees' => false,
+
+/**
+ * Make the Group Membership Component Assume that the ACL Contains a User
+ * The WND app doesn't know about the users or groups associated with ACLs. This
+ * means that an ACL containing "admin" might refer to a user called "admin" or a
+ * group called "admin". By default, the group membership component considers the ACLs to
+ * target groups, and as such, it will try to get the information for such a group. This
+ * works fine if the majority of the ACLs target groups. If the majority of the ACLs
+ * contain users, this might be problematic. The cost of getting information on a
+ * group is usually higher than getting information on a user. This option
+ * makes the group membership component assume the ACL contains a user and checks whether
+ * there is a user in ownCloud with such a name first. If the name doesn't refer to a user,
+ * it will get the group information. Note that this will have performance implications
+ * if the group membership component can't discard users in a large number of cases. It is
+ * recommended to enable this option only if there are a high number of ACLs targeting users.
+ */
+'wnd.groupmembership.checkUserFirst' => false,
+
+/**
+ * App: Workflow / Tagging
+ *
+ * Note: This app is for Enterprise customers only.
+ *
+ * Possible keys: `workflow.retention_engine` STRING
+ */
+
+/**
+ * Provide Advanced Management of File Tagging
+ * Enables admins to specify rules and conditions (file size, file mimetype, group membership and more)
+ * to automatically assign tags to uploaded files. Values: `tagbased` (default) or `userbased`.
+ */
+
+'workflow.retention_engine' => 'tagbased',
 
 ];

@@ -4,7 +4,7 @@ Feature: poll incoming shares
   I want to be able to poll incoming shares manually
   So that I can make sure all shares are up-to-date
 
-  @files_sharing-app-required
+  @files_sharing-app-required @skipOnOcV10.6 @skipOnOcV10.7.0
   Scenario: poll incoming share with a federation share of deep nested folders when there is a file change in remote end
     Given using server "REMOTE"
     And user "Alice" has been created with default attributes and small skeleton files
@@ -23,11 +23,11 @@ Feature: poll incoming shares
     And user "Brian" from server "LOCAL" has accepted the last pending share
     When user "Alice" on "REMOTE" uploads file "filesForUpload/lorem.txt" to "/really/very/deeply/nested/folder/with/sub/folders/lorem.txt" using the WebDAV API
     And using server "LOCAL"
-    Then the etag of element "/" of user "Brian" should not have changed
+    Then the etag of element "/" of user "Brian" should have changed
     When the administrator invokes occ command "incoming-shares:poll"
     Then the etag of element "/" of user "Brian" should have changed
 
-  @files_sharing-app-required
+  @files_sharing-app-required @skipOnOcV10.6 @skipOnOcV10.7.0
   Scenario: poll incoming share with a federation share and no file change
     Given using server "REMOTE"
     And user "Alice" has been created with default attributes and small skeleton files
@@ -38,7 +38,7 @@ Feature: poll incoming shares
     And user "Alice" from server "REMOTE" has shared "/shareFolder" with user "Brian" from server "LOCAL"
     And user "Brian" from server "LOCAL" has accepted the last pending share
     And using server "LOCAL"
-    Then the etag of element "/" of user "Brian" should not have changed
+    Then the etag of element "/" of user "Brian" should have changed
     When the administrator invokes occ command "incoming-shares:poll"
     Then the etag of element "/" of user "Brian" should have changed
 

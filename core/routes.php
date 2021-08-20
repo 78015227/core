@@ -54,6 +54,7 @@ $application->registerRoutes($this, [
 		['name' => 'Cron#run', 'url' => '/cron', 'verb' => 'GET'],
 		['name' => 'License#getGracePeriod', 'url' => '/license/graceperiod', 'verb' => 'GET'],
 		['name' => 'License#setNewLicense', 'url' => '/license/license', 'verb' => 'POST'],
+		['name' => 'License#removeLicense', 'url' => '/license/license', 'verb' => 'DELETE'],
 		['name' => 'License#getLicenseMessage', 'url' => '/license/licenseMessage', 'verb' => 'GET'],
 	],
 	'ocs' => [
@@ -102,7 +103,7 @@ $this->create('files.viewcontroller.showFile', '/f/{fileId}')->action(static fun
 		// Check the old phoenix.baseUrl system key to provide compatibility across the name change
 		$webBaseUrl = \OC::$server->getConfig()->getSystemValue('phoenix.baseUrl', null);
 	}
-	if ($webBaseUrl) {
+	if (isWebRewriteLinksEnabled()) {
 		$webBaseUrl = \rtrim($webBaseUrl, '/');
 		$fileId = $urlParams['fileId'];
 		\OC_Response::redirect("$webBaseUrl/index.html#/f/$fileId");
@@ -119,7 +120,7 @@ $this->create('files_sharing.sharecontroller.showShare', '/s/{token}')->action(s
 		// Check the old phoenix.baseUrl system key to provide compatibility across the name change
 		$webBaseUrl = \OC::$server->getConfig()->getSystemValue('phoenix.baseUrl', null);
 	}
-	if ($webBaseUrl) {
+	if (isWebRewriteLinksEnabled()) {
 		$webBaseUrl = \rtrim($webBaseUrl, '/');
 		$token = $urlParams['token'];
 		\OC_Response::redirect("$webBaseUrl/index.html#/s/$token");
@@ -145,3 +146,20 @@ $this->create('files_sharing.sharecontroller.downloadShare', '/s/{token}/downloa
 $this->create('heartbeat', '/heartbeat')->action(function () {
 	// do nothing
 });
+
+/**
+ * Asserts whether rewriting private and public links to the ownCloud Web UI is enabled.
+ *
+ * Since we have two different deployment modes - external or as oc10 app -
+ * we can't just decide based on whether or not the app is enabled. Only if it's
+ * installed at all, we return false on the disabled app.
+ *
+ * @return bool
+ */
+function isWebRewriteLinksEnabled(): bool {
+	if (\OC::$server->getAppManager()->isInstalled('web')
+		&& !\OC::$server->getAppManager()->isEnabledForUser('web')) {
+		return false;
+	}
+	return \OC::$server->getConfig()->getSystemValue('web.rewriteLinks', false);
+}

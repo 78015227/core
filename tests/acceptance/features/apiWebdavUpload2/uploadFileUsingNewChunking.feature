@@ -1,4 +1,4 @@
-@api @issue-ocis-reva-56
+@api @issue-ocis-reva-56 @notToImplementOnOCIS @newChunking @issue-ocis-1321
 Feature: upload file using new chunking
   As a user
   I want to be able to upload "large" files in chunks
@@ -100,7 +100,7 @@ Feature: upload file using new chunking
     Then the HTTP status code should be "404"
 
 
-  Scenario: Upload to new dav path using old way should fail
+  Scenario: Upload to new DAV path using old way should fail
     When user "Alice" uploads chunk file "1" of "3" with "AAAAA" to "/myChunkedFile.txt" using the WebDAV API
     Then the HTTP status code should be "503"
 
@@ -168,3 +168,21 @@ Feature: upload file using new chunking
       | file-name |
       | &#?       |
       | TIÄFÜ     |
+
+
+  Scenario: Upload chunked file with new chunking with lengthy filenames
+    Given the owncloud log level has been set to debug
+    And the owncloud log has been cleared
+    When user "Alice" uploads the following chunks to "हजार नेपालि-file-नाम-नेपालि-file-नाम-नेपालि-file-नाम-नेपालि-file-नाम-नेपालि-file-नाम-नेपालि-file-नाम-012345.txt" with new chunking and using the WebDAV API
+      | number | content                   |
+      | 1      | AAAAAAAAAAAAAAAAAAAAAAAAA |
+      | 2      | BBBBBBBBBBBBBBBBBBBBBBBBB |
+      | 3      | CCCCCCCCCCCCCCCCCCCCCCCCC |
+    Then the HTTP status code should be "201"
+    And the following headers should match these regular expressions for user "Alice"
+      | ETag | /^"[a-f0-9:\.]{1,32}"$/ |
+    And as "Alice" file "हजार नेपालि-file-नाम-नेपालि-file-नाम-नेपालि-file-नाम-नेपालि-file-नाम-नेपालि-file-नाम-नेपालि-file-नाम-012345.txt" should exist
+    And the content of file "हजार नेपालि-file-नाम-नेपालि-file-नाम-नेपालि-file-नाम-नेपालि-file-नाम-नेपालि-file-नाम-नेपालि-file-नाम-012345.txt" for user "Alice" should be "AAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBBBBBBBBBBBBBBBBBBCCCCCCCCCCCCCCCCCCCCCCCCC"
+    And the log file should not contain any log-entries containing these attributes:
+      | app |
+      | dav |

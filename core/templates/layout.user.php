@@ -4,6 +4,7 @@
 		<meta charset="utf-8">
 		<title>
 			<?php
+				/** @var OC_Theme $theme */
 				p(!empty($_['application'])?$_['application'].' - ':'');
 				p($theme->getTitle());
 			?>
@@ -23,7 +24,7 @@
 		<meta name="theme-color" content="<?php p($theme->getMailHeaderColor()); ?>">
 		<link rel="icon" href="<?php print_unescaped(image_path($_['appid'], 'favicon.ico')); /* IE11+ supports png */ ?>">
 		<link rel="apple-touch-icon-precomposed" href="<?php print_unescaped(image_path($_['appid'], 'favicon-touch.png')); ?>">
-		<link rel="mask-icon" sizes="any" href="<?php print_unescaped(image_path($_['appid'], 'favicon-mask.svg')); ?>" color="#1B223D">
+		<link rel="mask-icon" sizes="any" href="<?php print_unescaped(image_path($_['appid'], 'favicon-mask.svg')); ?>" color="#041e42">
 		<link rel="manifest" href="<?php print_unescaped(image_path($_['appid'], 'manifest.json')); ?>">
 		<?php foreach ($_['cssfiles'] as $cssfile): ?>
 			<link rel="stylesheet" href="<?php print_unescaped($cssfile); ?>">
@@ -36,7 +37,11 @@
 		<?php endforeach; ?>
 		<?php print_unescaped($_['headers']); ?>
 	</head>
-	<body id="<?php p($_['bodyid']);?>">
+	<body id="<?php p($_['bodyid']);?>" <?php
+	
+	if ($theme->getName() !== 'ownCloud') {
+		print_unescaped('class="theme-' . \str_replace(' ', '-', $theme->getName()) . ' has-theme"');
+	} ?> >
 		<?php include('layout.noscript.warning.php'); ?>
 		<div id="notification-container">
 			<div id="notification"></div>
@@ -61,10 +66,10 @@
 					<div id="expand" tabindex="6" role="link" class="menutoggle">
 						<?php if ($_['enableAvatars']): ?>
 						<div class="avatardiv<?php if ($_['userAvatarSet']) {
-				print_unescaped(' avatardiv-shown');
-			} else {
-				print_unescaped('" style="display: none');
-			} ?>">
+		print_unescaped(' avatardiv-shown');
+	} else {
+		print_unescaped('" style="display: none');
+	} ?>">
 							<?php if ($_['userAvatarSet']): ?>
 								<img alt="" width="32" height="32"
 								src="<?php p(\OC::$server->getURLGenerator()->linkToRoute('core.avatar.getAvatar', ['userId' => $_['user_uid'], 'size' => 32]));?>"

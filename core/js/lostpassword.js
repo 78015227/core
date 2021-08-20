@@ -1,4 +1,3 @@
-
 OC.Lostpassword = {
 	sendErrorMsg : t('core', 'Couldn\'t send reset email. Please contact your administrator.'),
 
@@ -76,8 +75,10 @@ OC.Lostpassword = {
 
 	resetPassword : function(event){
 		$('#password').parent().removeClass('shake');
+
 		event.preventDefault();
 		if ($('#password').val() === $('#retypepassword').val()){
+			$('#reset-password #submit').addClass('icon-loading-small');
 			$.post(
 					$('#password').parents('form').attr('action'),
 					{
@@ -114,6 +115,8 @@ OC.Lostpassword = {
 					OC.Lostpassword.redirect
 			);
 		} else {
+			$('#reset-password #submit').removeClass('icon-loading-small');
+
 			if (result && result.msg){
 				resetErrorMsg = result.msg;
 			} else if (result && result.encryption) {
@@ -141,7 +144,7 @@ OC.Lostpassword = {
 
 	getResetStatusNode : function (){
 		if (!$('#lost-password').length){
-			$('<p id="lost-password"></p>').insertBefore($('#reset-password fieldset'));
+			$('#reset-password .submit-wrap').prepend($('<p id="lost-password"></p>'));
 		} else {
 			$('#lost-password').replaceWith($('<p id="lost-password"></p>'));
 		}

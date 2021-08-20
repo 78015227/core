@@ -26,7 +26,11 @@
     "Remote share password" : "Fjalëkalim ndarjeje të largët",
     "Cancel" : "Anuloje",
     "Add remote share" : "Shtoni ndarje të largët",
+    "The video cannot be played because your browser does not support the file type. Please try another browser." : "Kjo video s’mund të luhet, ngaqë shfletuesi juaj nuk mbulon llojin e kartelës. Ju lutemi, provoni një shfletues tjetër.",
     "You can upload into this folder" : "Mund të ngarkoni te kjo dosje",
+    "Add to another cloud" : "Shtojeni në një re tjetër",
+    "Enter the server address to add the content to" : "Jepni adresën e shërbyesit ku të shtohet lënda",
+    "Add" : "Shtoni",
     "No ownCloud installation (7 or higher) found at {remote}" : "Te {remote} s’u gjet instalim ownCloud (7 ose më sipër)",
     "Invalid ownCloud url" : "URL ownCloud e pavlefshme",
     "Share" : "Ndaje me të tjerë",
@@ -80,6 +84,8 @@
     "Public link expired" : "Lidhja publike skadoi",
     "Public link of %2$s expired" : "Lidhja publike e %2$s skadoi",
     "Shared by %2$s" : "U nda nga %2$s",
+    "Received remote share from %1$s" : "U mor ndarje e largët prej %1$s",
+    "Received remote share from %s" : "U mor ndarje e largët prej %s",
     "Shares" : "Ndarje",
     "File sharing" : "Ndarje kartelash me të tjerët",
     "Public link" : "Lidhje publike",
@@ -96,6 +102,7 @@
     "Please specify a valid group" : "Ju lutemi, tregoni një grup të vlefshëm",
     "The group is blacklisted for sharing" : "Grupit i është bllokuar shkëmbimi",
     "Public link sharing is disabled by the administrator" : "Ndarja e lidhjeve publike është çaktivizuar nga përgjegjësi",
+    "Public link creation is only possible for certain groups" : "Krijimi i lidhjeve publike është i mundshëm vetëm për disa grupe të caktuara",
     "Public upload disabled by the administrator" : "Ngarkimi publik është çaktivizuar nga përgjegjësi",
     "Public upload is only possible for publicly shared folders" : "Ngarkimi publik është i mundshëm vetëm për dosje të ndara publikisht",
     "Sharing %s failed because the back end does not allow shares from type %s" : "Ndarja e %s dështoi, ngaqë pjesa përgjegjëse e shërbyesit nuk lejon ndarje prej llojit %s",
@@ -115,8 +122,9 @@
     "Automatically accept new incoming local user shares" : "Prano vetvetiu ndarje të reja që vijnë nga përdorues vendorë",
     "Allow finding you via autocomplete in share dialog. If this is disabled the full username needs to be entered." : "Lejoni gjetjen tuaj përmes vetëplotësimi te dialogu i ndarjeve me të tjerët. Nëse kjo është e çaktivizuar, do të duhet të jepen emra përdoruesish.",
     "This share is password-protected" : "Kjo ndarje është e mbrojtur me fjalëkalim",
-    "The password is wrong. Try again." : "Fjalëkalimi është i gabuar. Riprovoni.",
     "Password" : "Fjalëkalim",
+    "The password is wrong. Try again." : "Fjalëkalimi është i gabuar. Riprovoni.",
+    "Proceed" : "Bëje",
     "No entries found in this folder" : "S’u gjetën zëra në këtë dosje",
     "Name" : "Emër",
     "State" : "Gjendje",
@@ -135,6 +143,7 @@
     "Nothing to configure." : "S’ka gjë për formësim.",
     "Group Sharing Blacklist" : "Listë Bllokimesh Grupesh Ndarjesh",
     "Exclude groups from receiving shares" : "Përjashto grupe nga marrje ndarjesh",
-    "These groups will not be available to share with. Members of the group are not restricted in initiating shares and can receive shares with other groups they are a member of as usual." : "Për këto grupe nuk do të jetë e mundur të ndajnë me të tjerët. Anëtarët e grupit nuk janë të kufizuar të nisin ndarje dhe mund të marrin ndarje me grupe të tjerë te të cilët janë anëtarë, si zakonisht."
+    "These groups will not be available to share with. Members of the group are not restricted in initiating shares and can receive shares with other groups they are a member of as usual." : "Për këto grupe nuk do të jetë e mundur të ndajnë me të tjerët. Anëtarët e grupit nuk janë të kufizuar të nisin ndarje dhe mund të marrin ndarje me grupe të tjerë te të cilët janë anëtarë, si zakonisht.",
+    "Only certain groups are allowed to create public links" : "Vetëm disa grupeve u lejohet të krijojnë lidhje publike"
 },"pluralForm" :"nplurals=2; plural=(n != 1);"
 }

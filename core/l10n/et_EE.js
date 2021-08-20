@@ -157,7 +157,6 @@ OC.L10N.register(
     "Share to Twitter. Opens in a new window." : "Jaga Twitteris. Avaneb uues aknas.",
     "Share to Facebook. Opens in a new window." : "Jaga Facebookis. Avaneb uues aknas.",
     "Share to Diaspora. Opens in a new window." : "Jaga Diasporas. Avaneb uues aknas.",
-    "Share to Google+. Opens in a new window." : "Jaga Google plusis. Avaneb uues aknas.",
     "Share via email. Opens your mail client." : "Jaga e-postiga. Avab sinu meilikliendi",
     "Email link to person" : "Saada link isikule e-postiga",
     "Send copy to self" : "Saada koopia ka endale",
@@ -258,7 +257,6 @@ OC.L10N.register(
     "Performance warning" : "Kiiruse hoiatus",
     "SQLite will be used as database." : "Andmebaasina kasutatakse SQLite",
     "Finish setup" : "Lõpeta seadistamine",
-    "Finishing …" : "Lõpetamine ...",
     "Need help?" : "Vajad abi?",
     "See the documentation" : "Vaata dokumentatsiooni",
     "Hey there,<br><br>just letting you know that %s shared <strong>%s</strong> with you.<br><a href=\"%s\">View it!</a><br><br>" : "Hei,<br><br>annan teada, et %s jagas sinuga <strong>%s</strong>. <a href=\"%s\">Vaata seda!</a><br><br>",
@@ -279,7 +277,6 @@ OC.L10N.register(
     "Use the following link to reset your password: {link}" : "Kasuta järgnevat linki oma parooli taastamiseks: {link}",
     "Password changed successfully" : "Parool on muudetud",
     "New password" : "Uus parool",
-    "New Password" : "Uus parool",
     "Confirm Password" : "Kinnita parool",
     "Reset password" : "Nulli parool",
     "This ownCloud instance is currently in single user mode." : "See ownCloud on momendil seadistatud ühe kasutaja jaoks.",
@@ -296,7 +293,6 @@ OC.L10N.register(
     "Start update" : "Käivita uuendus",
     "To avoid timeouts with larger installations, you can instead run the following command from your installation directory:" : "Suurtel saitidel aegumise vältimiseks võid sa paigalduskaustas käivitada järgmise käsu:",
     "Detailed logs" : "Üksikasjalikud logid",
-    "Update needed" : "On vaja uuendada",
     "This page will refresh itself when the %s instance is available again." : "Se leht laetakse uuesti, kui %s instantsi on uuesti saadaval."
 },
 "nplurals=2; plural=(n != 1);");

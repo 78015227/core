@@ -45,7 +45,8 @@ class PrincipalTest extends TestCase {
 
 		$this->connector = new \OCA\DAV\Connector\Sabre\Principal(
 			$this->userManager,
-			$this->groupManager);
+			$this->groupManager
+		);
 		parent::setUp();
 	}
 
@@ -78,7 +79,7 @@ class PrincipalTest extends TestCase {
 		$barUser
 				->expects($this->exactly(1))
 				->method('getEMailAddress')
-				->will($this->returnValue('bar@owncloud.org'));
+				->will($this->returnValue('bar@owncloud.com'));
 		$this->userManager
 			->expects($this->once())
 			->method('search')
@@ -93,7 +94,7 @@ class PrincipalTest extends TestCase {
 			1 => [
 				'uri' => 'principals/users/bar',
 				'{DAV:}displayname' => 'bar',
-				'{http://sabredav.org/ns}email-address' => 'bar@owncloud.org'
+				'{http://sabredav.org/ns}email-address' => 'bar@owncloud.com'
 			]
 		];
 		$response = $this->connector->getPrincipalsByPrefix('principals/users');
@@ -138,7 +139,7 @@ class PrincipalTest extends TestCase {
 		$fooUser
 				->expects($this->exactly(1))
 				->method('getEMailAddress')
-				->will($this->returnValue('foo@owncloud.org'));
+				->will($this->returnValue('foo@owncloud.com'));
 		$fooUser
 				->expects($this->exactly(1))
 				->method('getUID')
@@ -152,7 +153,7 @@ class PrincipalTest extends TestCase {
 		$expectedResponse = [
 			'uri' => 'principals/users/foo',
 			'{DAV:}displayname' => 'foo',
-			'{http://sabredav.org/ns}email-address' => 'foo@owncloud.org'
+			'{http://sabredav.org/ns}email-address' => 'foo@owncloud.com'
 		];
 		$response = $this->connector->getPrincipalByPath('principals/users/foo');
 		$this->assertSame($expectedResponse, $response);

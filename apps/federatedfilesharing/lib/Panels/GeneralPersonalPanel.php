@@ -41,11 +41,13 @@ class GeneralPersonalPanel implements ISettings {
 	/** @var IRequest */
 	protected $request;
 
-	public function __construct(IL10N $l,
-								IUserSession $userSession,
-								IURLGenerator $urlGenerator,
-								FederatedShareProvider $shareProvider,
-								IRequest $request) {
+	public function __construct(
+		IL10N $l,
+		IUserSession $userSession,
+		IURLGenerator $urlGenerator,
+		FederatedShareProvider $shareProvider,
+		IRequest $request
+	) {
 		$this->l = $l;
 		$this->userSession = $userSession;
 		$this->urlGenerator = $urlGenerator;
@@ -68,7 +70,7 @@ class GeneralPersonalPanel implements ISettings {
 			$isIE8 = true;
 		}
 		$cloudID = $this->userSession->getUser()->getCloudId();
-		$url = 'https://owncloud.org/federation#' . $cloudID;
+		$url = 'https://owncloud.com/federation#' . $cloudID;
 		$ownCloudLogoPath = $this->urlGenerator->imagePath('core', 'logo-icon.svg');
 		$tmpl = new Template('federatedfilesharing', 'settings-personal-general');
 		$tmpl->assign('outgoingServer2serverShareEnabled', $this->shareProvider->isOutgoingServer2serverShareEnabled());

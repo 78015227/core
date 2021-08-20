@@ -216,7 +216,6 @@ OC.L10N.register(
     "For larger installations we recommend to choose a different database backend." : "Pentru instalări mai mari recomandăm folosirea altei baze de date ca backend.",
     "Especially when using the desktop client for file syncing the use of SQLite is discouraged." : "În special atunci când este folosit clientul desktop pentru sincronizarea fișierelor, utilizarea SQLite este nerecomandată.",
     "Finish setup" : "Finalizează instalarea",
-    "Finishing …" : "Se finalizează...",
     "Need help?" : "Ai nevoie de ajutor?",
     "See the documentation" : "Vezi documentația",
     "Menu" : "Meniu",
@@ -233,7 +232,6 @@ OC.L10N.register(
     "Alternative Logins" : "Conectări alternative",
     "Use the following link to reset your password: {link}" : "Folosește următorul link pentru a reseta parola: {link}",
     "New password" : "Noua parolă",
-    "New Password" : "Noua parolă",
     "Reset password" : "Resetează parola",
     "This ownCloud instance is currently in single user mode." : "Această instanță ownCloud este momentan în modul de utilizare de către un singur utilizator.",
     "This means only administrators can use the instance." : "Asta înseamnă că doar administratorii pot folosi instanța.",
@@ -250,7 +248,6 @@ OC.L10N.register(
     "The theme %s has been disabled." : "Tema %s a fost dezactivată.",
     "Start update" : "Începe actualizarea",
     "Detailed logs" : "Loguri detaliate",
-    "Update needed" : "E necesară actualizarea",
     "This %s instance is currently in maintenance mode, which may take a while." : "Instanța %s este acum în modul de mentenanță, ceea ce ar putea dura o vreme.",
     "This page will refresh itself when the %s instance is available again." : "Această pagină se va reîmprospăta atunci când %s instance e disponibil din nou."
 },

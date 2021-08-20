@@ -250,7 +250,6 @@ OC.L10N.register(
     "For larger installations we recommend to choose a different database backend." : "Pa instalaciones más grandes encamiéntase escoyer un motor de base de datos distintu.",
     "Especially when using the desktop client for file syncing the use of SQLite is discouraged." : "Especialmente cuando s'utiliza'l veceru d'escritoriu pa la sincronización de ficheros l'usu de SQLite ta desaconseyáu .",
     "Finish setup" : "Finar la configuración ",
-    "Finishing …" : "Finando ...",
     "Need help?" : "¿Precises sofitu?",
     "See the documentation" : "Consulta la documentación",
     "Hey there,<br><br>just letting you know that %s shared <strong>%s</strong> with you.<br><a href=\"%s\">View it!</a><br><br>" : "Hola, ¿qué hai?,<br><br>namái déxamos dicite que %s compartió <strong>%s</strong> contigo.\n<br><a href=\"%s\">¡Velu!</a><br><br>",
@@ -270,7 +269,6 @@ OC.L10N.register(
     "Alternative Logins" : "Anicios de sesión alternativos",
     "Use the following link to reset your password: {link}" : "Usa'l siguiente enllaz pa restablecer la to contraseña: {link}",
     "New password" : "Contraseña nueva",
-    "New Password" : "Contraseña nueva",
     "Reset password" : "Restablecer contraseña",
     "This ownCloud instance is currently in single user mode." : "Esta instalación d'ownCloud ta en mou d'usuariu únicu.",
     "This means only administrators can use the instance." : "Esto quier dicir que namái pue usala un alministrador.",
@@ -289,7 +287,6 @@ OC.L10N.register(
     "Start update" : "Aniciar anovamientu",
     "To avoid timeouts with larger installations, you can instead run the following command from your installation directory:" : "Pa evitar tiempos d'espera con instalaciones más grandes, nel so llugar puede executar el siguiente comandu dende'l directoriu d'instalación:",
     "Detailed logs" : "Rexistros detallaos",
-    "Update needed" : "Anovamientu necesariu",
     "For help, see the  <a target=\"_blank\" rel=\"noreferrer\" href=\"%s\">documentation</a>." : "Pa llograr sofitu, consulte la  <a target=\"_blank\" rel=\"noreferrer\" href=\"%s\">documentación</a>.",
     "This %s instance is currently in maintenance mode, which may take a while." : "Esta instancia %s  ta anguaño en mou de mantenimientu, polo que pue tardar un pocoñín.",
     "This page will refresh itself when the %s instance is available again." : "Esta páxina va anovase sola cuando la instancia %s tea disponible de nueves."

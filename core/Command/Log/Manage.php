@@ -31,9 +31,9 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class Manage extends Command {
-	const DEFAULT_BACKEND = 'owncloud';
-	const DEFAULT_LOG_LEVEL = 2;
-	const DEFAULT_TIMEZONE = 'UTC';
+	public const DEFAULT_BACKEND = 'owncloud';
+	public const DEFAULT_LOG_LEVEL = 2;
+	public const DEFAULT_TIMEZONE = 'UTC';
 
 	/** @var IConfig */
 	protected $config;
@@ -109,6 +109,7 @@ class Manage extends Command {
 
 		$timezone = $this->config->getSystemValue('logtimezone', self::DEFAULT_TIMEZONE);
 		$output->writeln('Log timezone: '.$timezone);
+		return 0;
 	}
 
 	/**

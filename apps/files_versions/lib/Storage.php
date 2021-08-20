@@ -53,6 +53,7 @@ use OCP\User;
 class Storage {
 	public const DEFAULTENABLED = true;
 	public const DEFAULTMAXSIZE = 50; // unit: percentage; 50% of available disk space/quota
+
 	public const VERSIONS_ROOT = 'files_versions/';
 
 	public const DELETE_TRIGGER_MASTER_REMOVED = 0;

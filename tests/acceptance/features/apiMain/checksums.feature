@@ -117,25 +117,31 @@ Feature: checksums
   @files_sharing-app-required
   @issue-ocis-reva-196
   Scenario: Sharing a file with checksum should return the checksum in the propfind using new DAV path
-    Given using new DAV path
+    Given the administrator has set the default folder for received shares to "Shares"
+    And auto-accept shares has been disabled
+    And using new DAV path
     And user "Brian" has been created with default attributes and without skeleton files
     And user "Alice" has uploaded file "filesForUpload/textfile.txt" to "/myChecksumFile.txt" with checksum "MD5:d70b40f177b14b470d1756a3c12b963a"
     When user "Alice" shares file "/myChecksumFile.txt" with user "Brian" using the sharing API
-    And user "Brian" requests the checksum of "/myChecksumFile.txt" via propfind
+    And user "Brian" accepts share "/myChecksumFile.txt" offered by user "Alice" using the sharing API
+    And user "Brian" requests the checksum of "/Shares/myChecksumFile.txt" via propfind
     Then the webdav checksum should match "SHA1:3ee962b839762adb0ad8ba6023a4690be478de6f MD5:d70b40f177b14b470d1756a3c12b963a ADLER32:8ae90960"
 
   @files_sharing-app-required
-  @issue-ocis-reva-196
+  @issue-ocis-reva-196 @skipOnOcV10
   Scenario: Sharing and modifying a file should return correct checksum in the propfind using new DAV path
-    Given using new DAV path
+    Given the administrator has set the default folder for received shares to "Shares"
+    And auto-accept shares has been disabled
+    And using new DAV path
     And user "Brian" has been created with default attributes and without skeleton files
     And user "Alice" has uploaded file "filesForUpload/textfile.txt" to "/myChecksumFile.txt" with checksum "MD5:d70b40f177b14b470d1756a3c12b963a"
     When user "Alice" shares file "/myChecksumFile.txt" with user "Brian" using the sharing API
-    And user "Brian" uploads file with checksum "SHA1:ce5582148c6f0c1282335b87df5ed4be4b781399" and content "Some Text" to "/myChecksumFile.txt" using the WebDAV API
+    And user "Brian" accepts share "/myChecksumFile.txt" offered by user "Alice" using the sharing API
+    And user "Brian" uploads file with checksum "SHA1:ce5582148c6f0c1282335b87df5ed4be4b781399" and content "Some Text" to "/Shares/myChecksumFile.txt" using the WebDAV API
     Then as user "Alice" the webdav checksum of "/myChecksumFile.txt" via propfind should match "SHA1:ce5582148c6f0c1282335b87df5ed4be4b781399 MD5:56e57920c3c8c727bfe7a5288cdf61c4 ADLER32:1048035a"
 
-  @issue-ocis-reva-56
-  Scenario: Upload new dav chunked file where checksum matches
+  @issue-ocis-reva-56 @notToImplementOnOCIS @newChunking @issue-ocis-1321
+  Scenario: Upload new DAV chunked file where checksum matches
     Given using new DAV path
     When user "Alice" creates a new chunking upload with id "chunking-42" using the WebDAV API
     And user "Alice" uploads new chunk file "2" with "BBBBB" to id "chunking-42" using the WebDAV API
@@ -143,8 +149,8 @@ Feature: checksums
     And user "Alice" moves new chunk file with id "chunking-42" to "/myChunkedFile.txt" with checksum "SHA1:5d84d61b03fdacf813640f5242d309721e0629b1" using the WebDAV API
     Then the HTTP status code should be "201"
 
-  @issue-ocis-reva-56
-  Scenario: Upload new dav chunked file where checksum does not match
+  @issue-ocis-reva-56 @notToImplementOnOCIS @newChunking @issue-ocis-1321
+  Scenario: Upload new DAV chunked file where checksum does not match
     Given using new DAV path
     When user "Alice" creates a new chunking upload with id "chunking-42" using the WebDAV API
     And user "Alice" uploads new chunk file "2" with "BBBBB" to id "chunking-42" using the WebDAV API
@@ -154,8 +160,8 @@ Feature: checksums
     And user "Alice" should not see the following elements
       | /myChunkedFile.txt |
 
-  @issue-ocis-reva-56
-  Scenario: Upload new dav chunked file using async MOVE where checksum matches
+  @issue-ocis-reva-56 @notToImplementOnOCIS @newChunking @issue-ocis-1321
+  Scenario: Upload new DAV chunked file using async MOVE where checksum matches
     Given using new DAV path
     And the administrator has enabled async operations
     When user "Alice" creates a new chunking upload with id "chunking-42" using the WebDAV API
@@ -170,8 +176,8 @@ Feature: checksums
       | fileId | /^[0-9a-z]{20,}$/ |
     And the content of file "/myChunkedFile.txt" for user "Alice" should be "BBBBBCCCCC"
 
-  @issue-ocis-reva-56
-  Scenario: Upload new dav chunked file using async MOVE where checksum does not match
+  @issue-ocis-reva-56 @notToImplementOnOCIS @newChunking @issue-ocis-1321
+  Scenario: Upload new DAV chunked file using async MOVE where checksum does not match
     Given using new DAV path
     And the administrator has enabled async operations
     When user "Alice" creates a new chunking upload with id "chunking-42" using the WebDAV API
@@ -188,8 +194,8 @@ Feature: checksums
     And user "Alice" should not see the following elements
       | /myChunkedFile.txt |
 
-  @issue-ocis-reva-56
-  Scenario: Upload new dav chunked file using async MOVE where checksum does not match - retry with correct checksum
+  @issue-ocis-reva-56 @notToImplementOnOCIS @newChunking @issue-ocis-1321
+  Scenario: Upload new DAV chunked file using async MOVE where checksum does not match - retry with correct checksum
     Given using new DAV path
     And the administrator has enabled async operations
     When user "Alice" creates a new chunking upload with id "chunking-42" using the WebDAV API
@@ -309,7 +315,7 @@ Feature: checksums
       | old         |
       | new         |
 
-  @issue-ocis-reva-56
+  @issue-ocis-reva-56 @notToImplementOnOCIS @newChunking @issue-ocis-1321
   Scenario: Upload overwriting a file with new chunking and correct checksum
     Given using new DAV path
     And user "Alice" has uploaded file with content "ownCloud test text file 0" to "/textfile0.txt"
@@ -321,7 +327,7 @@ Feature: checksums
     And the content of file "/textfile0.txt" for user "Alice" should be "BBBBBCCCCC"
 
   @skipOnStorage:ceph @skipOnStorage:scality @files_primary_s3-issue-224
-  @issue-ocis-reva-56
+  @issue-ocis-reva-56 @notToImplementOnOCIS @newChunking @issue-ocis-1321
   Scenario: Upload overwriting a file with new chunking and invalid checksum
     Given using new DAV path
     And user "Alice" has uploaded file with content "ownCloud test text file 0" to "/textfile0.txt"

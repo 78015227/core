@@ -29,6 +29,7 @@ use OCP\Files\External\Backend\InvalidBackend;
 use OCP\Files\External\IStorageConfig;
 use OCP\Files\External\Service\IGlobalStoragesService;
 use OCP\Files\External\Service\IUserStoragesService;
+use OCP\Files\External\DefinitionParameter;
 use OCP\IUserManager;
 use OCP\IUserSession;
 use Symfony\Component\Console\Helper\Table;
@@ -58,7 +59,7 @@ class ListCommand extends Base {
 	 */
 	protected $userManager;
 
-	const ALL = -1;
+	public const ALL = -1;
 
 	public function __construct(IGlobalStoragesService $globalService, IUserStoragesService $userService, IUserSession $userSession, IUserManager $userManager) {
 		parent::__construct();
@@ -124,6 +125,7 @@ class ListCommand extends Base {
 		}
 
 		$this->listMounts($userId, $mounts, $input, $output);
+		return 0;
 	}
 
 	/**
@@ -171,11 +173,11 @@ class ListCommand extends Base {
 			}
 
 			if (!$input->getOption('show-password')) {
-				$hideKeys = ['password', 'refresh_token', 'token', 'client_secret', 'public_key', 'private_key'];
+				$hideKeys = ['refresh_token', 'token', 'public_key', 'private_key'];
 				foreach ($mounts as $mount) {
 					$config = $mount->getBackendOptions();
 					foreach ($config as $key => $value) {
-						if (\in_array($key, $hideKeys)) {
+						if (\in_array($key, $hideKeys, true) || $this->shouldHideKey($mount, $key)) {
 							$mount->setBackendOption($key, '***');
 						}
 					}
@@ -186,7 +188,7 @@ class ListCommand extends Base {
 		// default output style
 		$full = $input->getOption('full');
 		$showMountOptions = $input->getOption('mount-options');
-		
+
 		$defaultMountOptions = [
 			'encrypt' => true,
 			'previews' => true,
@@ -326,6 +328,26 @@ class ListCommand extends Base {
 				"Please make sure that all related apps that provide these storages are enabled or delete these.</error>"
 			);
 		}
+	}
+
+	private function shouldHideKey(IStorageConfig $mount, $key) {
+		$backend = $mount->getBackend();
+		$backendParameters = $backend->getParameters();
+
+		$auth = $mount->getAuthMechanism();
+		$authParameters = $auth->getParameters();
+		if (
+			(
+				isset($backendParameters[$key]) &&
+				$backendParameters[$key]->getType() === DefinitionParameter::VALUE_PASSWORD
+			) || (
+				isset($authParameters[$key]) &&
+				$authParameters[$key]->getType() === DefinitionParameter::VALUE_PASSWORD
+			)
+		) {
+			return true;
+		}
+		return false;
 	}
 
 	protected function getStorageService($userId) {

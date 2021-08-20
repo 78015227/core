@@ -42,6 +42,7 @@ class HttpRequestHelper {
 	/**
 	 *
 	 * @param string $url
+	 * @param string $xRequestId
 	 * @param string $method
 	 * @param string $user
 	 * @param string $password
@@ -59,6 +60,7 @@ class HttpRequestHelper {
 	 */
 	public static function sendRequest(
 		$url,
+		$xRequestId,
 		$method = 'GET',
 		$user = null,
 		$password = null,
@@ -85,6 +87,7 @@ class HttpRequestHelper {
 		 */
 		$request = self::createRequest(
 			$url,
+			$xRequestId,
 			$method,
 			$headers,
 			$body
@@ -255,6 +258,7 @@ class HttpRequestHelper {
 	 * This enables us to create multiple requests in advance so that we can send them to the server at once in parallel.
 	 *
 	 * @param string $url
+	 * @param string $xRequestId
 	 * @param string $method
 	 * @param array $headers ['X-MyHeader' => 'value']
 	 * @param string|array $body either the actual string to send in the body,
@@ -265,12 +269,16 @@ class HttpRequestHelper {
 	 */
 	public static function createRequest(
 		$url,
+		$xRequestId = '',
 		$method = 'GET',
 		$headers = null,
 		$body = null
 	) {
 		if ($headers === null) {
 			$headers = [];
+		}
+		if ($xRequestId !== '') {
+			$headers['X-Request-ID'] = $xRequestId;
 		}
 		if (\is_array($body)) {
 			// when creating the client, it is possible to set 'form_params' and
@@ -281,7 +289,10 @@ class HttpRequestHelper {
 			$headers['Content-Type'] = 'application/x-www-form-urlencoded';
 		}
 		$request = new Request(
-			$method, $url, $headers, $body
+			$method,
+			$url,
+			$headers,
+			$body
 		);
 		return $request;
 	}
@@ -292,6 +303,7 @@ class HttpRequestHelper {
 	 * @see HttpRequestHelper::sendRequest()
 	 *
 	 * @param string $url
+	 * @param string $xRequestId
 	 * @param string $user
 	 * @param string $password
 	 * @param array $headers ['X-MyHeader' => 'value']
@@ -305,6 +317,7 @@ class HttpRequestHelper {
 	 */
 	public static function get(
 		$url,
+		$xRequestId,
 		$user = null,
 		$password = null,
 		$headers = null,
@@ -314,7 +327,16 @@ class HttpRequestHelper {
 		$stream = false
 	) {
 		return self::sendRequest(
-			$url, 'GET', $user, $password, $headers, $body, $config, $cookies, $stream
+			$url,
+			$xRequestId,
+			'GET',
+			$user,
+			$password,
+			$headers,
+			$body,
+			$config,
+			$cookies,
+			$stream
 		);
 	}
 
@@ -324,6 +346,7 @@ class HttpRequestHelper {
 	 * @see HttpRequestHelper::sendRequest()
 	 *
 	 * @param string $url
+	 * @param string $xRequestId
 	 * @param string $user
 	 * @param string $password
 	 * @param array $headers ['X-MyHeader' => 'value']
@@ -337,6 +360,7 @@ class HttpRequestHelper {
 	 */
 	public static function post(
 		$url,
+		$xRequestId,
 		$user = null,
 		$password = null,
 		$headers = null,
@@ -346,7 +370,16 @@ class HttpRequestHelper {
 		$stream = false
 	) {
 		return self::sendRequest(
-			$url, 'POST', $user, $password, $headers, $body, $config, $cookies, $stream
+			$url,
+			$xRequestId,
+			'POST',
+			$user,
+			$password,
+			$headers,
+			$body,
+			$config,
+			$cookies,
+			$stream
 		);
 	}
 
@@ -356,6 +389,7 @@ class HttpRequestHelper {
 	 * @see HttpRequestHelper::sendRequest()
 	 *
 	 * @param string $url
+	 * @param string $xRequestId
 	 * @param string $user
 	 * @param string $password
 	 * @param array $headers ['X-MyHeader' => 'value']
@@ -369,6 +403,7 @@ class HttpRequestHelper {
 	 */
 	public static function put(
 		$url,
+		$xRequestId,
 		$user = null,
 		$password = null,
 		$headers = null,
@@ -378,7 +413,16 @@ class HttpRequestHelper {
 		$stream = false
 	) {
 		return self::sendRequest(
-			$url, 'PUT', $user, $password, $headers, $body, $config, $cookies, $stream
+			$url,
+			$xRequestId,
+			'PUT',
+			$user,
+			$password,
+			$headers,
+			$body,
+			$config,
+			$cookies,
+			$stream
 		);
 	}
 
@@ -388,6 +432,7 @@ class HttpRequestHelper {
 	 * @see HttpRequestHelper::sendRequest()
 	 *
 	 * @param string $url
+	 * @param string $xRequestId
 	 * @param string $user
 	 * @param string $password
 	 * @param array $headers ['X-MyHeader' => 'value']
@@ -401,6 +446,7 @@ class HttpRequestHelper {
 	 */
 	public static function delete(
 		$url,
+		$xRequestId,
 		$user = null,
 		$password = null,
 		$headers = null,
@@ -410,7 +456,16 @@ class HttpRequestHelper {
 		$stream = false
 	) {
 		return self::sendRequest(
-			$url, 'DELETE', $user, $password, $headers, $body, $config, $cookies, $stream
+			$url,
+			$xRequestId,
+			'DELETE',
+			$user,
+			$password,
+			$headers,
+			$body,
+			$config,
+			$cookies,
+			$stream
 		);
 	}
 
@@ -435,13 +490,16 @@ class HttpRequestHelper {
 		try {
 			$responseXmlObject = new SimpleXMLElement($contents);
 			$responseXmlObject->registerXPathNamespace(
-				'ocs', 'http://open-collaboration-services.org/ns'
+				'ocs',
+				'http://open-collaboration-services.org/ns'
 			);
 			$responseXmlObject->registerXPathNamespace(
-				'oc', 'http://owncloud.org/ns'
+				'oc',
+				'http://owncloud.org/ns'
 			);
 			$responseXmlObject->registerXPathNamespace(
-				'd', 'DAV:'
+				'd',
+				'DAV:'
 			);
 			return $responseXmlObject;
 		} catch (\Exception $e) {

@@ -1,4 +1,4 @@
-@api @files_sharing-app-required @issue-ocis-reva-34 @issue-ocis-reva-41 @issue-ocis-reva-243
+@api @files_sharing-app-required @issue-ocis-1289 @issue-ocis-1328
 Feature: accept/decline shares coming from internal users
   As a user
   I want to have control of which received shares I accept
@@ -78,7 +78,7 @@ Feature: accept/decline shares coming from internal users
       | /PARENT/       |
       | /textfile0.txt |
 
-  @smokeTest
+  @smokeTest @issue-ocis-2131
   Scenario: accept a pending share
     Given user "Alice" has shared folder "/PARENT" with user "Brian"
     And user "Alice" has shared file "/textfile0.txt" with user "Brian"
@@ -152,23 +152,23 @@ Feature: accept/decline shares coming from internal users
       | share_with_displayname | %displayname%                                 |
       | mail_send              | 0                                             |
     And user "Brian" should see the following elements
-      | /FOLDER/                               |
-      | /PARENT/                               |
-      | <top_folder>/PARENT<suffix>/           |
-      | <top_folder>/PARENT<suffix>/parent.txt |
-      | /textfile0.txt                         |
-      | <top_folder>/textfile0<suffix>.txt     |
+      | /FOLDER/                                       |
+      | /PARENT/                                       |
+      | <top_folder>/<received_parent_name>/           |
+      | <top_folder>/<received_parent_name>/parent.txt |
+      | /textfile0.txt                                 |
+      | <top_folder>/<received_textfile_name>          |
     And the sharing API should report to user "Brian" that these shares are in the accepted state
       | path                                  |
       | <top_folder>/<received_parent_name>/  |
       | <top_folder>/<received_textfile_name> |
     Examples:
-      | share_folder        | top_folder          | suffix | received_parent_name | received_textfile_name |
-      |                     |                     | %20(2) | PARENT (2)           | textfile0 (2).txt      |
-      | /                   |                     | %20(2) | PARENT (2)           | textfile0 (2).txt      |
-      | /ReceivedShares     | /ReceivedShares     |        | PARENT               | textfile0.txt          |
-      | ReceivedShares      | /ReceivedShares     |        | PARENT               | textfile0.txt          |
-      | /My/Received/Shares | /My/Received/Shares |        | PARENT               | textfile0.txt          |
+      | share_folder        | top_folder          | received_parent_name | received_textfile_name |
+      |                     |                     | PARENT (2)           | textfile0 (2).txt      |
+      | /                   |                     | PARENT (2)           | textfile0 (2).txt      |
+      | /ReceivedShares     | /ReceivedShares     | PARENT               | textfile0.txt          |
+      | ReceivedShares      | /ReceivedShares     | PARENT               | textfile0.txt          |
+      | /My/Received/Shares | /My/Received/Shares | PARENT               | textfile0.txt          |
 
   Scenario: accept an accepted share
     Given user "Alice" has created folder "/shared"
@@ -203,7 +203,7 @@ Feature: accept/decline shares coming from internal users
       | /PARENT/       |
       | /textfile0.txt |
 
-  @smokeTest
+  @smokeTest @issue-ocis-2128
   Scenario: decline an accepted share
     Given user "Alice" has shared folder "/PARENT" with user "Brian"
     And user "Alice" has shared file "/textfile0.txt" with user "Brian"
@@ -257,6 +257,7 @@ Feature: accept/decline shares coming from internal users
       | /Shares/PARENT/       |
       | /Shares/textfile0.txt |
 
+  @issue-ocis-2131
   Scenario: receive two shares with identical names from different users, accept one by one
     Given user "Alice" has created folder "/shared"
     And user "Alice" has created folder "/shared/Alice"
@@ -272,7 +273,7 @@ Feature: accept/decline shares coming from internal users
     And the HTTP status code should be "200"
     And user "Carol" should see the following elements
       | /Shares/shared/Brian/       |
-      | /Shares/shared%20(2)/Alice/ |
+      | /Shares/shared (2)/Alice/ |
     And the sharing API should report to user "Carol" that these shares are in the accepted state
       | path                |
       | /Shares/shared/     |
@@ -331,8 +332,8 @@ Feature: accept/decline shares coming from internal users
       | /Shares/PARENT (2) (2) (2)/ | Brian     |
 
   Scenario: user shares folder with matching folder-name for both user involved in sharing
-    Given user "Alice" uploads file with content "uploaded content" to "/PARENT/abc.txt" using the WebDAV API
-    And user "Alice" uploads file with content "uploaded content" to "/FOLDER/abc.txt" using the WebDAV API
+    Given user "Alice" has uploaded file with content "uploaded content" to "/PARENT/abc.txt"
+    And user "Alice" has uploaded file with content "uploaded content" to "/FOLDER/abc.txt"
     When user "Alice" shares folder "/PARENT" with user "Brian" using the sharing API
     And user "Alice" shares folder "/FOLDER" with user "Brian" using the sharing API
     Then the OCS status code should be "100"
@@ -353,8 +354,8 @@ Feature: accept/decline shares coming from internal users
     And the content of file "/Shares/FOLDER/abc.txt" for user "Brian" should be "uploaded content"
 
   Scenario: user shares folder in a group with matching folder-name for every users involved
-    Given user "Alice" uploads file with content "uploaded content" to "/PARENT/abc.txt" using the WebDAV API
-    And user "Alice" uploads file with content "uploaded content" to "/FOLDER/abc.txt" using the WebDAV API
+    Given user "Alice" has uploaded file with content "uploaded content" to "/PARENT/abc.txt"
+    And user "Alice" has uploaded file with content "uploaded content" to "/FOLDER/abc.txt"
     And user "Carol" has created folder "PARENT"
     And user "Carol" has created folder "FOLDER"
     When user "Alice" shares folder "/PARENT" with group "grp1" using the sharing API
@@ -415,7 +416,7 @@ Feature: accept/decline shares coming from internal users
       | /Shares/textfile1.txt |
 
   Scenario: user shares resource with matching resource-name with another user when auto accept is disabled
-    Given user "Alice" shares folder "/PARENT" with user "Brian" using the sharing API
+    When user "Alice" shares folder "/PARENT" with user "Brian" using the sharing API
     And user "Alice" shares file "/textfile0.txt" with user "Brian" using the sharing API
     Then the OCS status code should be "100"
     And the HTTP status code should be "200"
@@ -460,7 +461,7 @@ Feature: accept/decline shares coming from internal users
     Given these users have been created with small skeleton files but not initialized:
       | username |
       | David    |
-    And user "Alice" uploads file with content "uploaded content" to "/PARENT/abc.txt" using the WebDAV API
+    And user "Alice" has uploaded file with content "uploaded content" to "/PARENT/abc.txt"
     When user "Alice" shares folder "/PARENT" with user "David" using the sharing API
     And user "David" accepts share "/PARENT" offered by user "Alice" using the sharing API
     Then user "David" should see the following elements
@@ -472,7 +473,7 @@ Feature: accept/decline shares coming from internal users
       | /textfile2.txt         |
       | /textfile3.txt         |
     And user "David" should not see the following elements
-      | /PARENT%20(2)/ |
+      | /PARENT (2)/ |
     And the content of file "/Shares/PARENT/abc.txt" for user "David" should be "uploaded content"
 
   @issue-ocis-1123
@@ -498,3 +499,122 @@ Feature: accept/decline shares coming from internal users
     When user "Alice" restores version index "1" of file "/toShareFile.txt" using the WebDAV API
     Then the content of file "/toShareFile.txt" for user "Alice" should be "Test Content."
     And the content of file "/Shares/toShareFile.txt" for user "Brian" should be "Test Content."
+
+
+  Scenario: a user receives multiple group shares for matching file and folder name
+    Given group "grp2" has been created
+    And user "Alice" has been added to group "grp2"
+    And user "Brian" has been added to group "grp2"
+    And user "Carol" has created folder "/PARENT"
+    And user "Alice" has created folder "/PaRent"
+    And user "Alice" has uploaded the following files with content "subfile, from alice to grp2"
+      | path               |
+      | /PARENT/parent.txt |
+      | /PaRent/parent.txt |
+    And user "Alice" has uploaded the following files with content "from alice to grp2"
+      | path        |
+      | /PARENT.txt |
+    And user "Carol" has uploaded the following files with content "subfile, from carol to grp1"
+      | path               |
+      | /PARENT/parent.txt |
+    And user "Carol" has uploaded the following files with content "from carol to grp1"
+      | path        |
+      | /PARENT.txt |
+      | /parent.txt |
+    When user "Alice" shares the following entries with group "grp2" using the sharing API
+      | path        |
+      | /PARENT     |
+      | /PaRent     |
+      | /PARENT.txt |
+    And user "Brian" accepts the following shares offered by user "Alice" using the sharing API
+      | path        |
+      | /PARENT     |
+      | /PaRent     |
+      | /PARENT.txt |
+    Then user "Brian" should see the following elements
+      | /PARENT/           |
+      | /Shares/PARENT/    |
+      | /Shares/PaRent/    |
+      | /Shares/PARENT.txt |
+    And the content of file "/Shares/PARENT/parent.txt" for user "Brian" should be "subfile, from alice to grp2"
+    And the content of file "/Shares/PaRent/parent.txt" for user "Brian" should be "subfile, from alice to grp2"
+    And the content of file "/Shares/PARENT.txt" for user "Brian" should be "from alice to grp2"
+    When user "Carol" shares the following entries with group "grp2" using the sharing API
+      | path        |
+      | /PARENT     |
+      | /PARENT.txt |
+      | /parent.txt |
+    And user "Brian" accepts the following shares offered by user "Carol" using the sharing API
+      | path        |
+      | /PARENT     |
+      | /PARENT.txt |
+      | /parent.txt |
+    Then user "Brian" should see the following elements
+      | /PARENT/               |
+      | /Shares/PARENT/        |
+      | /Shares/PARENT (2)/    |
+      | /Shares/PaRent/        |
+      | /Shares/PARENT.txt     |
+      | /Shares/PARENT (2).txt |
+      | /Shares/parent.txt     |
+    And the content of file "/Shares/PARENT (2)/parent.txt" for user "Brian" should be "subfile, from carol to grp1"
+    And the content of file "/Shares/PARENT (2).txt" for user "Brian" should be "from carol to grp1"
+    And the content of file "/Shares/parent.txt" for user "Brian" should be "from carol to grp1"
+
+
+  Scenario: a group receives multiple shares from non-member for matching file and folder name
+    Given user "Brian" has been removed from group "grp1"
+    And user "Alice" has created folder "/PaRent"
+    And user "Carol" has created folder "/PARENT"
+    And user "Alice" has uploaded the following files with content "subfile, from alice to grp1"
+      | path               |
+      | /PARENT/parent.txt |
+      | /PaRent/parent.txt |
+    And user "Alice" has uploaded the following files with content "from alice to grp1"
+      | path        |
+      | /PARENT.txt |
+    And user "Brian" has uploaded the following files with content "subfile, from brian to grp1"
+      | path               |
+      | /PARENT/parent.txt |
+    And user "Brian" has uploaded the following files with content "from brian to grp1"
+      | path        |
+      | /PARENT.txt |
+      | /parent.txt |
+    When user "Alice" shares the following entries with group "grp1" using the sharing API
+      | path        |
+      | /PARENT     |
+      | /PaRent     |
+      | /PARENT.txt |
+    And user "Carol" accepts the following shares offered by user "Alice" using the sharing API
+      | path        |
+      | /PARENT     |
+      | /PaRent     |
+      | /PARENT.txt |
+    Then user "Carol" should see the following elements
+      | /PARENT/           |
+      | /Shares/PARENT/    |
+      | /Shares/PaRent/    |
+      | /Shares/PARENT.txt |
+    And the content of file "/Shares/PARENT/parent.txt" for user "Carol" should be "subfile, from alice to grp1"
+    And the content of file "/Shares/PARENT.txt" for user "Carol" should be "from alice to grp1"
+    When user "Brian" shares the following entries with group "grp1" using the sharing API
+      | path        |
+      | /PARENT     |
+      | /PARENT.txt |
+      | /parent.txt |
+    And user "Carol" accepts the following shares offered by user "Brian" using the sharing API
+      | path        |
+      | /PARENT     |
+      | /PARENT.txt |
+      | /parent.txt |
+    Then user "Carol" should see the following elements
+      | /PARENT/               |
+      | /Shares/PARENT/        |
+      | /Shares/PARENT (2)/    |
+      | /Shares/PaRent/        |
+      | /Shares/PARENT.txt     |
+      | /Shares/PARENT (2).txt |
+      | /Shares/parent.txt     |
+    And the content of file "/Shares/PARENT (2)/parent.txt" for user "Carol" should be "subfile, from brian to grp1"
+    And the content of file "/Shares/PARENT (2).txt" for user "Carol" should be "from brian to grp1"
+    

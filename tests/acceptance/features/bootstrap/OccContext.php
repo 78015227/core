@@ -59,8 +59,10 @@ class OccContext implements Context {
 	private $lastDeletedJobId;
 
 	/**
-	 * ToDo: remove all the tech_preview test code after official release of
-	 *       10.4 and we no longer need to test against 10.3.* as "latest"
+	 * The code to manage dav.enable.tech_preview was used in 10.4/10.3
+	 * The use of the steps to enable/disable it has been removed from the
+	 * feature files. But the infrastructure has been left here, as a similar
+	 * thing might likely happen in the future.
 	 *
 	 * @var boolean
 	 */
@@ -91,7 +93,9 @@ class OccContext implements Context {
 		if ($this->doTechPreview) {
 			if (!$this->isTechPreviewEnabled()) {
 				$this->addSystemConfigKeyUsingTheOccCommand(
-					"dav.enable.tech_preview", "true", "boolean"
+					"dav.enable.tech_preview",
+					"true",
+					"boolean"
 				);
 				$this->techPreviewEnabled = true;
 				return true;
@@ -149,11 +153,14 @@ class OccContext implements Context {
 	 * @throws Exception
 	 */
 	public function invokingTheCommandWithEnvVariable(
-		$cmd, $envVariableName, $envVariableValue
+		$cmd,
+		$envVariableName,
+		$envVariableValue
 	) {
 		$args = [$cmd];
 		$this->featureContext->runOccWithEnvVariables(
-			$args, [$envVariableName => $envVariableValue]
+			$args,
+			[$envVariableName => $envVariableValue]
 		);
 	}
 
@@ -274,7 +281,8 @@ class OccContext implements Context {
 	 */
 	public function scanFileSystemPathUsingTheOccCommand($path, $user = null) {
 		$path = $this->featureContext->substituteInLineCodes(
-			$path, $user
+			$path,
+			$user
 		);
 		$this->invokingTheCommand(
 			"files:scan --path='$path'"
@@ -311,7 +319,10 @@ class OccContext implements Context {
 	 * @return void
 	 */
 	public function createLocalStorageMountUsingTheOccCommand($mount) {
-		$result = SetupHelper::createLocalStorageMount($mount);
+		$result = SetupHelper::createLocalStorageMount(
+			$mount,
+			$this->featureContext->getStepLineRef()
+		);
 		$storageId = $result['storageId'];
 		$this->featureContext->setResultOfOccCommand($result);
 		$this->featureContext->addStorageId($mount, $storageId);
@@ -353,7 +364,9 @@ class OccContext implements Context {
 	 * @throws Exception
 	 */
 	public function addSystemConfigKeyUsingTheOccCommand(
-		$key, $value, $type = "string"
+		$key,
+		$value,
+		$type = "string"
 	) {
 		$this->invokingTheCommand(
 			"config:system:set --value '${value}' --type ${type} ${key}"
@@ -383,6 +396,32 @@ class OccContext implements Context {
 		$this->invokingTheCommand(
 			"trashbin:cleanup $user"
 		);
+	}
+
+	/**
+	 * Create a calendar for given user with given calendar name
+	 *
+	 * @param string $user
+	 * @param string $calendarName
+	 *
+	 * @return void
+	 * @throws Exception
+	 */
+	public function createCalendarForUserUsingOccCommand($user, $calendarName) {
+		$this->invokingTheCommand("dav:create-calendar $user $calendarName");
+	}
+
+	/**
+	 * Create an address book for given user with given address book name
+	 *
+	 * @param string $user
+	 * @param string $addressBookName
+	 *
+	 * @return void
+	 * @throws Exception
+	 */
+	public function createAnAddressBookForUserUsingOccCommand($user, $addressBookName) {
+		$this->invokingTheCommand("dav:create-addressbook $user $addressBookName");
 	}
 
 	/**
@@ -557,7 +596,8 @@ class OccContext implements Context {
 	public function theAdministratorInvokesOccCommandForUser($cmd, $user) {
 		$user = $this->featureContext->getActualUsername($user);
 		$cmd = $this->featureContext->substituteInLineCodes(
-			$cmd, $user
+			$cmd,
+			$user
 		);
 		$this->invokingTheCommand($cmd);
 	}
@@ -624,7 +664,9 @@ class OccContext implements Context {
 	 * @throws Exception
 	 */
 	public function theAdministratorInvokesOccCommandWithEnvironmentVariable(
-		$cmd, $envVariableName, $envVariableValue
+		$cmd,
+		$envVariableName,
+		$envVariableValue
 	) {
 		$this->invokingTheCommandWithEnvVariable(
 			$cmd,
@@ -644,7 +686,9 @@ class OccContext implements Context {
 	 * @throws Exception
 	 */
 	public function theAdministratorHasInvokedOccCommandWithEnvironmentVariable(
-		$cmd, $envVariableName, $envVariableValue
+		$cmd,
+		$envVariableName,
+		$envVariableValue
 	) {
 		$this->invokingTheCommandWithEnvVariable(
 			$cmd,
@@ -780,7 +824,8 @@ class OccContext implements Context {
 		// end of the captured string, so trim them.
 		$text = \trim($text, $text[0]);
 		$text = $this->featureContext->substituteInLineCodes(
-			$text, $user
+			$text,
+			$user
 		);
 		$commandOutput = $this->featureContext->getStdOutOfOccCommand();
 		$lines = SetupHelper::findLines(
@@ -864,7 +909,8 @@ class OccContext implements Context {
 			return;
 		}
 		$this->addSystemConfigKeyUsingTheOccCommand(
-			"share_folder", $folder
+			"share_folder",
+			$folder
 		);
 	}
 
@@ -878,7 +924,8 @@ class OccContext implements Context {
 	 */
 	public function theAdministratorHasSetTheMailSmtpmodeTo($smtpmode) {
 		$this->addSystemConfigKeyUsingTheOccCommand(
-			"mail_smtpmode", $smtpmode
+			"mail_smtpmode",
+			$smtpmode
 		);
 	}
 
@@ -1249,7 +1296,10 @@ class OccContext implements Context {
 	 * @throws Exception
 	 */
 	public function addRemoveUserOrGroupToOrFromMount(
-		$action, $userOrGroup, $userOrGroupName, $mountName
+		$action,
+		$userOrGroup,
+		$userOrGroupName,
+		$mountName
 	) {
 		if ($action === "adds" || $action === "added") {
 			$action = "--add";
@@ -1282,7 +1332,9 @@ class OccContext implements Context {
 	 * @throws Exception
 	 */
 	public function addRemoveUserOrGroupToOrFromLastLocalMount(
-		$action, $userOrGroup, $userOrGroupName
+		$action,
+		$userOrGroup,
+		$userOrGroupName
 	) {
 		$storageIds = $this->featureContext->getStorageIds();
 		Assert::assertGreaterThan(
@@ -1292,7 +1344,10 @@ class OccContext implements Context {
 		);
 		$lastMountName = \end($storageIds);
 		$this->addRemoveUserOrGroupToOrFromMount(
-			$action, $userOrGroup, $userOrGroupName, $lastMountName
+			$action,
+			$userOrGroup,
+			$userOrGroupName,
+			$lastMountName
 		);
 	}
 
@@ -1307,7 +1362,9 @@ class OccContext implements Context {
 	 * @throws \Exception
 	 */
 	public function theAdminAddsRemovesAsTheApplicableUserLastLocalMountUsingTheOccCommand(
-		$action, $userOrGroup, $user
+		$action,
+		$userOrGroup,
+		$user
 	) {
 		$this->addRemoveUserOrGroupToOrFromLastLocalMount(
 			$action,
@@ -1327,7 +1384,9 @@ class OccContext implements Context {
 	 * @throws \Exception
 	 */
 	public function theAdminHasAddedRemovedAsTheApplicableUserLastLocalMountUsingTheOccCommand(
-		$action, $userOrGroup, $user
+		$action,
+		$userOrGroup,
+		$user
 	) {
 		$this->addRemoveUserOrGroupToOrFromLastLocalMount(
 			$action,
@@ -1349,7 +1408,10 @@ class OccContext implements Context {
 	 * @throws \Exception
 	 */
 	public function theAdminAddsRemovesAsTheApplicableUserForMountUsingTheOccCommand(
-		$action, $userOrGroup, $user, $mount
+		$action,
+		$userOrGroup,
+		$user,
+		$mount
 	) {
 		$user = $this->featureContext->getActualUsername($user);
 		$this->addRemoveUserOrGroupToOrFromMount(
@@ -1391,7 +1453,10 @@ class OccContext implements Context {
 	 * @throws \Exception
 	 */
 	public function theAdminHasAddedRemovedTheApplicableUserForMountUsingTheOccCommand(
-		$action, $userOrGroup, $user, $mount
+		$action,
+		$userOrGroup,
+		$user,
+		$mount
 	) {
 		$user = $this->featureContext->getActualUsername($user);
 		$this->addRemoveUserOrGroupToOrFromMount(
@@ -2313,7 +2378,9 @@ class OccContext implements Context {
 	 * @throws Exception
 	 */
 	public function theAdministratorAddsSystemConfigKeyWithValueUsingTheOccCommand(
-		$key, $value, $type = "string"
+		$key,
+		$value,
+		$type = "string"
 	) {
 		$this->addSystemConfigKeyUsingTheOccCommand(
 			$key,
@@ -2334,7 +2401,9 @@ class OccContext implements Context {
 	 * @throws Exception
 	 */
 	public function theAdministratorHasAddedSystemConfigKeyWithValueUsingTheOccCommand(
-		$key, $value, $type = "string"
+		$key,
+		$value,
+		$type = "string"
 	) {
 		$this->addSystemConfigKeyUsingTheOccCommand(
 			$key,
@@ -2392,6 +2461,34 @@ class OccContext implements Context {
 	}
 
 	/**
+	 * @When the administrator creates a calendar for user :user with name :calendarName using the occ command
+	 *
+	 * @param string $user
+	 * @param string $calendarName
+	 *
+	 * @return void
+	 * @throws Exception
+	 */
+	public function theAdminCreatesACalendarForUserUsingTheOccCommand($user, $calendarName) {
+		$user = $this->featureContext->getActualUsername($user);
+		$this->createCalendarForUserUsingOccCommand($user, $calendarName);
+	}
+
+	/**
+	 * @When the administrator creates an address book for user :user with name :addressBookName using the occ command
+	 *
+	 * @param string $user
+	 * @param string $addressBookName
+	 *
+	 * @return void
+	 * @throws Exception
+	 */
+	public function theAdminCreatesAnAddressBookForUserUsingTheOccCommand($user, $addressBookName) {
+		$user = $this->featureContext->getActualUsername($user);
+		$this->createAnAddressBookForUserUsingOccCommand($user, $addressBookName);
+	}
+
+	/**
 	 * @When the administrator gets all the jobs in the background queue using the occ command
 	 *
 	 * @return void
@@ -2425,7 +2522,8 @@ class OccContext implements Context {
 		$jobId = $this->lastDeletedJobId;
 		$match = $this->getLastJobIdForJob($job);
 		Assert::assertNotEquals(
-			$jobId, $match,
+			$jobId,
+			$match,
 			"job $job with jobId $jobId" .
 			" was not expected to be listed in background queue, but was"
 		);
@@ -2441,7 +2539,12 @@ class OccContext implements Context {
 	 * @throws Exception
 	 */
 	public function systemConfigKeyShouldHaveValue($key, $value) {
-		$config = \trim(SetupHelper::getSystemConfigValue($key));
+		$config = \trim(
+			SetupHelper::getSystemConfigValue(
+				$key,
+				$this->featureContext->getStepLineRef()
+			)
+		);
 		Assert::assertSame(
 			$value,
 			$config,
@@ -2481,7 +2584,10 @@ class OccContext implements Context {
 	 */
 	public function systemConfigKeyShouldNotExist($key) {
 		Assert::assertEmpty(
-			SetupHelper::getSystemConfig($key)['stdOut'],
+			SetupHelper::getSystemConfig(
+				$key,
+				$this->featureContext->getStepLineRef()
+			)['stdOut'],
 			"The system config key '$key' was not expected to exist"
 		);
 	}
@@ -2600,10 +2706,13 @@ class OccContext implements Context {
 	 * @return void
 	 */
 	public function theSystemConfigKeyFromLastCommandOutputShouldContainValue(
-		$key, $value, $type
+		$key,
+		$value,
+		$type
 	) {
 		$configList = \json_decode(
-			$this->featureContext->getStdOutOfOccCommand(), true
+			$this->featureContext->getStdOutOfOccCommand(),
+			true
 		);
 		$systemConfig = $configList['system'];
 
@@ -2616,7 +2725,8 @@ class OccContext implements Context {
 			// if the expected value of the key is a json
 			// match the value with the regular expression
 			$actualKeyValuePair = \json_encode(
-				$systemConfig[$key], JSON_UNESCAPED_SLASHES
+				$systemConfig[$key],
+				JSON_UNESCAPED_SLASHES
 			);
 
 			Assert::assertThat(
@@ -2653,6 +2763,7 @@ class OccContext implements Context {
 				'enable_external_storage',
 				'--value=yes'
 			],
+			$this->featureContext->getStepLineRef(),
 			$this->featureContext->getAdminUsername(),
 			$this->featureContext->getAdminPassword(),
 			$this->featureContext->getBaseUrl(),
@@ -2664,6 +2775,7 @@ class OccContext implements Context {
 				'core',
 				'enable_external_storage',
 			],
+			$this->featureContext->getStepLineRef(),
 			$this->featureContext->getAdminUsername(),
 			$this->featureContext->getAdminPassword(),
 			$this->featureContext->getBaseUrl(),
@@ -2697,6 +2809,7 @@ class OccContext implements Context {
 				'shareapi_exclude_groups_list',
 				"--value='[$groups]'"
 			],
+			$this->featureContext->getStepLineRef(),
 			$this->featureContext->getAdminUsername(),
 			$this->featureContext->getAdminPassword(),
 			$this->featureContext->getBaseUrl(),
@@ -2708,6 +2821,7 @@ class OccContext implements Context {
 				'core',
 				'shareapi_exclude_groups_list'
 			],
+			$this->featureContext->getStepLineRef(),
 			$this->featureContext->getAdminUsername(),
 			$this->featureContext->getAdminPassword(),
 			$this->featureContext->getBaseUrl(),
@@ -2738,6 +2852,7 @@ class OccContext implements Context {
 				"shareapi_exclude_groups",
 				"--value=yes"
 			],
+			$this->featureContext->getStepLineRef(),
 			$this->featureContext->getAdminUsername(),
 			$this->featureContext->getAdminPassword(),
 			$this->featureContext->getBaseUrl(),
@@ -2749,6 +2864,7 @@ class OccContext implements Context {
 				"core",
 				"shareapi_exclude_groups"
 			],
+			$this->featureContext->getStepLineRef(),
 			$this->featureContext->getAdminUsername(),
 			$this->featureContext->getAdminPassword(),
 			$this->featureContext->getBaseUrl(),
@@ -2784,6 +2900,7 @@ class OccContext implements Context {
 				"enable_lock_file_action",
 				"--value=$value"
 			],
+			$this->featureContext->getStepLineRef(),
 			$this->featureContext->getAdminUsername(),
 			$this->featureContext->getAdminPassword(),
 			$this->featureContext->getBaseUrl(),
@@ -2795,6 +2912,7 @@ class OccContext implements Context {
 				"files",
 				"enable_lock_file_action"
 			],
+			$this->featureContext->getStepLineRef(),
 			$this->featureContext->getAdminUsername(),
 			$this->featureContext->getAdminPassword(),
 			$this->featureContext->getBaseUrl(),
@@ -2840,10 +2958,12 @@ class OccContext implements Context {
 		);
 		$extMntSettings = $settings->getRowsHash();
 		$extMntSettings['user'] = $this->featureContext->substituteInLineCodes(
-			$extMntSettings['user'], $userRenamed
+			$extMntSettings['user'],
+			$userRenamed
 		);
 		$password = $this->featureContext->substituteInLineCodes(
-			$extMntSettings['password'], $user
+			$extMntSettings['password'],
+			$user
 		);
 		$args = [
 			"files_external:create",
@@ -2932,7 +3052,10 @@ class OccContext implements Context {
 	public function resetDAVTechPreview() {
 		if ($this->doTechPreview) {
 			if ($this->initialTechPreviewStatus === "") {
-				SetupHelper::deleteSystemConfig('dav.enable.tech_preview');
+				SetupHelper::deleteSystemConfig(
+					'dav.enable.tech_preview',
+					$this->featureContext->getStepLineRef()
+				);
 			} elseif ($this->initialTechPreviewStatus === 'true' && !$this->techPreviewEnabled) {
 				$this->enableDAVTechPreview();
 			} elseif ($this->initialTechPreviewStatus === 'false' && $this->techPreviewEnabled) {
@@ -2981,13 +3104,19 @@ class OccContext implements Context {
 			$this->featureContext->getBaseUrl(),
 			$this->featureContext->getOcPath()
 		);
-		$ocVersion = SetupHelper::getSystemConfigValue('version');
+		$ocVersion = SetupHelper::getSystemConfigValue(
+			'version',
+			$this->featureContext->getStepLineRef()
+		);
 		// dav.enable.tech_preview was used in some ownCloud versions before 10.4.0
 		// only set it on those versions of ownCloud
 		if (\version_compare($ocVersion, '10.4.0') === -1) {
 			$this->doTechPreview = true;
 			$techPreviewEnabled = \trim(
-				SetupHelper::getSystemConfigValue('dav.enable.tech_preview')
+				SetupHelper::getSystemConfigValue(
+					'dav.enable.tech_preview',
+					$this->featureContext->getStepLineRef()
+				)
 			);
 			$this->initialTechPreviewStatus = $techPreviewEnabled;
 			$this->techPreviewEnabled = $techPreviewEnabled === 'true';

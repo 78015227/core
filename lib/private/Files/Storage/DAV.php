@@ -357,14 +357,7 @@ class DAV extends Common {
 							->newClient()
 							->get($this->createBaseUri() . $this->encodePath($path), [
 									'auth' => [$this->user, $this->password],
-									'stream' => true,
-									'config' => [
-										'stream_context' => [
-											'http' => [
-												'request_fulluri' => true
-											]
-										],
-									],
+									'stream' => true
 							]);
 				} catch (RequestException $e) {
 					if ($e->getResponse() instanceof ResponseInterface
@@ -423,6 +416,7 @@ class DAV extends Common {
 				self::$tempFiles[$tmpFile] = $path;
 				return \fopen('close://' . $tmpFile, $mode);
 		}
+		return false;
 	}
 
 	/**
@@ -876,8 +870,9 @@ class DAV extends Common {
 			throw new StorageNotAvailableException(\get_class($e) . ': ' . $e->getMessage());
 		} elseif (($e instanceof StorageNotAvailableException)
 			|| ($e instanceof StorageInvalidException)
-			|| ($e instanceof \Sabre\DAV\Exception
-		)) {
+			|| (
+				$e instanceof \Sabre\DAV\Exception
+			)) {
 			// rethrow
 			throw $e;
 		}

@@ -32,12 +32,70 @@ require_once 'bootstrap.php';
  * Steps that relate to files_versions app
  */
 class FilesVersionsContext implements Context {
-
 	/**
 	 *
 	 * @var FeatureContext
 	 */
 	private $featureContext;
+
+	/**
+	 * @param string $fileId
+	 *
+	 * @return string
+	 */
+	private function getVersionsPathForFileId(string $fileId) {
+		return "/meta/$fileId/v";
+	}
+
+	/**
+	 * @When user :user tries to get versions of file :file from :fileOwner
+	 *
+	 * @param string $user
+	 * @param string $file
+	 * @param string $fileOwner
+	 *
+	 * @return void
+	 * @throws Exception
+	 */
+	public function userTriesToGetFileVersions($user, $file, $fileOwner) {
+		$user = $this->featureContext->getActualUsername($user);
+		$fileOwner = $this->featureContext->getActualUsername($fileOwner);
+		$fileId = $this->featureContext->getFileIdForPath($fileOwner, $file);
+		$response = $this->featureContext->makeDavRequest(
+			$user,
+			"PROPFIND",
+			$this->getVersionsPathForFileId($fileId),
+			null,
+			null,
+			null,
+			2
+		);
+		$this->featureContext->setResponse($response);
+	}
+
+	/**
+	 * @When user :user gets the number of versions of file :file
+	 *
+	 * @param string $user
+	 * @param string $file
+	 *
+	 * @return void
+	 * @throws Exception
+	 */
+	public function userGetsFileVersions($user, $file) {
+		$user = $this->featureContext->getActualUsername($user);
+		$fileId = $this->featureContext->getFileIdForPath($user, $file);
+		$response = $this->featureContext->makeDavRequest(
+			$user,
+			"PROPFIND",
+			$this->getVersionsPathForFileId($fileId),
+			null,
+			null,
+			null,
+			2
+		);
+		$this->featureContext->setResponse($response);
+	}
 
 	/**
 	 * @When user :user restores version index :versionIndex of file :path using the WebDAV API
@@ -52,16 +110,19 @@ class FilesVersionsContext implements Context {
 	public function userRestoresVersionIndexOfFile($user, $versionIndex, $path) {
 		$user = $this->featureContext->getActualUsername($user);
 		$fileId = $this->featureContext->getFileIdForPath($user, $path);
-		$responseXml = $this->listVersionFolder($user, "/meta/$fileId/v", 1);
+		$responseXml = $this->listVersionFolder($user, $fileId, 1);
 		$xmlPart = $responseXml->xpath("//d:response/d:href");
-		//restoring the version only works with dav path v2
+		//restoring the version only works with DAV path v2
 		$destinationUrl = $this->featureContext->getBaseUrl() . "/" .
 			WebDavHelper::getDavPath($user, 2) . \trim($path, "/");
 		$fullUrl = $this->featureContext->getBaseUrlWithoutPath() .
 			$xmlPart[$versionIndex];
 		HttpRequestHelper::sendRequest(
 			$fullUrl,
-			'COPY', $user, $this->featureContext->getPasswordForUser($user),
+			$this->featureContext->getStepLineRef(),
+			'COPY',
+			$user,
+			$this->featureContext->getPasswordForUser($user),
 			['Destination' => $destinationUrl]
 		);
 	}
@@ -76,7 +137,9 @@ class FilesVersionsContext implements Context {
 	 * @return void
 	 */
 	public function theVersionFolderOfFileShouldContainElements(
-		$path, $user, $count
+		$path,
+		$user,
+		$count
 	) {
 		$user = $this->featureContext->getActualUsername($user);
 		$fileId = $this->featureContext->getFileIdForPath($user, $path);
@@ -87,19 +150,22 @@ class FilesVersionsContext implements Context {
 	/**
 	 * @Then the version folder of fileId :fileId for user :user should contain :count element(s)
 	 *
-	 * @param int $fileId
+	 * @param string $fileId
 	 * @param string $user
 	 * @param int $count
 	 *
 	 * @return void
 	 */
 	public function theVersionFolderOfFileIdShouldContainElements(
-		$fileId, $user, $count
+		$fileId,
+		$user,
+		$count
 	) {
-		$responseXml = $this->listVersionFolder($user, "/meta/$fileId/v", 1);
+		$responseXml = $this->listVersionFolder($user, $fileId, 1);
 		$xmlPart = $responseXml->xpath("//d:prop/d:getetag");
 		Assert::assertEquals(
-			$count, \count($xmlPart) - 1,
+			$count,
+			\count($xmlPart) - 1,
 			"could not find $count version element(s) in \n" . $responseXml->asXML()
 		);
 	}
@@ -115,19 +181,59 @@ class FilesVersionsContext implements Context {
 	 * @return void
 	 */
 	public function theContentLengthOfFileForUserInVersionsFolderIs(
-		$path, $index, $user, $length
+		$path,
+		$index,
+		$user,
+		$length
 	) {
 		$user = $this->featureContext->getActualUsername($user);
 		$fileId = $this->featureContext->getFileIdForPath($user, $path);
 		$responseXml = $this->listVersionFolder(
-			$user, "/meta/$fileId/v", 1, ['getcontentlength']
+			$user,
+			$fileId,
+			1,
+			['getcontentlength']
 		);
 		$xmlPart = $responseXml->xpath("//d:prop/d:getcontentlength");
 		Assert::assertEquals(
-			$length, (int) $xmlPart[$index],
+			$length,
+			(int) $xmlPart[$index],
 			"The content length of file {$path} with version {$index} for user {$user} was 
 			expected to be {$length} but the actual content length is {$xmlPart[$index]}"
 		);
+	}
+
+	/**
+	 * @When user :user downloads the version of file :path with the index :index
+	 *
+	 * @param string $user
+	 * @param string $path
+	 * @param string $index
+	 *
+	 * @return void
+	 */
+	public function downloadVersion(string $user, string $path, string $index) {
+		$user = $this->featureContext->getActualUsername($user);
+		$fileId = $this->featureContext->getFileIdForPath($user, $path);
+		$index = (int)$index;
+		$responseXml = $this->listVersionFolder($user, $fileId, 1);
+		$xmlPart = $responseXml->xpath("//d:response/d:href");
+		if (!isset($xmlPart[$index])) {
+			Assert::fail(
+				'could not find version of path "' . $path . '" with index "' . $index . '"'
+			);
+		}
+		// the href already contains the path
+		$url = WebDavHelper::sanitizeUrl(
+			$this->featureContext->getBaseUrlWithoutPath() . $xmlPart[$index]
+		);
+		$response = HttpRequestHelper::get(
+			$url,
+			$this->featureContext->getStepLineRef(),
+			$user,
+			$this->featureContext->getPasswordForUser($user)
+		);
+		$this->featureContext->setResponse($response);
 	}
 
 	/**
@@ -135,14 +241,17 @@ class FilesVersionsContext implements Context {
 	 * with an registered namespace with 'd' as prefix and 'DAV:' as namespace
 	 *
 	 * @param string $user
-	 * @param string $path
+	 * @param string $fileId
 	 * @param int $folderDepth
-	 * @param string[] $properties
+	 * @param string[]|null $properties
 	 *
 	 * @return SimpleXMLElement
 	 */
 	public function listVersionFolder(
-		$user, $path, $folderDepth, $properties = null
+		string $user,
+		string $fileId,
+		int $folderDepth,
+		array $properties = null
 	) {
 		if (!$properties) {
 			$properties = [
@@ -153,7 +262,13 @@ class FilesVersionsContext implements Context {
 		$password = $this->featureContext->getPasswordForUser($user);
 		$response = WebDavHelper::propfind(
 			$this->featureContext->getBaseUrl(),
-			$user, $password, $path, $properties, $folderDepth, "versions"
+			$user,
+			$password,
+			$this->getVersionsPathForFileId($fileId),
+			$properties,
+			$this->featureContext->getStepLineRef(),
+			$folderDepth,
+			"versions"
 		);
 		$responseXml = HttpRequestHelper::getResponseXml(
 			$response,

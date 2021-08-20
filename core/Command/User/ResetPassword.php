@@ -59,11 +59,13 @@ class ResetPassword extends Command {
 	/** @var LostController */
 	private $lostController;
 
-	public function __construct(IUserManager $userManager,
-						IConfig $config,
-						ITimeFactory $timeFactory,
-						EnvironmentHelper $environmentHelper,
-						LostController $lostController) {
+	public function __construct(
+		IUserManager $userManager,
+		IConfig $config,
+		ITimeFactory $timeFactory,
+		EnvironmentHelper $environmentHelper,
+		LostController $lostController
+	) {
 		$this->userManager = $userManager;
 		$this->config = $config;
 		$this->timeFactory = $timeFactory;
@@ -201,6 +203,7 @@ class ResetPassword extends Command {
 			$output->writeln("<error>Error while resetting password!</error>");
 			return 1;
 		}
+		return 0;
 	}
 
 	/**

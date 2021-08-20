@@ -30,7 +30,7 @@ use OCP\Files\IMimeTypeDetector;
 use OCP\Files\IMimeTypeLoader;
 
 class UpdateDB extends Command {
-	const DEFAULT_MIMETYPE = 'application/octet-stream';
+	public const DEFAULT_MIMETYPE = 'application/octet-stream';
 
 	/** @var IMimeTypeDetector */
 	protected $mimetypeDetector;
@@ -94,5 +94,6 @@ class UpdateDB extends Command {
 
 		$output->writeln('Added '.$totalNewMimetypes.' new mimetypes');
 		$output->writeln('Updated '.$totalFilecacheUpdates.' filecache rows');
+		return 0;
 	}
 }
