@@ -180,7 +180,8 @@ class Share20OcsController extends OCSController {
 			'expiration' => null,
 			'token' => null,
 			'uid_file_owner' => $share->getShareOwner(),
-			'displayname_file_owner' => $shareFileOwner !== null ? $shareFileOwner->getDisplayName() : $share->getShareOwner()
+			'displayname_file_owner' => $shareFileOwner !== null ? $shareFileOwner->getDisplayName() : $share->getShareOwner(),
+			'is_quick_link' => $share->getIsQuickLink(),
 		];
 		if ($sharedBy !== null) {
 			$result['additional_info_owner'] = $this->getAdditionalUserInfo($sharedBy);
@@ -519,6 +520,9 @@ class Share20OcsController extends OCSController {
 			if ($password !== '') {
 				$share->setPassword($password);
 			}
+
+			$isQuickLink = $this->request->getParam('isQuickLink', 0);
+			$share->setIsQuickLink($isQuickLink);
 		} elseif ($shareType === Share::SHARE_TYPE_REMOTE) {
 			if (!$this->shareManager->outgoingServer2ServerSharesAllowed()) {
 				$share->getNode()->unlock(ILockingProvider::LOCK_SHARED);

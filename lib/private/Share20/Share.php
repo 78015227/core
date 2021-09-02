@@ -75,6 +75,8 @@ class Share implements IShare {
 	private $state;
 	/** @var bool */
 	private $shouldHashPassword = true;
+	/** @var int */
+	private $isQuickLink;
 
 	/** @var IRootFolder */
 	private $rootFolder;
@@ -493,5 +495,20 @@ class Share implements IShare {
 	 */
 	public function setShouldHashPassword($status) {
 		$this->shouldHashPassword = $status;
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function setIsQuickLink($isQuickLink) {
+		$this->isQuickLink = $isQuickLink;
+		return $this;
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function getIsQuickLink() {
+		return $this->isQuickLink;
 	}
 }

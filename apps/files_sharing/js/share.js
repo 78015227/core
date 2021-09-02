@@ -329,6 +329,8 @@
 				shareType: OC.Share.SHARE_TYPE_LINK,
 				itemType: fileInfoModel.isDirectory() ? 'folder' : 'file',
 				itemSource: fileInfoModel.get('id'),
+				isQuickLink: 1,
+				name: t('files_sharing', 'Public quick link')
 			};
 
 			var shareModel = new OC.Share.ShareModel(attributes);
@@ -356,16 +358,28 @@
 					}
 				}
 
+				var linkCollection = shareItemModel.getLinkSharesCollection();
+
 				if (initNewShareLinkView) {
-					var linkCollection = shareItemModel.getLinkSharesCollection();
 					linkShareView = new OC.Share.ShareDialogLinkListView({
 						collection: linkCollection,
 						itemModel: shareItemModel
 					});
 				}
 
-				attributes.name = linkShareView._generateName();
 				attributes.path = fileInfoModel.get('path') + '/' + fileInfoModel.get('name');
+
+				// check for existing public quick link
+				var quickLink = linkCollection.find({isQuickLink: 1});
+				if (quickLink) {
+					self._copyToClipboard(quickLink.getLink());
+
+					OC.Notification.show(t(
+						'files_sharing',
+						'Public link has been copied to the clipboard.'
+					), { timeout: 7 });
+					return;
+				}
 
 				shareModel.save(attributes, {
 					attrs: attributes,

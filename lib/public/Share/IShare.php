@@ -393,4 +393,23 @@ interface IShare {
 	 * @since 10.0.10
 	 */
 	public function setShouldHashPassword($status);
+
+	/**
+	 * Set isQuickLink to true. This indicates whether a quick link
+	 * was created via the quick link button in the UI.
+	 *
+	 * @param $isQuickLink
+	 * @return void
+	 * @since 10.9.0
+	 */
+	public function setIsQuickLink($isQuickLink);
+
+	/**
+	 * Get isQuickLink property. This indicates whether a quick link
+	 * was created via the quick link button in the UI.
+	 *
+	 * @return int 1 for true, 0 for false
+	 * @since 10.9.0
+	 */
+	public function getIsQuickLink();
 }

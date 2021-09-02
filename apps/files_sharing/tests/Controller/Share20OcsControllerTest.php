@@ -441,6 +441,7 @@ class Share20OcsControllerTest extends TestCase {
 			'displayname_file_owner' => 'ownerDisplay',
 			'additional_info_file_owner' => null,
 			'mimetype' => 'myMimeType',
+			'is_quick_link' => 0,
 		];
 		$data[] = [$share, $expected];
 
@@ -490,6 +491,7 @@ class Share20OcsControllerTest extends TestCase {
 			'displayname_file_owner' => 'ownerDisplay',
 			'additional_info_file_owner' => null,
 			'mimetype' => 'myFolderMimeType',
+			'is_quick_link' => 0,
 		];
 		$data[] = [$share, $expected];
 
@@ -541,6 +543,7 @@ class Share20OcsControllerTest extends TestCase {
 			'additional_info_file_owner' => null,
 			'mimetype' => 'myFolderMimeType',
 			'name' => 'some_name',
+			'is_quick_link' => 0,
 		];
 		$data[] = [$share, $expected];
 
@@ -2432,6 +2435,7 @@ class Share20OcsControllerTest extends TestCase {
 				'share_with_displayname' => 'recipient',
 				'mail_send' => 0,
 				'mimetype' => 'myMimeType',
+				'is_quick_link' => 0,
 			], $share, [], false
 		];
 
@@ -2465,6 +2469,7 @@ class Share20OcsControllerTest extends TestCase {
 				'share_with_additional_info' => null,
 				'mail_send' => 0,
 				'mimetype' => 'myMimeType',
+				'is_quick_link' => 0,
 			], $share, [
 				['owner', false, $owner],
 				['initiator', false, $initiator],
@@ -2510,6 +2515,7 @@ class Share20OcsControllerTest extends TestCase {
 				'share_with_displayname' => 'recipient',
 				'mail_send' => 0,
 				'mimetype' => 'myMimeType',
+				'is_quick_link' => 0,
 			], $share, [], false
 		];
 
@@ -2551,6 +2557,7 @@ class Share20OcsControllerTest extends TestCase {
 				'share_with_displayname' => 'recipientGroupDisplayName',
 				'mail_send' => 0,
 				'mimetype' => 'myMimeType',
+				'is_quick_link' => 0,
 			], $share, [], false
 		];
 
@@ -2591,6 +2598,7 @@ class Share20OcsControllerTest extends TestCase {
 				'share_with_displayname' => 'recipientGroup2',
 				'mail_send' => 0,
 				'mimetype' => 'myMimeType',
+				'is_quick_link' => 0,
 			], $share, [], false
 		];
 
@@ -2636,6 +2644,7 @@ class Share20OcsControllerTest extends TestCase {
 				'url' => 'myLink',
 				'mimetype' => 'myMimeType',
 				'name' => 'some_name',
+				'is_quick_link' => 0,
 			], $share, [], false
 		];
 
@@ -2676,6 +2685,7 @@ class Share20OcsControllerTest extends TestCase {
 				'share_with_displayname' => 'user@server.com',
 				'mail_send' => 0,
 				'mimetype' => 'myFolderMimeType',
+				'is_quick_link' => 0,
 			], $share, [], false
 		];
 

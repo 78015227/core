@@ -48,6 +48,9 @@
 				delete data.file_target;
 				delete data.mail_send;
 				delete data.share_with_displayname;
+
+				data.isQuickLink = data.is_quick_link;
+				delete data.is_quick_link;
 			}
 
 			data.itemSource = data.item_source;

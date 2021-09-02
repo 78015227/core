@@ -137,6 +137,9 @@ class DefaultShareProvider implements IShareProvider {
 
 			// Set user-defined name
 			$qb->setValue('share_name', $qb->createNamedParameter($share->getName()));
+
+			// Set is quick link
+			$qb->setValue('is_quick_link', $qb->createNamedParameter($share->getIsQuickLink()));
 		} else {
 			throw new \Exception('invalid share type!');
 		}
@@ -1023,6 +1026,7 @@ class DefaultShareProvider implements IShareProvider {
 		$share->setNodeType($data['item_type']);
 		$share->setName($data['share_name']);
 		$share->setState((int)$data['accepted']);
+		$share->setIsQuickLink((int)$data['is_quick_link']);
 
 		if ($data['expiration'] !== null) {
 			$expiration = \DateTime::createFromFormat('Y-m-d H:i:s', $data['expiration']);
