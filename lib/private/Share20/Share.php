@@ -75,7 +75,7 @@ class Share implements IShare {
 	private $state;
 	/** @var bool */
 	private $shouldHashPassword = true;
-	/** @var int */
+	/** @var bool */
 	private $isQuickLink;
 
 	/** @var IRootFolder */

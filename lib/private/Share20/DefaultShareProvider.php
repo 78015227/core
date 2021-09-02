@@ -139,7 +139,7 @@ class DefaultShareProvider implements IShareProvider {
 			$qb->setValue('share_name', $qb->createNamedParameter($share->getName()));
 
 			// Set is quick link
-			$qb->setValue('is_quick_link', $qb->createNamedParameter($share->getIsQuickLink()));
+			$qb->setValue('is_quick_link', $qb->createNamedParameter((int) $share->getIsQuickLink()));
 		} else {
 			throw new \Exception('invalid share type!');
 		}
@@ -1015,6 +1015,7 @@ class DefaultShareProvider implements IShareProvider {
 		} elseif ($share->getShareType() === \OCP\Share::SHARE_TYPE_LINK) {
 			$share->setPassword($data['share_with']);
 			$share->setToken($data['token']);
+			$share->setIsQuickLink((bool)$data['is_quick_link']);
 		}
 
 		$share = $this->updateShareAttributes($share, $data['attributes']);
@@ -1026,7 +1027,6 @@ class DefaultShareProvider implements IShareProvider {
 		$share->setNodeType($data['item_type']);
 		$share->setName($data['share_name']);
 		$share->setState((int)$data['accepted']);
-		$share->setIsQuickLink((int)$data['is_quick_link']);
 
 		if ($data['expiration'] !== null) {
 			$expiration = \DateTime::createFromFormat('Y-m-d H:i:s', $data['expiration']);

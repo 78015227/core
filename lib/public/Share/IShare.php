@@ -408,7 +408,7 @@ interface IShare {
 	 * Get isQuickLink property. This indicates whether a quick link
 	 * was created via the quick link button in the UI.
 	 *
-	 * @return int 1 for true, 0 for false
+	 * @return bool
 	 * @since 10.9.0
 	 */
 	public function getIsQuickLink();

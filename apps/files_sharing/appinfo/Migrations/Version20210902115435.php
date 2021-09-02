@@ -6,7 +6,7 @@ use Doctrine\DBAL\Types\Types;
 use OCP\Migration\ISchemaMigration;
 
 /**
- * Auto-generated migration step: Please modify to your needs!
+ * Add is_quick_link column.
  */
 class Version20210902115435 implements ISchemaMigration {
 	public function changeSchema(Schema $schema, array $options) {
