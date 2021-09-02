@@ -11,21 +11,21 @@ Feature: sharing
       | Carol    |
 
   @smokeTest
-  Scenario Outline: User is not allowed to reshare file when reshare permission is not given
-    Given using OCS API version "<ocs_api_version>"
+  Scenario: User is not allowed to reshare file when reshare permission is not given
+    Given using OCS API version "1"
     And user "Alice" has uploaded file "filesForUpload/textfile.txt" to "/textfile0.txt"
     And user "Alice" has shared file "/textfile0.txt" with user "Brian" with permissions "read,update"
     And user "Brian" has accepted share "/textfile0.txt" offered by user "Alice"
     When user "Brian" shares file "/Shares/textfile0.txt" with user "Carol" with permissions "read,update" using the sharing API
     Then the OCS status code should be "404"
-    And the HTTP status code should be "<http_status_code>"
+    And the HTTP status code should be "200"
     And as "Carol" file "/Shares/textfile0.txt" should not exist
     And the sharing API should report to user "Carol" that no shares are in the pending state
     But as "Brian" file "/Shares/textfile0.txt" should exist
-    Examples:
-      | ocs_api_version | http_status_code |
-      | 1               | 200              |
-      | 2               | 404              |
+#    Examples:
+#      | ocs_api_version | http_status_code |
+#      | 1               | 200              |
+#      | 2               | 404              |
 
   Scenario Outline: User is not allowed to reshare folder when reshare permission is not given
     Given using OCS API version "<ocs_api_version>"

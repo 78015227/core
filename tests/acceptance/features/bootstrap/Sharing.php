@@ -1258,6 +1258,7 @@ trait Sharing {
 		}
 
 		$data = $this->getResponseXml(null, __METHOD__)->data[0];
+		var_dump($data);
 		if (\is_iterable($data)) {
 			foreach ($data as $element) {
 				if (($element->share_type->__toString() === (string) $shareType)
@@ -1421,6 +1422,7 @@ trait Sharing {
 			$permissions,
 			true
 		);
+		var_dump("====================================");
 		// this is expected to fail if a file is shared with create and delete permissions, which is not possible
 		Assert::assertTrue(
 			$this->isUserOrGroupInSharedData($user2, "user", $permissions),
