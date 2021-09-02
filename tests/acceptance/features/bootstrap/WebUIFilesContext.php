@@ -2245,6 +2245,13 @@ class WebUIFilesContext extends RawMinkContext implements Context {
 		// Get all the contexts you need in this context
 		$this->featureContext = $environment->getContext('FeatureContext');
 		$this->webUIGeneralContext = $environment->getContext('WebUIGeneralContext');
+		$screenResolution = getenv("SCREEN_RESOLUTION");
+		if (!empty($screenResolution)) {
+			$screenResolution = explode(",", $screenResolution);
+			$width = (int)$screenResolution[0];
+			$height = (int)$screenResolution[1];
+			$this->getSession()->resizeWindow($width,$height, 'current');
+		}
 	}
 
 	/**
