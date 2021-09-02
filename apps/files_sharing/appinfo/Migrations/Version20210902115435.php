@@ -1,5 +1,5 @@
 <?php
-namespace OCA\files_sharing\Migrations;
+namespace OCA\Files_Sharing\Migrations;
 
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
