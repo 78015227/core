@@ -329,7 +329,7 @@
 				shareType: OC.Share.SHARE_TYPE_LINK,
 				itemType: fileInfoModel.isDirectory() ? 'folder' : 'file',
 				itemSource: fileInfoModel.get('id'),
-				isQuickLink: 1,
+				isQuickLink: true,
 				name: t('files_sharing', 'Public quick link')
 			};
 
@@ -368,9 +368,8 @@
 				}
 
 				attributes.path = fileInfoModel.get('path') + '/' + fileInfoModel.get('name');
-
 				// check for existing public quick link
-				var quickLink = linkCollection.find({isQuickLink: 1});
+				var quickLink = linkCollection.find({isQuickLink: true});
 				if (quickLink) {
 					self._copyToClipboard(quickLink.getLink());
 

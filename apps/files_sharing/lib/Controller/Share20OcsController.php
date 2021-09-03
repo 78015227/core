@@ -181,7 +181,6 @@ class Share20OcsController extends OCSController {
 			'token' => null,
 			'uid_file_owner' => $share->getShareOwner(),
 			'displayname_file_owner' => $shareFileOwner !== null ? $shareFileOwner->getDisplayName() : $share->getShareOwner(),
-			'is_quick_link' => $share->getIsQuickLink(),
 		];
 		if ($sharedBy !== null) {
 			$result['additional_info_owner'] = $this->getAdditionalUserInfo($sharedBy);
@@ -254,6 +253,7 @@ class Share20OcsController extends OCSController {
 			if ($share->getToken() !== null) {
 				$result['url'] = $this->urlGenerator->linkToRouteAbsolute('files_sharing.sharecontroller.showShare', ['token' => $share->getToken()]);
 			}
+			$result['is_quick_link'] = $share->getIsQuickLink();
 		} elseif ($share->getShareType() === Share::SHARE_TYPE_REMOTE) {
 			$result['share_with'] = $share->getSharedWith();
 			$result['share_with_displayname'] = $share->getSharedWith();

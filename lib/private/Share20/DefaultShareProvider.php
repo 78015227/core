@@ -139,7 +139,7 @@ class DefaultShareProvider implements IShareProvider {
 			$qb->setValue('share_name', $qb->createNamedParameter($share->getName()));
 
 			// Set is quick link
-			$qb->setValue('is_quick_link', $qb->createNamedParameter((int) $share->getIsQuickLink()));
+			$qb->setValue('is_quick_link', $qb->createNamedParameter((int)$share->getIsQuickLink()));
 		} else {
 			throw new \Exception('invalid share type!');
 		}

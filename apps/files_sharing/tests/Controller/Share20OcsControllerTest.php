@@ -330,7 +330,8 @@ class Share20OcsControllerTest extends TestCase {
 		$token=null,
 		$password=null,
 		$name=null,
-		$attributes=null
+		$attributes=null,
+		$isQuickLink=false
 	) {
 		$share = $this->createMock(IShare::class);
 		$share->method('getId')->willReturn($id);
@@ -351,6 +352,7 @@ class Share20OcsControllerTest extends TestCase {
 		$share->method('getToken')->willReturn($token);
 		$share->method('getPassword')->willReturn($password);
 		$share->method('getName')->willReturn($name);
+		$share->method('getIsQuickLink')->willReturn($isQuickLink);
 
 		if ($shareType === Share::SHARE_TYPE_USER  ||
 			$shareType === Share::SHARE_TYPE_GROUP ||
@@ -441,7 +443,6 @@ class Share20OcsControllerTest extends TestCase {
 			'displayname_file_owner' => 'ownerDisplay',
 			'additional_info_file_owner' => null,
 			'mimetype' => 'myMimeType',
-			'is_quick_link' => 0,
 		];
 		$data[] = [$share, $expected];
 
@@ -491,7 +492,6 @@ class Share20OcsControllerTest extends TestCase {
 			'displayname_file_owner' => 'ownerDisplay',
 			'additional_info_file_owner' => null,
 			'mimetype' => 'myFolderMimeType',
-			'is_quick_link' => 0,
 		];
 		$data[] = [$share, $expected];
 
@@ -2435,7 +2435,6 @@ class Share20OcsControllerTest extends TestCase {
 				'share_with_displayname' => 'recipient',
 				'mail_send' => 0,
 				'mimetype' => 'myMimeType',
-				'is_quick_link' => 0,
 			], $share, [], false
 		];
 
@@ -2469,7 +2468,6 @@ class Share20OcsControllerTest extends TestCase {
 				'share_with_additional_info' => null,
 				'mail_send' => 0,
 				'mimetype' => 'myMimeType',
-				'is_quick_link' => 0,
 			], $share, [
 				['owner', false, $owner],
 				['initiator', false, $initiator],
@@ -2515,7 +2513,6 @@ class Share20OcsControllerTest extends TestCase {
 				'share_with_displayname' => 'recipient',
 				'mail_send' => 0,
 				'mimetype' => 'myMimeType',
-				'is_quick_link' => 0,
 			], $share, [], false
 		];
 
@@ -2557,7 +2554,6 @@ class Share20OcsControllerTest extends TestCase {
 				'share_with_displayname' => 'recipientGroupDisplayName',
 				'mail_send' => 0,
 				'mimetype' => 'myMimeType',
-				'is_quick_link' => 0,
 			], $share, [], false
 		];
 
@@ -2598,7 +2594,6 @@ class Share20OcsControllerTest extends TestCase {
 				'share_with_displayname' => 'recipientGroup2',
 				'mail_send' => 0,
 				'mimetype' => 'myMimeType',
-				'is_quick_link' => 0,
 			], $share, [], false
 		];
 
@@ -2614,7 +2609,8 @@ class Share20OcsControllerTest extends TestCase {
 			->setExpirationDate(new \DateTime('2001-01-02T00:00:00'))
 			->setToken('myToken')
 			->setName('some_name')
-			->setId(42);
+			->setId(42)
+			->setIsQuickLink(true);
 
 		$result[] = [
 			[
@@ -2644,7 +2640,7 @@ class Share20OcsControllerTest extends TestCase {
 				'url' => 'myLink',
 				'mimetype' => 'myMimeType',
 				'name' => 'some_name',
-				'is_quick_link' => 0,
+				'is_quick_link' => 1,
 			], $share, [], false
 		];
 
@@ -2685,7 +2681,6 @@ class Share20OcsControllerTest extends TestCase {
 				'share_with_displayname' => 'user@server.com',
 				'mail_send' => 0,
 				'mimetype' => 'myFolderMimeType',
-				'is_quick_link' => 0,
 			], $share, [], false
 		];
 
