@@ -1065,22 +1065,13 @@ class WebUISharingContext extends RawMinkContext implements Context {
 	 * @throws Exception
 	 */
 	public function enablePublicLinkQuickAction(string $action):void {
-		if ($action === "enabled") {
+
 			SetupHelper::setSystemConfig(
 				'sharing.showPublicLinkQuickAction',
-				'true',
+				($action === "enabled") ? 'true' : 'false',
 				$this->featureContext->getStepLineRef(),
 				'boolean'
 			);
-		}
-		if ($action === "disabled") {
-			SetupHelper::setSystemConfig(
-				'sharing.showPublicLinkQuickAction',
-				'false',
-				$this->featureContext->getStepLineRef(),
-				'boolean'
-			);
-		}
 	}
 
 	/**
@@ -1556,7 +1547,7 @@ class WebUISharingContext extends RawMinkContext implements Context {
 		$isDisplayed = $this->filesPage->isPublicLinkQuickActionVisible($name);
 		Assert::assertTrue(
 			$isDisplayed,
-			"Public link quick action was supposed to be displayed but is not"
+			"Public link quick action was expected to be displayed but is not"
 		);
 	}
 
@@ -1572,7 +1563,7 @@ class WebUISharingContext extends RawMinkContext implements Context {
 		$isDisplayed = $this->filesPage->isPublicLinkQuickActionVisible($name);
 		Assert::assertFalse(
 			$isDisplayed,
-			"Public link quick action was not supposed to be displayed but is"
+			"Public link quick action was not expected to be displayed but is"
 		);
 	}
 

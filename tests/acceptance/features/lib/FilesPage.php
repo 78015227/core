@@ -503,10 +503,10 @@ class FilesPage extends FilesPageBasic {
 	public function isPublicLinkQuickActionVisible(string $name):bool {
 		$quickActionXpathLocator = \sprintf($this->publicLinkQuickActionXpath, $name);
 		$quickActionButton = $this->find("xpath", $quickActionXpathLocator);
-		if ($quickActionButton === null) {
-			return false;
-		}
-		return true;
+//		if ($quickActionButton === null) {
+//			return false;
+//		}
+		return !($quickActionButton === null);
 	}
 
 	/**
